@@ -34,7 +34,7 @@ func Init() error {
 }
 
 func drawGraph() {
-	first := true
+	var gh parse.Graph
 	for _, p := range probes {
 		data, err := p.Fetch.GetData()
 		if err != nil {
@@ -47,11 +47,7 @@ func drawGraph() {
 			log.Printf("parse fail:%v", err)
 			continue
 		}
-		if first {
-			Graph = graph
-			first = false
-			continue
-		}
-		Graph.Merge(&graph)
+		gh.Merge(&graph)
 	}
+	Graph = gh
 }

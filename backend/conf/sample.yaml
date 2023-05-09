@@ -8,4 +8,10 @@ probe:
       command: "birdc show ospf state all"
     parse:
       type: "bird"
+  - fetch:
+      type: "command"
+      cmd: "birdc show ospf state all"
+    parse:
+      type: "bird"
 interval: 60
+port: 7878
