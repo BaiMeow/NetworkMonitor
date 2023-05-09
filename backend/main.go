@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"path"
+	"strconv"
 )
 
 type staticRouter struct {
@@ -30,5 +31,6 @@ func main() {
 	r.StaticFS("/assets/", &staticRouter{"/static/assets"})
 	r.GET("/api/graph", controller.GetGraph)
 	r.StaticFileFS("/", "/", &staticRouter{"/static"})
-	r.Run(":80")
+	r.StaticFileFS("/bs.jpg", "/static/bs.jpg", http.FS(FS))
+	r.Run(":" + strconv.Itoa(conf.Port))
 }

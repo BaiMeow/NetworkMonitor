@@ -5,8 +5,10 @@ import (
 	"github.com/spf13/viper"
 )
 
-var Probes []Probe
-var Interval int
+var (
+	Probes         []Probe
+	Interval, Port int
+)
 
 func Init() error {
 	viper.SetConfigName("config")
@@ -18,6 +20,7 @@ func Init() error {
 	}
 	probes := viper.Get("probe").([]any)
 	Interval = viper.GetInt("interval")
+	Port = viper.GetInt("port")
 	for _, probe := range probes {
 		probe, ok := probe.(map[string]any)
 		if !ok {

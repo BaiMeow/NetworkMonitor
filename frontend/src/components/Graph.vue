@@ -50,20 +50,25 @@ const option = ref({
 
 axios.get('/api/graph').then(response => {
     let data:Array<any> = response.data;
-    let {nodes,edges} = data.reduce(({nodes,edges }, cur) => {
-        cur['links'].forEach((link) => {
-            edges.push({
-                source: link['src'],
-                target: link['dst'],
-                value: link['cost'],
+    let {nodes,edges} = data.reduce(({ nodes,edges }, cur) => {
+        if (cur['links'] as Array<any> && cur['links'].length!==0){
+            cur['links'].forEach((link) => {
+                edges.push({
+                    source: link['src'],
+                    target: link['dst'],
+                    value: link['cost'],
+                });
             });
-        });
-        cur['router'].forEach((router) => {
-            nodes.push({
-                name: router['router_id'],
-                value: router['router_id'],
+        }
+        if (cur['router'] as Array<any> && cur['router'].length!==0){
+            cur['router'].forEach((router) => {
+                if (nodes.findIndex((e)=> e.name === router['router_id'])!=-1) return;
+                nodes.push({
+                    name: router['router_id'],
+                    value: router['router_id'],
+                });
             });
-        });
+        }
         return {nodes,edges};
     },{nodes:[],edges:[]});
 
