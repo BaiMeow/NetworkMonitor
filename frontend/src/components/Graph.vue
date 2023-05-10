@@ -5,23 +5,58 @@ import { reactive } from "vue";
 import VChart from "vue-echarts";
 import axios from "axios";
 
-const option= reactive({
+interface Router {
+  router_id: string;
+  metadata?: Object;
+}
+
+interface Link {
+  src: string;
+  dst: string;
+  cost: number;
+}
+
+interface Area {
+  area_id: string;
+  router: Router[];
+  links: Link[];
+}
+
+interface Edge{
+    source:string
+    target:string
+    value:number
+    lineStyle?:any
+    symbol?:string[]
+}
+
+interface Node{
+    name:string
+    value:string
+    meta?:any
+    area:string[]
+}
+
+const option:any = reactive({
     title: {
         text: 'DN11 OSPF Status',
     },
     tooltip: {
         trigger: 'item',
         triggerOn: 'mousemove',
-        formatter: (params)=>{
+        formatter: (params:any)=>{
             if (params.dataType === 'edge') {
+                params.data as Link
                 return `link: ${params.data.source} <==> ${params.data.target} <br/> cost: ${params.data.value}`;
             } else {
+                params.data as Edge
                 let output = `RouterId: ${params.data.value}`;
                 if (params.data.meta) {
                     output += '<br/>';
                     for (let key in params.data.meta) {
                         output += `${key}: ${params.data.meta[key]} <br/>`;
                     }
+                    output+= `area: ${params.data.area.join()}`
                 }
                 return output
             }
@@ -45,15 +80,11 @@ const option= reactive({
             label: {
                 show: true,
                 position: 'right',
-                formatter: (params)=>{
-                    if (params.dataType === 'edge') {
-                        return params.data.value;
-                    } else {
-                        if (params.data.meta && params.data.meta['name']) {
-                            return params.data.meta['name'];
+                formatter: (params:any)=>{
+                    if (params.data.meta && params.data.meta.name) {
+                            return params.data.meta.name;
                         }
                         return params.data.value;
-                    }
                 },
             },
             draggable: true,
@@ -71,30 +102,48 @@ const option= reactive({
     }
 })
 
+
+
 axios.get('/api/graph').then(response => {
-    let data: Array<any> = response.data;
-    let { nodes, edges } = data.reduce(({ nodes, edges }, cur) => {
-        if (cur['links'] as Array<any> && cur['links'].length !== 0) {
-            cur['links'].forEach((link: any) => {
-                edges.push({
-                    source: link['src'],
-                    target: link['dst'],
-                    value: link['cost'],
-                });
+    let area: Array<Area> = response.data;
+    let { nodes, edges } = area.reduce(({ nodes, edges, }, cur) => {
+        if (cur.links && cur.links.length !== 0) {
+            cur.links.forEach((link: Link) => {
+                edges.push((()=>{
+                    let eg:Edge = {
+                        source: ''+link.src,
+                        target: link.dst,
+                        value: link.cost,
+                    }
+                    if (cur.links.findIndex((l)=>{
+                        return l.src===link.dst&&l.dst===link.src&&l.cost!==link.cost
+                    })!==-1){
+                        eg.lineStyle = {
+                            curveness:0.07
+                        }
+                        eg.symbol = ['', 'arrow'];
+                    }
+                    return eg;
+                })());
             });
         }
-        if (cur['router'] as Array<any> && cur['router'].length !== 0) {
-            cur['router'].forEach((router: any) => {
-                if (nodes.findIndex((e: any) => e.name === router['router_id']) != -1) return;
+        if (cur.router as Array<Router> && cur.router.length !== 0) {
+            cur.router.forEach((router: Router) => {
+                let index = nodes.findIndex((r)=>r.name==router.router_id)
+                if (index!==-1){
+                    nodes[index].area.push(cur.area_id)
+                    return
+                }
                 nodes.push({
-                    name: router['router_id'],
-                    value: router['router_id'],
-                    meta: router['metadata']? router['metadata']: {},
+                    name: router.router_id,
+                    value: router.router_id,
+                    meta: router.metadata? router.metadata: {},
+                    area: [cur.area_id]
                 });
             });
         }
         return { nodes, edges };
-    }, { nodes: [], edges: [] });
+    }, { nodes:[] as Array<Node>,edges:[] as Array<Edge>});
 
     option.series[0].data = nodes;
     option.series[0].links = edges;
