@@ -3,11 +3,12 @@ package fetch
 import (
 	"fmt"
 	"os/exec"
+	"strings"
 )
 
 func init() {
-	Register("command", func(m map[string]any) (Fetcher, error) {
-		cmd, ok := m["cmd"].(string)
+	Register("cmd", func(m map[string]any) (Fetcher, error) {
+		cmd, ok := m["command"].(string)
 		if !ok {
 			return nil, fmt.Errorf("cmd is not string")
 		}
@@ -20,7 +21,17 @@ type Command struct {
 }
 
 func (c *Command) GetData() (string, error) {
-	output, err := exec.Command(c.Command).CombinedOutput()
+	ss := strings.SplitN(c.Command, " ", 2)
+	var cmd, arg string
+	switch len(ss) {
+	case 0:
+		return "", fmt.Errorf("command is empty")
+	case 1:
+		cmd = ss[0]
+	case 2:
+		cmd, arg = ss[0], ss[1]
+	}
+	output, err := exec.Command(cmd, arg).Output()
 	if err != nil {
 		return "", err
 	}

@@ -63,7 +63,10 @@ func update() error {
 
 	//update metadata
 	var tmpMeta = make(map[string]map[string]any)
-	metas := viper.Get("metadata").(map[string]any)
+	metas, ok := viper.Get("metadata").(map[string]any)
+	if !ok {
+		return nil
+	}
 	for name, meta := range metas {
 		meta, ok := meta.(map[string]any)
 		if !ok {

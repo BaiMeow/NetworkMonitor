@@ -5,14 +5,27 @@ import { reactive } from "vue";
 import VChart from "vue-echarts";
 import axios from "axios";
 
-const option = reactive({
+const option= reactive({
     title: {
         text: 'DN11 OSPF Status',
     },
     tooltip: {
         trigger: 'item',
         triggerOn: 'mousemove',
-        formatter: '{c}',
+        formatter: (params)=>{
+            if (params.dataType === 'edge') {
+                return `link: ${params.data.source} <==> ${params.data.target} <br/> cost: ${params.data.value}`;
+            } else {
+                let output = `RouterId: ${params.data.value}`;
+                if (params.data.meta) {
+                    output += '<br/>';
+                    for (let key in params.data.meta) {
+                        output += `${key}: ${params.data.meta[key]} <br/>`;
+                    }
+                }
+                return output
+            }
+        },
     },
     roam: 'scale',
     symbolSize: 50,
@@ -32,6 +45,16 @@ const option = reactive({
             label: {
                 show: true,
                 position: 'right',
+                formatter: (params)=>{
+                    if (params.dataType === 'edge') {
+                        return params.data.value;
+                    } else {
+                        if (params.data.meta && params.data.meta['name']) {
+                            return params.data.meta['name'];
+                        }
+                        return params.data.value;
+                    }
+                },
             },
             draggable: true,
             edgeLabel: {
@@ -66,6 +89,7 @@ axios.get('/api/graph').then(response => {
                 nodes.push({
                     name: router['router_id'],
                     value: router['router_id'],
+                    meta: router['metadata']? router['metadata']: {},
                 });
             });
         }
@@ -75,8 +99,6 @@ axios.get('/api/graph').then(response => {
     option.series[0].data = nodes;
     option.series[0].links = edges;
 });
-
-//let backend = "[{\"area_id\":\"0.0.0.0\",\"router\":[{\"router_id\":\"172.16.255.2\"},{\"router_id\":\"172.16.255.4\"},{\"router_id\":\"172.16.255.3\"},{\"router_id\":\"172.16.255.7\"},{\"router_id\":\"172.16.255.5\"}],\"links\":[{\"src\":\"172.16.255.2\",\"dst\":\"172.16.255.4\",\"cost\":5},{\"src\":\"172.16.255.2\",\"dst\":\"172.16.255.3\",\"cost\":5},{\"src\":\"172.16.255.3\",\"dst\":\"172.16.255.4\",\"cost\":5},{\"src\":\"172.16.255.3\",\"dst\":\"172.16.255.7\",\"cost\":5},{\"src\":\"172.16.255.4\",\"dst\":\"172.16.255.5\",\"cost\":5},{\"src\":\"172.16.255.4\",\"dst\":\"172.16.255.7\",\"cost\":5}]}]"
 
 </script>
 

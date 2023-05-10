@@ -13,6 +13,12 @@ type Probe struct {
 }
 
 func NewProbe(p conf.Probe) (*Probe, error) {
+	if fetch.Spawn[p.Fetch.Type()] == nil {
+		return nil, fmt.Errorf("invalid fetch type:%v", p.Fetch.Type())
+	}
+	if parse.Spawn[p.Parse.Type()] == nil {
+		return nil, fmt.Errorf("invalid parse type:%v", p.Parse.Type())
+	}
 	fetcher, err := fetch.Spawn[p.Fetch.Type()](p.Fetch)
 	if err != nil {
 		return nil, fmt.Errorf("spawn fetcher fail:%v", fetcher)
