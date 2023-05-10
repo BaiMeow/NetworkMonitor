@@ -7,6 +7,4 @@ import Graph from "./components/Graph.vue";
   <Graph />
 </template>
 
-<style scoped>
-
-</style>
+<style scoped></style>
