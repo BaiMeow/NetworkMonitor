@@ -1,14 +1,16 @@
 package main
 
 import (
-	"github.com/BaiMeow/OSPF-monitor/conf"
-	"github.com/BaiMeow/OSPF-monitor/controller"
-	"github.com/BaiMeow/OSPF-monitor/graph"
-	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
 	"path"
 	"strconv"
+
+	"github.com/BaiMeow/OSPF-monitor/conf"
+	"github.com/BaiMeow/OSPF-monitor/controller"
+	"github.com/BaiMeow/OSPF-monitor/graph"
+	"github.com/BaiMeow/OSPF-monitor/middleware"
+	"github.com/gin-gonic/gin"
 )
 
 type staticRouter struct {
@@ -28,6 +30,7 @@ func main() {
 	}
 
 	r := gin.Default()
+	r.Use(middleware.Cors())
 	r.StaticFS("/assets/", &staticRouter{"/static/assets"})
 	r.GET("/api/graph", controller.GetGraph)
 	r.StaticFileFS("/", "/", &staticRouter{"/static"})
