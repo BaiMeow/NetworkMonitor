@@ -1,26 +1,26 @@
 <script setup lang="ts">
 import "echarts";
-import { ref } from "vue";
+import { reactive } from "vue";
 
 import VChart from "vue-echarts";
 import axios from "axios";
 
-const option = ref({
-    title:{
+const option = reactive({
+    title: {
         text: 'DN11 OSPF Status',
     },
     tooltip: {
         trigger: 'item',
         triggerOn: 'mousemove',
-        formatter:'{c}',
+        formatter: '{c}',
     },
     roam: 'scale',
     symbolSize: 50,
     animationDurationUpdate: 1500,
-    animationEasingUpdate: 'quinticInOut',
+    animationEasingUpdate: 'quinticInOut' as any,
     series: [
         {
-            type:'graph',
+            type: 'graph',
             layout: 'force',
             animation: true,
             force: {
@@ -31,10 +31,10 @@ const option = ref({
             roam: true,
             label: {
                 show: true,
-                position:'right',
+                position: 'right',
             },
             draggable: true,
-            edgeLabel:{
+            edgeLabel: {
                 show: true,
                 formatter: '{c}',
             },
@@ -49,10 +49,10 @@ const option = ref({
 })
 
 axios.get('/api/graph').then(response => {
-    let data:Array<any> = response.data;
-    let {nodes,edges} = data.reduce(({ nodes,edges }, cur) => {
-        if (cur['links'] as Array<any> && cur['links'].length!==0){
-            cur['links'].forEach((link) => {
+    let data: Array<any> = response.data;
+    let { nodes, edges } = data.reduce(({ nodes, edges }, cur) => {
+        if (cur['links'] as Array<any> && cur['links'].length !== 0) {
+            cur['links'].forEach((link: any) => {
                 edges.push({
                     source: link['src'],
                     target: link['dst'],
@@ -60,20 +60,20 @@ axios.get('/api/graph').then(response => {
                 });
             });
         }
-        if (cur['router'] as Array<any> && cur['router'].length!==0){
-            cur['router'].forEach((router) => {
-                if (nodes.findIndex((e)=> e.name === router['router_id'])!=-1) return;
+        if (cur['router'] as Array<any> && cur['router'].length !== 0) {
+            cur['router'].forEach((router: any) => {
+                if (nodes.findIndex((e: any) => e.name === router['router_id']) != -1) return;
                 nodes.push({
                     name: router['router_id'],
                     value: router['router_id'],
                 });
             });
         }
-        return {nodes,edges};
-    },{nodes:[],edges:[]});
+        return { nodes, edges };
+    }, { nodes: [], edges: [] });
 
-    option.value.series[0].data = nodes;
-    option.value.series[0].links = edges;
+    option.series[0].data = nodes;
+    option.series[0].links = edges;
 });
 
 //let backend = "[{\"area_id\":\"0.0.0.0\",\"router\":[{\"router_id\":\"172.16.255.2\"},{\"router_id\":\"172.16.255.4\"},{\"router_id\":\"172.16.255.3\"},{\"router_id\":\"172.16.255.7\"},{\"router_id\":\"172.16.255.5\"}],\"links\":[{\"src\":\"172.16.255.2\",\"dst\":\"172.16.255.4\",\"cost\":5},{\"src\":\"172.16.255.2\",\"dst\":\"172.16.255.3\",\"cost\":5},{\"src\":\"172.16.255.3\",\"dst\":\"172.16.255.4\",\"cost\":5},{\"src\":\"172.16.255.3\",\"dst\":\"172.16.255.7\",\"cost\":5},{\"src\":\"172.16.255.4\",\"dst\":\"172.16.255.5\",\"cost\":5},{\"src\":\"172.16.255.4\",\"dst\":\"172.16.255.7\",\"cost\":5}]}]"
@@ -81,10 +81,10 @@ axios.get('/api/graph').then(response => {
 </script>
 
 <template>
-    <v-chart class="graph" :option="option"/>
+    <v-chart class="graph" :option="option" />
 </template>
 <style scoped>
-.graph{
+.graph {
     width: 100vw;
     height: 100%;
     top: 0;
