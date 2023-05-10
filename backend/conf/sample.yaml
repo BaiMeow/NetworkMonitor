@@ -1,3 +1,5 @@
+interval: 60
+port: 7878
 probe:
   - fetch:
       type: "ssh"
@@ -13,5 +15,6 @@ probe:
       cmd: "birdc show ospf state all"
     parse:
       type: "bird"
-interval: 60
-port: 7878
+tag:
+  10.17.4.1:
+    name: "R4"

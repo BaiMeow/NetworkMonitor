@@ -2,12 +2,18 @@ package conf
 
 import (
 	"fmt"
+	"github.com/fsnotify/fsnotify"
 	"github.com/spf13/viper"
 )
+
+type Metadata struct {
+	Name string
+}
 
 var (
 	Probes         []Probe
 	Interval, Port int
+	Metas          map[string]map[string]any
 )
 
 func Init() error {
@@ -15,12 +21,26 @@ func Init() error {
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath(".")
 	err := viper.ReadInConfig()
+	viper.OnConfigChange(
+		func(e fsnotify.Event) {
+			if err := update(); err != nil {
+				fmt.Println("update probes fail", err)
+			}
+		})
+	viper.WatchConfig()
+
 	if err != nil {
 		return err
 	}
-	probes := viper.Get("probe").([]any)
 	Interval = viper.GetInt("interval")
 	Port = viper.GetInt("port")
+	return update()
+}
+
+func update() error {
+	// update probe
+	var tmp []Probe
+	probes := viper.Get("probe").([]any)
 	for _, probe := range probes {
 		probe, ok := probe.(map[string]any)
 		if !ok {
@@ -34,10 +54,24 @@ func Init() error {
 		if !ok {
 			return fmt.Errorf("parse config error:invalid field fetch")
 		}
-		Probes = append(Probes, Probe{
+		tmp = append(tmp, Probe{
 			Parse: parser,
 			Fetch: fetcher,
 		})
 	}
+	Probes = tmp
+
+	//update metadata
+	var tmpMeta = make(map[string]map[string]any)
+	metas := viper.Get("metadata").(map[string]any)
+	for name, meta := range metas {
+		meta, ok := meta.(map[string]any)
+		if !ok {
+			return fmt.Errorf("parse config error:invalid metadata:%v", meta)
+		}
+		tmpMeta[name] = meta
+	}
+	Metas = tmpMeta
+
 	return nil
 }
