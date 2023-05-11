@@ -12,6 +12,7 @@ import (
 var Graph parse.Graph
 
 var probes []*Probe
+var probesLock sync.Mutex
 
 func Init() error {
 	for _, probe := range conf.Probes {
@@ -31,6 +32,20 @@ func Init() error {
 			}
 		}
 	}()
+	conf.UpdateCallBack = func() {
+		probesLock.Lock()
+		defer probesLock.Unlock()
+		ticker.Reset(time.Duration(conf.Interval) * time.Second)
+		var tmp []*Probe
+		for _, probe := range conf.Probes {
+			p, err := NewProbe(probe)
+			if err != nil {
+				log.Printf("contruct probe fail:%v\n", err)
+			}
+			tmp = append(tmp, p)
+		}
+		probes = tmp
+	}
 	return nil
 }
 
@@ -39,6 +54,8 @@ func drawGraph() {
 	var lock sync.Mutex
 	var wg sync.WaitGroup
 
+	probesLock.Lock()
+	defer probesLock.Unlock()
 	for _, p := range probes {
 		wg.Add(1)
 		p := p

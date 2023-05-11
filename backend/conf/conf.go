@@ -15,6 +15,7 @@ var (
 	Probes         []Probe
 	Interval, Port int
 	Metas          map[string]map[string]any
+	UpdateCallBack func()
 )
 
 func Init() error {
@@ -33,7 +34,6 @@ func Init() error {
 	if err != nil {
 		return err
 	}
-	Interval = viper.GetInt("interval")
 	Port = viper.GetInt("port")
 	return update()
 }
@@ -78,6 +78,11 @@ func update() error {
 	}
 	Metas = tmpMeta
 
+	Interval = viper.GetInt("interval")
+
+	if UpdateCallBack != nil {
+		UpdateCallBack()
+	}
 	log.Println("update config success")
 	return nil
 }
