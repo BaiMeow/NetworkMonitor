@@ -1,7 +1,8 @@
 interval: 60
 port: 7878
 probe:
-  - fetch:
+  R4:
+    fetch:
       type: "ssh"
       host: "10.17.4.1"
       port: 22
@@ -10,7 +11,8 @@ probe:
       command: "birdc show ospf state all"
     parse:
       type: "bird"
-  - fetch:
+  local:
+    fetch:
       type: "command"
       cmd: "birdc show ospf state all"
     parse:

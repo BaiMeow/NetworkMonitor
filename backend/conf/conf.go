@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/fsnotify/fsnotify"
 	"github.com/spf13/viper"
+	"log"
 )
 
 type Metadata struct {
@@ -22,7 +23,7 @@ func Init() error {
 	viper.AddConfigPath(".")
 	err := viper.ReadInConfig()
 	viper.OnConfigChange(
-		func(e fsnotify.Event) {
+		func(_ fsnotify.Event) {
 			if err := update(); err != nil {
 				fmt.Println("update probes fail", err)
 			}
@@ -40,8 +41,8 @@ func Init() error {
 func update() error {
 	// update probe
 	var tmp []Probe
-	probes := viper.Get("probe").([]any)
-	for _, probe := range probes {
+	probes := viper.Get("probe").(map[string]any)
+	for name, probe := range probes {
 		probe, ok := probe.(map[string]any)
 		if !ok {
 			return fmt.Errorf("parse config error:%v", probe)
@@ -55,6 +56,7 @@ func update() error {
 			return fmt.Errorf("parse config error:invalid field fetch")
 		}
 		tmp = append(tmp, Probe{
+			Name:  name,
 			Parse: parser,
 			Fetch: fetcher,
 		})
@@ -76,5 +78,6 @@ func update() error {
 	}
 	Metas = tmpMeta
 
+	log.Println("update config success")
 	return nil
 }

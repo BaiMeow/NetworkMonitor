@@ -36,8 +36,8 @@ cloud.google.com/go/storage v1.8.0/go.mod h1:Wv1Oy7z6Yz3DshWRJFhqM/UCfaWIRTdp0RX
 cloud.google.com/go/storage v1.10.0/go.mod h1:FLPqc6j+Ki4BU591ie1oL6qBQGu2Bl/tZ9ullr3+Kg0=
 cloud.google.com/go/storage v1.14.0/go.mod h1:GrKmX003DSIwi9o29oFT7YDnHYwZoctc3fOKtUw0Xmo=
 dmitri.shuralyov.com/gpu/mtl v0.0.0-20190408044501-666a987793e9/go.mod h1:H6x//7gZCb22OMCxBHrMx7a5I7Hp++hsVxbQ4BYO7hU=
-github.com/BaiMeow/script-tools v0.0.0-20230404122338-20ffd81a9718 h1:dGDYUe14sBA4tvWWID7Rb9fDnTFajLp33ljgdj45NTs=
-github.com/BaiMeow/script-tools v0.0.0-20230404122338-20ffd81a9718/go.mod h1:vLX1UmuL8hldWz7N/onzuLZ6bvLNjsrVMsTMGloLkGI=
+github.com/BaiMeow/script-tools v0.0.0-20230511071413-c65f3d694fe7 h1:VTZ8ozDuxSclThKxm1y3Uf01+snS6NA12uTQSC8AxJY=
+github.com/BaiMeow/script-tools v0.0.0-20230511071413-c65f3d694fe7/go.mod h1:vLX1UmuL8hldWz7N/onzuLZ6bvLNjsrVMsTMGloLkGI=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
 github.com/bytedance/sonic v1.5.0/go.mod h1:ED5hyg4y6t3/9Ku1R6dU/4KyJ48DZ4jPhfY1O2AihPM=

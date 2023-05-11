@@ -1,6 +1,7 @@
 package conf
 
 type Probe struct {
+	Name  string
 	Parse Parser
 	Fetch Fetcher
 }

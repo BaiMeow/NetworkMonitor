@@ -52,7 +52,7 @@ func (s *SshWithPassword) GetData() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	output, err := session.CombinedOutput(s.Command)
+	output, err := session.Run(s.Command)
 	if err != nil {
 		return "", err
 	}
