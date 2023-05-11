@@ -5,6 +5,7 @@ import (
 	"github.com/BaiMeow/OSPF-monitor/conf"
 	"github.com/BaiMeow/OSPF-monitor/parse"
 	"log"
+	"sync"
 	"time"
 )
 
@@ -35,13 +36,24 @@ func Init() error {
 
 func drawGraph() {
 	var gh parse.Graph
+	var lock sync.Mutex
+	var wg sync.WaitGroup
+
 	for _, p := range probes {
-		graph, err := p.GetGraph()
-		if err != nil {
-			log.Println(err)
-			continue
-		}
-		gh.Merge(&graph)
+		wg.Add(1)
+		p := p
+		go func() {
+			defer wg.Done()
+			graph, err := p.GetGraph()
+			if err != nil {
+				log.Println(err)
+			}
+			lock.Lock()
+			defer lock.Unlock()
+			gh.Merge(&graph)
+		}()
 	}
+
+	wg.Wait()
 	Graph = gh
 }
