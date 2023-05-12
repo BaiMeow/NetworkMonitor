@@ -40,6 +40,11 @@ func (p *BirdParser) Parse() (Graph, error) {
 			err = p.parseArea(fields)
 		case "router":
 			err = p.parseRouter(fields)
+		case "other":
+			// skip other areas
+			return p.graph, nil
+		case "unreachable":
+			err = p.parseUnreachable(fields)
 		case "":
 			p.left()
 		}
@@ -79,10 +84,13 @@ func (p *BirdParser) parseRouter(fields []string) error {
 	return fmt.Errorf("invalid bird format:%v", fields)
 }
 
-func (p *BirdParser) skip(words int) {
+func (p *BirdParser) skip(words int) bool {
 	for ; words > 0; words-- {
-		p.s.Scan()
+		if !p.s.Scan() {
+			return false
+		}
 	}
+	return true
 }
 
 func (p *BirdParser) left() {
@@ -90,4 +98,17 @@ func (p *BirdParser) left() {
 		p.router = ""
 		return
 	}
+}
+
+func (p *BirdParser) parseUnreachable(fields []string) error {
+	if len(fields) != 1 {
+		return fmt.Errorf("invalid bird format:%v", fields)
+	}
+	p.router = ""
+	for {
+		if p.s.Text() == "" || !p.s.Scan() {
+			break
+		}
+	}
+	return nil
 }

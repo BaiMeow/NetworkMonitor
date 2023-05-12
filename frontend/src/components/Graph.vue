@@ -73,8 +73,8 @@ const option: any = reactive({
       animation: true,
       force: {
         initLayout: 'circular',
-        repulsion: 1000,
-        gravity: 0,
+        repulsion: 1200,
+        gravity: 0.1,
       },
       roam: true,
       label: {
