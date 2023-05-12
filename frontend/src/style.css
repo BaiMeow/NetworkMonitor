@@ -2,9 +2,17 @@ html body{
     margin:0;
 }
 
-.cost ,.peer_num  {
-    font-size: 20px;
+.cost {
+    font-size: 16px;
     color: #138385;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+}
+
+.peer_count  {
+    font-size: 20px;
+    color: #DE3A0B;
     margin: 0;
     padding: 1rem;
     text-align: center;

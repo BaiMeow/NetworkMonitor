@@ -64,8 +64,8 @@ const option: any = reactive({
           for (let key in params.data.meta) {
             output += `${key}: ${params.data.meta[key]} <br/>`;
           }
-          output += `Area: ${params.data.area.join()}`
-          output += ` <br/> Peer Number: <div class="peer_num"> ${params.data.peer_num} </div>`
+          output += `Area: ${params.data.area.join(', ')}`
+          output += ` <br/> Peer Count: <div class="peer_count"> ${params.data.peer_num} </div>`
         }
         return output
       }
