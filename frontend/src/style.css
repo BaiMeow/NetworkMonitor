@@ -1,3 +1,11 @@
 html body{
     margin:0;
 }
+
+.cost ,.peer_num  {
+    font-size: 20px;
+    color: #138385;
+    margin: 0;
+    padding: 1rem;
+    text-align: center;
+}
