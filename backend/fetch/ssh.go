@@ -52,6 +52,7 @@ func (s *SshWithPassword) GetData() (string, error) {
 	if err != nil {
 		return "", err
 	}
+	defer session.Close()
 	output, err := session.Run(s.Command)
 	if err != nil {
 		return "", err
