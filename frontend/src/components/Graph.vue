@@ -105,9 +105,7 @@ const option: any = reactive({
       draggable: true,
       edgeLabel: {
         show: true,
-        formatter: (params: any) => {
-          return params.data.cost;
-        },
+        formatter: (params: any) => params.data.cost
       },
       data: [],
       links: [],
@@ -235,9 +233,9 @@ axios.get("https://monitor.dn11.baimeow.cn/api/graph").then((response) => {
           value: 100/arrow.cost,
           cost: arrow.cost,
           lineStyle:{
-            curveness:pre_source===arrow.src&&next_curveness?-curveness:curveness,
-            symbol:['','arrow']
-          }
+            curveness:pre_source===arrow.src&&next_curveness?-curveness:curveness
+          },
+          symbol:['','arrow']
         })
         if (next_curveness){
           curveness += 0.07;
@@ -250,7 +248,7 @@ axios.get("https://monitor.dn11.baimeow.cn/api/graph").then((response) => {
   });
 
   option.series[0].force.edgeLength = [(300 * min) / max, 300];
-  option.series[0].force.repulsion = [(120 * max) / min, 150];
+  option.series[0].force.repulsion = [(120 * max) / min, 200];
   option.series[0].data = nodes;
   option.series[0].links = edges;
 });
