@@ -146,7 +146,9 @@ axios.get("https://monitor.dn11.baimeow.cn/api/graph").then((response) => {
       if (cur.router === undefined || cur.router.length === 0)
         return routers;
       cur.router.forEach((r) => {
-        if (!routers.includes(r)) routers.push(r);
+        if (routers.findIndex((router) => router.router_id === r.router_id) === -1) {
+          routers.push(r);
+        }
       })
       return routers
     },
@@ -174,7 +176,7 @@ axios.get("https://monitor.dn11.baimeow.cn/api/graph").then((response) => {
   // prepare edges fro render
   all_routers.forEach((a) => {
     all_routers.forEach((b) => {
-      if (a.router_id === b.router_id) return;
+      if (a.router_id >= b.router_id) return;
 
       let links = all_links.filter((lk) => {
         return (lk.src === a.router_id && lk.dst === b.router_id) || (lk.src === b.router_id && lk.dst === a.router_id);
