@@ -47,15 +47,15 @@ type SshWithPassword struct {
 	Command  string
 }
 
-func (s *SshWithPassword) GetData() (string, error) {
+func (s *SshWithPassword) GetData() ([]byte, error) {
 	session, err := ssh.ConnectWithPassword(net.JoinHostPort(s.Host, strconv.Itoa(s.Port)), s.User, s.Password)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	defer session.Close()
 	output, err := session.Run(s.Command)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	return string(output), nil
+	return output, nil
 }

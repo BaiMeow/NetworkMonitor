@@ -4,12 +4,12 @@ COPY . /app/
 
 WORKDIR /app
 
-RUN go mod tidy && go build -o main .
+RUN go mod tidy && go build -o /app/main
 
-FROM alpine:latest
+FROM ubuntu:devel
 
-COPY --from=builder --chmod=755 /app/main /app/main
+COPY --from=builder /app/main /app/main
 
-WORKDIR /config
+WORKDIR "/config"
 
-CMD ["/app/main"]
+CMD ["bash","-c","/app/main"]

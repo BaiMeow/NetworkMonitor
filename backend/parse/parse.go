@@ -1,7 +1,7 @@
 package parse
 
 type Parser interface {
-	Init(input string)
+	Init(input []byte)
 	Parse() (Graph, error)
 }
 

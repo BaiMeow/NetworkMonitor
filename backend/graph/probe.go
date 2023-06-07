@@ -45,7 +45,7 @@ func (p *Probe) GetGraph() (gh parse.Graph, err error) {
 			p.Up = true
 		}
 	}()
-	var data string
+	var data []byte
 	data, err = p.Fetch.GetData()
 	if err != nil {
 		return nil, fmt.Errorf("fetch data from %s fail:%v", p.Name, err)

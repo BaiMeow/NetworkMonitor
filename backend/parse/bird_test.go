@@ -4,7 +4,7 @@ import "testing"
 
 func TestBirdParser(t *testing.T) {
 	var p BirdParser
-	p.Init(birdOutput)
+	p.Init([]byte(birdOutput))
 	graph, err := p.Parse()
 	if err != nil {
 		t.Error(err)

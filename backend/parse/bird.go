@@ -2,6 +2,7 @@ package parse
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
 	"strconv"
 	"strings"
@@ -21,8 +22,8 @@ type BirdParser struct {
 	router string
 }
 
-func (p *BirdParser) Init(input string) {
-	p.s = bufio.NewScanner(strings.NewReader(input))
+func (p *BirdParser) Init(input []byte) {
+	p.s = bufio.NewScanner(bytes.NewReader(input))
 	p.graph = nil
 	p.area = ""
 	p.router = ""
