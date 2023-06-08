@@ -9,7 +9,8 @@ import (
 	"time"
 )
 
-var Graph parse.Graph
+var OSPF map[uint32]*parse.OSPF
+var BGP parse.BGP
 
 var probes []*Probe
 var probesLock sync.Mutex
@@ -22,13 +23,13 @@ func Init() error {
 		}
 		probes = append(probes, p)
 	}
-	drawGraph()
+	draw()
 	ticker := time.NewTicker(time.Second * time.Duration(conf.Interval))
 	go func() {
 		for {
 			select {
 			case <-ticker.C:
-				drawGraph()
+				draw()
 			}
 		}
 	}()
@@ -49,10 +50,10 @@ func Init() error {
 	return nil
 }
 
-func drawGraph() {
-	var gh parse.Graph
-	var lock sync.Mutex
+func draw() {
 	var wg sync.WaitGroup
+	var drawing parse.Drawing
+	drawing.OSPF = make(map[uint32]*parse.OSPF)
 
 	probesLock.Lock()
 	defer probesLock.Unlock()
@@ -61,16 +62,14 @@ func drawGraph() {
 		p := p
 		go func() {
 			defer wg.Done()
-			graph, err := p.GetGraph()
+			err := p.DrawAndMerge(&drawing)
 			if err != nil {
 				log.Println(err)
 			}
-			lock.Lock()
-			defer lock.Unlock()
-			gh.Merge(&graph)
 		}()
 	}
 
 	wg.Wait()
-	Graph = gh
+	OSPF = drawing.OSPF
+	BGP = drawing.BGP
 }

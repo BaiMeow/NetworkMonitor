@@ -23,11 +23,11 @@ func NewProbe(p conf.Probe) (*Probe, error) {
 	}
 	fetcher, err := fetch.Spawn[p.Fetch.Type()](p.Fetch)
 	if err != nil {
-		return nil, fmt.Errorf("spawn fetcher fail:%v", fetcher)
+		return nil, fmt.Errorf("spawn fetcher fail:%v", err)
 	}
 	parser, err := parse.Spawn[p.Parse.Type()](p.Parse)
 	if err != nil {
-		return nil, fmt.Errorf("spawn parser fail:%v", parser)
+		return nil, fmt.Errorf("spawn parser fail:%v", err)
 	}
 	return &Probe{
 		Name:   p.Name,
@@ -37,7 +37,7 @@ func NewProbe(p conf.Probe) (*Probe, error) {
 	}, nil
 }
 
-func (p *Probe) GetGraph() (gh parse.Graph, err error) {
+func (p *Probe) DrawAndMerge(drawing *parse.Drawing) (err error) {
 	defer func() {
 		if err != nil {
 			p.Up = false
@@ -48,12 +48,12 @@ func (p *Probe) GetGraph() (gh parse.Graph, err error) {
 	var data []byte
 	data, err = p.Fetch.GetData()
 	if err != nil {
-		return nil, fmt.Errorf("fetch data from %s fail:%v", p.Name, err)
+		return fmt.Errorf("fetch data from %s fail:%v", p.Name, err)
 	}
 	p.Parser.Init(data)
-	gh, err = p.Parser.Parse()
+	err = p.Parser.ParseAndMerge(drawing)
 	if err != nil {
-		return nil, fmt.Errorf("parse data from %s fail:%v", p.Name, err)
+		return fmt.Errorf("parse data from %s fail:%v", p.Name, err)
 	}
 	return
 }

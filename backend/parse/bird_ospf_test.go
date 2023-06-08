@@ -3,14 +3,17 @@ package parse
 import "testing"
 
 func TestBirdParser(t *testing.T) {
-	var p BirdParser
+	var p BirdOSPF
+	p.asn = 4242424242
 	p.Init([]byte(birdOutput))
-	graph, err := p.Parse()
+	var drawing Drawing
+	drawing.OSPF = make(map[uint32]*OSPF)
+	err := p.ParseAndMerge(&drawing)
 	if err != nil {
 		t.Error(err)
 		return
 	}
-	t.Log(graph)
+	t.Log(drawing.OSPF[4242424242])
 }
 
 var birdOutput = `BIRD 2.0.12 ready.

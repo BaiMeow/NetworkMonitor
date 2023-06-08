@@ -2,7 +2,7 @@ package parse
 
 type Parser interface {
 	Init(input []byte)
-	Parse() (Graph, error)
+	ParseAndMerge(drawing *Drawing) error
 }
 
 var Spawn = make(map[string]func(map[string]any) (Parser, error))

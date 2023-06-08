@@ -9,30 +9,48 @@ import (
 )
 
 func init() {
-	Register("bird", func(m map[string]any) (Parser, error) {
-		return &BirdParser{}, nil
+	Register("bird-ospf", func(m map[string]any) (Parser, error) {
+		asn, ok := m["asn"].(int)
+		if !ok {
+			return nil, fmt.Errorf("asn is not int")
+		}
+		return &BirdOSPF{
+			asn: uint32(asn),
+		}, nil
 	})
 }
 
-type BirdParser struct {
+type BirdOSPF struct {
 	s     *bufio.Scanner
-	graph Graph
+	graph OSPF
 	// ctx
+	asn    uint32
 	area   string
 	router string
 }
 
-func (p *BirdParser) Init(input []byte) {
+func (p *BirdOSPF) Init(input []byte) {
 	p.s = bufio.NewScanner(bytes.NewReader(input))
 	p.graph = nil
 	p.area = ""
 	p.router = ""
 }
 
-func (p *BirdParser) Parse() (Graph, error) {
+func (p *BirdOSPF) ParseAndMerge(drawing *Drawing) (err error) {
+	defer func() {
+		if err != nil {
+			return
+		}
+		drawing.Lock()
+		defer drawing.Unlock()
+		if ospf, ok := drawing.OSPF[p.asn]; !ok {
+			drawing.OSPF[p.asn] = &p.graph
+		} else {
+			ospf.Merge(&p.graph)
+		}
+	}()
 	for p.s.Scan() {
 		fields := strings.Split(strings.TrimSpace(p.s.Text()), " ")
-		var err error
 		switch fields[0] {
 		case "BIRD":
 			// skip next line
@@ -43,20 +61,20 @@ func (p *BirdParser) Parse() (Graph, error) {
 			err = p.parseRouter(fields)
 		case "other":
 			// skip other areas
-			return p.graph, nil
+			return nil
 		case "unreachable":
 			err = p.parseUnreachable(fields)
 		case "":
 			p.left()
 		}
 		if err != nil {
-			return nil, err
+			return
 		}
 	}
-	return p.graph, nil
+	return nil
 }
 
-func (p *BirdParser) parseArea(fields []string) error {
+func (p *BirdOSPF) parseArea(fields []string) error {
 	if len(fields) != 2 {
 		return fmt.Errorf("invalid bird format:%v", fields)
 	}
@@ -65,7 +83,7 @@ func (p *BirdParser) parseArea(fields []string) error {
 	return nil
 }
 
-func (p *BirdParser) parseRouter(fields []string) error {
+func (p *BirdOSPF) parseRouter(fields []string) error {
 	if len(fields) == 2 && p.router == "" && p.area != "" {
 		p.router = fields[1]
 		p.graph.getArea(p.area).addRouter(p.router)
@@ -85,7 +103,7 @@ func (p *BirdParser) parseRouter(fields []string) error {
 	return fmt.Errorf("invalid bird format:%v", fields)
 }
 
-func (p *BirdParser) skip(words int) bool {
+func (p *BirdOSPF) skip(words int) bool {
 	for ; words > 0; words-- {
 		if !p.s.Scan() {
 			return false
@@ -94,14 +112,14 @@ func (p *BirdParser) skip(words int) bool {
 	return true
 }
 
-func (p *BirdParser) left() {
+func (p *BirdOSPF) left() {
 	if p.router != "" {
 		p.router = ""
 		return
 	}
 }
 
-func (p *BirdParser) parseUnreachable(fields []string) error {
+func (p *BirdOSPF) parseUnreachable(fields []string) error {
 	if len(fields) != 1 {
 		return fmt.Errorf("invalid bird format:%v", fields)
 	}

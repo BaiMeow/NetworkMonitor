@@ -1,8 +1,8 @@
 package parse
 
-type Graph []Area
+type OSPF []Area
 
-func (g *Graph) getArea(areaId string) *Area {
+func (g *OSPF) getArea(areaId string) *Area {
 	for i, area := range *g {
 		if area.AreaId == areaId {
 			return &(*g)[i]
@@ -12,11 +12,11 @@ func (g *Graph) getArea(areaId string) *Area {
 	return &(*g)[len(*g)-1]
 }
 
-func (g *Graph) addLink(area, src, dst string, cost int) {
+func (g *OSPF) addLink(area, src, dst string, cost int) {
 	g.getArea(area).addLink(src, dst, cost)
 }
 
-func (g *Graph) Merge(gr *Graph) {
+func (g *OSPF) Merge(gr *OSPF) {
 	for _, v := range *gr {
 		ar := g.getArea(v.AreaId)
 		ar.merge(&v)

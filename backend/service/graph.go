@@ -5,6 +5,10 @@ import (
 	"github.com/BaiMeow/OSPF-monitor/parse"
 )
 
-func GetGraph() parse.Graph {
-	return graph.Graph
+func GetOSPF(asn uint32) *parse.OSPF {
+	return graph.OSPF[asn]
+}
+
+func GetBGP() *parse.BGP {
+	return &graph.BGP
 }
