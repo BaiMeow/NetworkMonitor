@@ -1,7 +1,7 @@
 package controller
 
 import (
-	"github.com/BaiMeow/OSPF-monitor/service"
+	"github.com/BaiMeow/NetworkMonitor/service"
 	"github.com/gin-gonic/gin"
 	"strconv"
 )

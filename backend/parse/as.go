@@ -1,7 +1,7 @@
 package parse
 
 import (
-	"github.com/BaiMeow/OSPF-monitor/conf"
+	"github.com/BaiMeow/NetworkMonitor/conf"
 	"net/netip"
 	"strconv"
 )

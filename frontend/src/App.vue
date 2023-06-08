@@ -1,10 +1,9 @@
 <script setup lang="ts">
-import Graph from "./components/Graph.vue";
-
+import BGP from "./components/BGP.vue"
 </script>
-
+// todo: switch between ospf and bgp graph
 <template>
-  <Graph />
+  <BGP />
 </template>
 
 <style scoped></style>

@@ -2,9 +2,9 @@ package graph
 
 import (
 	"fmt"
-	"github.com/BaiMeow/OSPF-monitor/conf"
-	"github.com/BaiMeow/OSPF-monitor/fetch"
-	"github.com/BaiMeow/OSPF-monitor/parse"
+	"github.com/BaiMeow/NetworkMonitor/conf"
+	"github.com/BaiMeow/NetworkMonitor/fetch"
+	"github.com/BaiMeow/NetworkMonitor/parse"
 )
 
 type Probe struct {

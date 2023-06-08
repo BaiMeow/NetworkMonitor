@@ -6,10 +6,10 @@ import (
 	"path"
 	"strconv"
 
-	"github.com/BaiMeow/OSPF-monitor/conf"
-	"github.com/BaiMeow/OSPF-monitor/controller"
-	"github.com/BaiMeow/OSPF-monitor/graph"
-	"github.com/BaiMeow/OSPF-monitor/middleware"
+	"github.com/BaiMeow/NetworkMonitor/conf"
+	"github.com/BaiMeow/NetworkMonitor/controller"
+	"github.com/BaiMeow/NetworkMonitor/graph"
+	"github.com/BaiMeow/NetworkMonitor/middleware"
 	"github.com/gin-gonic/gin"
 )
 

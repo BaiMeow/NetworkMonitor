@@ -1,4 +1,4 @@
-module github.com/BaiMeow/OSPF-monitor
+module github.com/BaiMeow/NetworkMonitor
 
 go 1.20
 

@@ -1,6 +1,6 @@
 package parse
 
-import "github.com/BaiMeow/OSPF-monitor/conf"
+import "github.com/BaiMeow/NetworkMonitor/conf"
 
 type Router struct {
 	RouterId string         `json:"router_id,omitempty"`

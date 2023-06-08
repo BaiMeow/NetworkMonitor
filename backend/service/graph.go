@@ -1,8 +1,8 @@
 package service
 
 import (
-	"github.com/BaiMeow/OSPF-monitor/graph"
-	"github.com/BaiMeow/OSPF-monitor/parse"
+	"github.com/BaiMeow/NetworkMonitor/graph"
+	"github.com/BaiMeow/NetworkMonitor/parse"
 )
 
 func GetOSPF(asn uint32) *parse.OSPF {

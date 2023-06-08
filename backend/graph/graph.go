@@ -2,8 +2,8 @@ package graph
 
 import (
 	"fmt"
-	"github.com/BaiMeow/OSPF-monitor/conf"
-	"github.com/BaiMeow/OSPF-monitor/parse"
+	"github.com/BaiMeow/NetworkMonitor/conf"
+	"github.com/BaiMeow/NetworkMonitor/parse"
 	"log"
 	"sync"
 	"time"

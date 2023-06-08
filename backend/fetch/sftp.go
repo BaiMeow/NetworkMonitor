@@ -3,7 +3,7 @@ package fetch
 import (
 	"bytes"
 	"fmt"
-	"github.com/BaiMeow/OSPF-monitor/template"
+	"github.com/BaiMeow/NetworkMonitor/template"
 	"github.com/BaiMeow/script-tools/ssh"
 	"net"
 	"strconv"
