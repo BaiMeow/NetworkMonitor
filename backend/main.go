@@ -35,6 +35,6 @@ func main() {
 	r.GET("/api/ospf/:as", controller.OSPF)
 	r.GET("/api/bgp", controller.BGP)
 	r.StaticFileFS("/", "/", &staticRouter{"/static"})
-	r.StaticFileFS("/bs.jpg", "/static/bs.jpg", http.FS(FS))
+	r.StaticFileFS("/avatar.png", "/static/avatar.png", http.FS(FS))
 	r.Run(":" + strconv.Itoa(conf.Port))
 }

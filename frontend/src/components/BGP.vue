@@ -61,7 +61,7 @@ const option: any = reactive({
                 return `${params.data.source} ↔ ${params.data.target}`;
             } else {
                 params = params as Params<Node>;
-                let output = `ASN: ${params.data.value}`;
+                let output = `ASN: ${params.data.name}`;
                 if ("meta" in params.data) {
                     output += "<br/>";
                     for (let key in params.data.meta) {
