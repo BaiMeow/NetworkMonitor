@@ -3,7 +3,7 @@ module github.com/BaiMeow/NetworkMonitor
 go 1.20
 
 require (
-	github.com/BaiMeow/go-mrt v0.0.0-20230607112122-fef10cf56235
+	github.com/BaiMeow/go-mrt v0.0.0-20230609131537-6ebc97fbbc82
 	github.com/BaiMeow/script-tools v0.0.0-20230607141019-8d03e1aac1a1
 	github.com/fsnotify/fsnotify v1.6.0
 	github.com/gin-gonic/gin v1.9.0

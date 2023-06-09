@@ -36,8 +36,8 @@ cloud.google.com/go/storage v1.8.0/go.mod h1:Wv1Oy7z6Yz3DshWRJFhqM/UCfaWIRTdp0RX
 cloud.google.com/go/storage v1.10.0/go.mod h1:FLPqc6j+Ki4BU591ie1oL6qBQGu2Bl/tZ9ullr3+Kg0=
 cloud.google.com/go/storage v1.14.0/go.mod h1:GrKmX003DSIwi9o29oFT7YDnHYwZoctc3fOKtUw0Xmo=
 dmitri.shuralyov.com/gpu/mtl v0.0.0-20190408044501-666a987793e9/go.mod h1:H6x//7gZCb22OMCxBHrMx7a5I7Hp++hsVxbQ4BYO7hU=
-github.com/BaiMeow/go-mrt v0.0.0-20230607112122-fef10cf56235 h1:HJyZFwLB25AiBm6krzoYd4OS1yzuCkFq1VDq/dl81bE=
-github.com/BaiMeow/go-mrt v0.0.0-20230607112122-fef10cf56235/go.mod h1:uBe3pVutA/RfG+UP/NygStthMuTURu6jPUBeHkXlZ4w=
+github.com/BaiMeow/go-mrt v0.0.0-20230609131537-6ebc97fbbc82 h1:8o+rhWv+fI5TVfCPystS++Um6YSgi6alaoRDIm+wsB8=
+github.com/BaiMeow/go-mrt v0.0.0-20230609131537-6ebc97fbbc82/go.mod h1:uBe3pVutA/RfG+UP/NygStthMuTURu6jPUBeHkXlZ4w=
 github.com/BaiMeow/script-tools v0.0.0-20230607141019-8d03e1aac1a1 h1:xibrDRYGagFJEW0eGhVBp7qVV/ioD5T6ADJpt4R6wk4=
 github.com/BaiMeow/script-tools v0.0.0-20230607141019-8d03e1aac1a1/go.mod h1:i83BUZDuQMx8o4YTOdFaVj7yLW/xf3lnTYC2SOIJlyY=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
