@@ -30,6 +30,10 @@ func (b *BGP) AddPrefix(ASN uint32, prefix netip.Prefix) {
 }
 
 func (b *BGP) AddAsLink(ASN1, ASN2 uint32) {
+	if ASN1 == ASN2 {
+		return
+	}
+
 	if ASN2 < ASN1 {
 		ASN1, ASN2 = ASN2, ASN1
 	}
