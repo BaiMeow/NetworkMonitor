@@ -4,6 +4,7 @@ import { reactive } from "vue";
 
 import VChart from "vue-echarts";
 import axios from "axios";
+import { Netmask } from "netmask";
 
 interface Resp<T>{
    status_code:number
@@ -116,13 +117,26 @@ const option: any = reactive({
 
 axios.get("/api/bgp").then((response) => {
     let resp: Resp<BGP> = response.data;
+    if ( !resp.data.as ) {
+        alert("no data")
+        return;
+    }
     const nodes = resp.data.as.reduce((nodes, cur) => {
         nodes.push({
             name: cur.asn.toString(),
             value: cur.asn.toString(),
             meta: cur.metadata ? cur.metadata : {},
             peer_num:0,
-            network: cur.network.sort((a, b) => {
+            network: cur.network.sort((a, b) =>
+                parseInt(a.split("/")[1]) - parseInt(b.split("/")[1])
+            ).reduce((network,cur) => 
+                    network.findIndex((net)=>{
+                        let nmask = new Netmask(net);
+                        return nmask.contains(cur) || nmask.toString() === cur;
+                    }) === -1 ?
+                    [...network, cur]:network
+                , [] as string[]
+            ).sort((a, b) => {
                 let an = a.split(/[./]/).map((x) => parseInt(x))
                 let bn = b.split(/[./]/).map((x) => parseInt(x))
                 for (let i = 0; i < an.length; i++) {

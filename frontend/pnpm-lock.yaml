@@ -2,10 +2,12 @@ lockfileVersion: 5.3
 
 specifiers:
   '@antv/g6': ^4.8.10
+  '@types/netmask': ^2.0.1
   '@types/node': ^20.1.1
   '@vitejs/plugin-vue': ^4.1.0
   axios: ^1.4.0
   echarts: ^5.4.2
+  netmask: ^2.0.2
   typescript: ^5.0.2
   vite: ^4.3.2
   vue: ^3.2.47
@@ -16,10 +18,12 @@ dependencies:
   '@antv/g6': 4.8.10
   axios: 1.4.0
   echarts: 5.4.2
+  netmask: r2.cnpmjs.org/netmask/2.0.2
   vue: 3.2.47
   vue-echarts: 6.5.5_echarts@5.4.2+vue@3.2.47
 
 devDependencies:
+  '@types/netmask': 2.0.1
   '@types/node': 20.1.1
   '@vitejs/plugin-vue': 4.2.1_vite@4.3.5+vue@3.2.47
   typescript: 5.0.4
@@ -452,6 +456,10 @@ packages:
     dependencies:
       '@babel/runtime': 7.21.5
     dev: false
+
+  /@types/netmask/2.0.1:
+    resolution: {integrity: sha512-SSj+JNRxpaljp9Uy1td4MM6p6hJfmKk3Z/5h5MhJZbX7KI90DNvS8L3aNuevAOaGftaGAXLUrEd161Tk3iwaTg==}
+    dev: true
 
   /@types/node/20.1.1:
     resolution: {integrity: sha512-uKBEevTNb+l6/aCQaKVnUModfEMjAl98lw2Si9P5y4hLu9tm6AlX2ZIoXZX6Wh9lJueYPrGPKk5WMCNHg/u6/A==}
@@ -1244,6 +1252,13 @@ packages:
     dependencies:
       yallist: r2.cnpmjs.org/yallist/4.0.0
     dev: true
+
+  r2.cnpmjs.org/netmask/2.0.2:
+    resolution: {integrity: sha512-dBpDMdxv9Irdq66304OLfEmQ9tbNRFnFTuZiLo+bD+r332bBmMJ8GBLXklIXXgxd3+v9+KUnZaUR5PJMa75Gsg==, registry: http://r.cnpmjs.org/, tarball: https://r2.cnpmjs.org/netmask/-/netmask-2.0.2.tgz}
+    name: netmask
+    version: 2.0.2
+    engines: {node: '>= 0.4.0'}
+    dev: false
 
   r2.cnpmjs.org/picocolors/1.0.0:
     resolution: {integrity: sha512-1fygroTLlHu66zi26VoTDv8yRgm0Fccecssto+MhsZ0D/DGW2sm8E8AjW7NU5VVTRt5GxbeZ5qBuJr+HyLYkjQ==, registry: http://r.cnpmjs.org/, tarball: https://r2.cnpmjs.org/picocolors/-/picocolors-1.0.0.tgz}
