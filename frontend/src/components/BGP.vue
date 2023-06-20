@@ -64,9 +64,22 @@ const option: any = reactive({
                 params = params as Params<Node>;
                 let output = `ASN: ${params.data.name}`;
                 if ("meta" in params.data) {
-                    output += "<br/>";
+                    let meta:string[][] = [];
                     for (let key in params.data.meta) {
-                        output += `${key}: ${params.data.meta[key]} <br/>`;
+                        meta.push([key,params.data.meta[key]])
+                    }
+                    let kv = meta.sort((a:string[],b:string[])=>{
+                        if (a[0]=='name'){
+                            return -1
+                        }
+                        if (b[0]=='name'){
+                            return 1
+                        }
+                        return a<b?-1:1
+                    })
+                    output += "<br/>";
+                    for (let [key, value] of kv) {
+                        output += `${key}: ${value} <br/>`;
                     }
                 }
                 output += `network: <br/>`
