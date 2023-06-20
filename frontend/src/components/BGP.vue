@@ -101,7 +101,7 @@ const option: any = reactive({
                     if (params.data.meta && params.data.meta.name) {
                         return params.data.meta.name;
                     }
-                    return params.data.value;
+                    return params.data.name;
                 },
             },
             draggable: true,
