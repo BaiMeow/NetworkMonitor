@@ -6,10 +6,10 @@ import VChart from "vue-echarts";
 import axios from "axios";
 import { Netmask } from "netmask";
 
-interface Resp<T>{
-   status_code:number
-   status_msg:string
-   data:T
+interface Resp<T> {
+    status_code: number
+    status_msg: string
+    data: T
 }
 
 interface BGP {
@@ -17,10 +17,10 @@ interface BGP {
     link: Link[]
 }
 
-interface AS{
-    asn:number
+interface AS {
+    asn: number
     network: string[]
-    metadata?:object
+    metadata?: object
 }
 
 interface Link {
@@ -60,35 +60,38 @@ const option: any = reactive({
             if (params.dataType === "edge") {
                 params = params as Params<Edge>;
                 return `${params.data.source} ↔ ${params.data.target}`;
-            } else {
-                params = params as Params<Node>;
-                let output = `ASN: ${params.data.name}`;
-                if ("meta" in params.data) {
-                    let meta:string[][] = [];
-                    for (let key in params.data.meta) {
-                        meta.push([key,params.data.meta[key]])
-                    }
-                    let kv = meta.sort((a:string[],b:string[])=>{
-                        if (a[0]=='name'){
-                            return -1
-                        }
-                        if (b[0]=='name'){
-                            return 1
-                        }
-                        return a<b?-1:1
-                    })
-                    output += "<br/>";
-                    for (let [key, value] of kv) {
-                        output += `${key}: ${value} <br/>`;
-                    }
-                }
-                output += `network: <br/>`
-                params.data.network.forEach((net:string) => {
-                    output += `${net} <br/>`;
-                });
-                output += `Peer Count: <div class="peer_count"> ${params.data.peer_num} </div>`;
-                return output;
             }
+
+            // dataType === node
+            
+            params = params as Params<Node>;
+            let output = `ASN: ${params.data.name}`;
+            if ("meta" in params.data) {
+                let meta: string[][] = [];
+                for (let key in params.data.meta) {
+                    meta.push([key, params.data.meta[key]])
+                }
+                let kv = meta.sort((a: string[], b: string[]) => {
+                    if (a[0] == 'name') {
+                        return -1
+                    }
+                    if (b[0] == 'name') {
+                        return 1
+                    }
+                    return a < b ? -1 : 1
+                })
+                output += "<br/>";
+                for (let [key, value] of kv) {
+                    output += `${key}: ${value} <br/>`;
+                }
+            }
+            output += `network: <br/>`
+            params.data.network.forEach((net: string) => {
+                output += `${net} <br/>`;
+            });
+            output += `Peer Count: <div class="peer_count"> ${params.data.peer_num} </div>`;
+            return output;
+
         },
     },
     roam: "scale",
@@ -130,7 +133,7 @@ const option: any = reactive({
 
 axios.get("/api/bgp").then((response) => {
     let resp: Resp<BGP> = response.data;
-    if ( !resp.data.as ) {
+    if (!resp.data.as) {
         alert("no data")
         return;
     }
@@ -139,15 +142,15 @@ axios.get("/api/bgp").then((response) => {
             name: cur.asn.toString(),
             value: cur.asn.toString(),
             meta: cur.metadata ? cur.metadata : {},
-            peer_num:0,
+            peer_num: 0,
             network: cur.network.sort((a, b) =>
                 parseInt(a.split("/")[1]) - parseInt(b.split("/")[1])
-            ).reduce((network,cur) => 
-                    network.findIndex((net)=>{
-                        let nmask = new Netmask(net);
-                        return nmask.contains(cur) || nmask.toString() === cur;
-                    }) === -1 ?
-                    [...network, cur]:network
+            ).reduce((network, cur) =>
+                network.findIndex((net) => {
+                    let nmask = new Netmask(net);
+                    return nmask.contains(cur) || nmask.toString() === cur;
+                }) === -1 ?
+                    [...network, cur] : network
                 , [] as string[]
             ).sort((a, b) => {
                 let an = a.split(/[./]/).map((x) => parseInt(x))
@@ -155,7 +158,7 @@ axios.get("/api/bgp").then((response) => {
                 for (let i = 0; i < an.length; i++) {
                     if (an[i] > bn[i]) {
                         return 1
-                    }else if (an[i] < bn[i]) {
+                    } else if (an[i] < bn[i]) {
                         return -1
                     }
                 }
@@ -169,7 +172,7 @@ axios.get("/api/bgp").then((response) => {
         node.peer_num = resp.data.link.filter((lk) => {
             return lk.src === parseInt(node.name) || lk.dst === parseInt(node.name);
         }).length;
-        node.value = ''+node.peer_num;
+        node.value = '' + node.peer_num;
         node.symbolSize = Math.pow(node.peer_num, 1 / 2) * 7;
     });
 
