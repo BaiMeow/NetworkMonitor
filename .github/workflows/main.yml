@@ -15,14 +15,14 @@ jobs:
 
       - name: Gen tag
         id: gen-tag
-        run: echo "$(date +%s)" >> $GITHUB_OUTPUT
+        run: echo "tag=$(date +%s)" >> $GITHUB_OUTPUT
       
       - name: Build the Docker image
         run: |
-          docker build . --tag registry.cn-shanghai.aliyuncs.com/baimeow/network_monitor:${{ steps.gen-tag.outputs }}
+          docker build . --tag registry.cn-shanghai.aliyuncs.com/baimeow/network_monitor:${{ steps.gen-tag.outputs.tag }}
 
       - name: Push the Docker image
         timeout-minutes: 3
         run: |
           docker login --username ${{ secrets.DOCKER_USERNAME }} --password ${{ secrets.DOCKER_PASSWORD }} registry.cn-shanghai.aliyuncs.com
-          docker push registry.cn-shanghai.aliyuncs.com/baimeow/network_monitor:${{ steps.gen-tag.outputs }}
+          docker push registry.cn-shanghai.aliyuncs.com/baimeow/network_monitor:${{ steps.gen-tag.outputs.tag }}
