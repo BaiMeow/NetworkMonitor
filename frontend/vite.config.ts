@@ -11,7 +11,8 @@ export default defineConfig({
   server:{
     proxy: {
         '/api': {
-          target: process.env.NODE_ENV === 'production' ? 'http://monitor.dn11.baimeow.cn' : 'http://localhost:8787',
+          target: 'http://monitor.dn11.baimeow.cn',
+          changeOrigin: true
         }
     }
   }
