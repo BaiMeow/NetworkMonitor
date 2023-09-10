@@ -38,11 +38,11 @@ jobs:
         with:
           repository: BaiMeow/argocd
           token: ${{ secrets.GH_PAT }} # `GH_PAT` is a secret that contains your PAT
-          path: ../deploy
+          path: deploy
           
       - name: Update ArgoCD
         run: |
-          cd ../deploy/${{ env.DEPLOY_NAME }}
+          cd deploy/${{ env.DEPLOY_NAME }}
           git config user.name github-actions
           git config user.email github-actions@github.com
           sed -i "s|^\(\s*image: '${{ env.IMAGE_BASE }}/${{ env.IMAGE_REPO }}:\)[0-9]\+'|\1${{ steps.gen-tag.outputs.tag }}'|" ${{ env.DEPLOY_NAME }}-deployment.yml
