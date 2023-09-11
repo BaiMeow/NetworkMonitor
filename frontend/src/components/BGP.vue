@@ -3,30 +3,9 @@ import "echarts";
 import { reactive } from "vue";
 
 import VChart from "vue-echarts";
-import axios from "axios";
 import { Netmask } from "netmask";
 
-interface Resp<T> {
-    status_code: number
-    status_msg: string
-    data: T
-}
-
-interface BGP {
-    as: AS[]
-    link: Link[]
-}
-
-interface AS {
-    asn: number
-    network: string[]
-    metadata?: object
-}
-
-interface Link {
-    src: number;
-    dst: number;
-}
+import { getASMetaData, getBGP, ASMetaData } from "../api/graph";
 
 interface Edge {
     source: string;
@@ -58,40 +37,39 @@ const option: any = reactive({
         triggerOn: "mousemove",
         formatter: (params: Params<any>) => {
             if (params.dataType === "edge") {
-                params = params as Params<Edge>;
-                return `${params.data.source} ↔ ${params.data.target}`;
+                params = params as Params<Edge>
+                return `${params.data.source} ↔ ${params.data.target}`
             }
 
             // dataType === node
-            
-            params = params as Params<Node>;
-            let output = `ASN: ${params.data.name}`;
-            if ("meta" in params.data) {
-                let meta: string[][] = [];
-                for (let key in params.data.meta) {
-                    meta.push([key, params.data.meta[key]])
-                }
-                let kv = meta.sort((a: string[], b: string[]) => {
-                    if (a[0] == 'name') {
-                        return -1
-                    }
-                    if (b[0] == 'name') {
-                        return 1
-                    }
-                    return a < b ? -1 : 1
-                })
-                output += "<br/>";
-                for (let [key, value] of kv) {
-                    output += `${key}: ${value} <br/>`;
+            console.log(params)
+            if (!params.data.meta) {
+                return
+            }
+    
+            params = params as Params<Node>
+
+            const metadata: ASMetaData = params.data.meta
+
+            if (metadata.html) {
+                return metadata.html
+            }
+
+            let output = `ASN: ${params.data.name}`
+            if (metadata.display) {
+                output += `<br/>name:${metadata.display}`
+            }
+            if (metadata.appendix) {
+                for (let key in metadata.appendix) {
+                    output += `<br/>${key}: ${metadata.appendix[key]}`
                 }
             }
-            output += `network: <br/>`
+            output += `<br/> network:`
             params.data.network.forEach((net: string) => {
-                output += `${net} <br/>`;
+                output += `<br/>${net}`
             });
-            output += `Peer Count: <div class="peer_count"> ${params.data.peer_num} </div>`;
-            return output;
-
+            output += `<br/>Peer Count: <div class="peer_count"> ${params.data.peer_num} </div>`
+            return output
         },
     },
     roam: "scale",
@@ -114,8 +92,8 @@ const option: any = reactive({
                 show: true,
                 position: "right",
                 formatter: (params: any) => {
-                    if (params.data.meta && params.data.meta.name) {
-                        return params.data.meta.name;
+                    if (params.data.meta && params.data.meta.display) {
+                        return params.data.meta.display;
                     }
                     return params.data.name;
                 },
@@ -131,17 +109,16 @@ const option: any = reactive({
     },
 });
 
-axios.get("/api/bgp").then((response) => {
-    let resp: Resp<BGP> = response.data;
+getBGP().then((resp) => {
     if (!resp.data.as) {
         alert("no data")
-        return;
+        return
     }
+
     const nodes = resp.data.as.reduce((nodes, cur) => {
         nodes.push({
             name: cur.asn.toString(),
             value: cur.asn.toString(),
-            meta: cur.metadata ? cur.metadata : {},
             peer_num: 0,
             network: cur.network.sort((a, b) =>
                 parseInt(a.split("/")[1]) - parseInt(b.split("/")[1])
@@ -174,6 +151,14 @@ axios.get("/api/bgp").then((response) => {
         }).length;
         node.value = '' + node.peer_num;
         node.symbolSize = Math.pow(node.peer_num, 1 / 2) * 7;
+        node = reactive(node);
+        getASMetaData(parseInt(node.name)).catch((e) => {
+            if (e.response.status !== 404) {
+                console.log(e)
+            }
+        }).then((resp) => {
+            node.meta = resp;
+        });
     });
 
     const edges = resp.data.link.reduce((edges, cur) => {
@@ -184,7 +169,8 @@ axios.get("/api/bgp").then((response) => {
         return edges;
     }, [] as Edge[]);
 
-    option.series[0].data = nodes;
+    option.series[0].data = [] as Node[];
+    option.series[0].data.push(...nodes);
     option.series[0].links = edges;
 });
 </script>
