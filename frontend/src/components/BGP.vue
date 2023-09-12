@@ -10,6 +10,7 @@ import { getASMetaData, getBGP, ASMetaData } from "../api/graph";
 interface Edge {
     source: string;
     target: string;
+    value: number
     lineStyle?: any;
     symbol?: string[];
 }
@@ -95,7 +96,7 @@ const option: any = reactive({
                 repulsion: 500,
                 gravity: 0.02,
                 friction: 0.15,
-                edgeLength: 80,
+                edgeLength: [10,140],
             },
             roam: true,
             label: {
@@ -178,13 +179,20 @@ getBGP().then((resp) => {
     });
 
     const edges = resp.data.link.reduce((edges, cur) => {
+        const src = nodes.find((node) => node.name === cur.src.toString());
+        const dst = nodes.find((node) => node.name === cur.dst.toString());
+        if (src == null || dst == null) {
+            return edges;
+        }
         edges.push({
             source: cur.src.toString(),
             target: cur.dst.toString(),
+            value: 1/Math.pow(Math.min(src.peer_num,dst.peer_num),1/2)*100,
         });
         return edges;
     }, [] as Edge[]);
 
+    console.log(edges);
     option.series[0].data = [] as Node[];
     option.series[0].data.push(...nodes);
     option.series[0].links = edges;
