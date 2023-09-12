@@ -34,6 +34,7 @@ export interface ASMetaData {
         [key: string]: string    
     }
     html?: string
+    customNode?: Object
 }
 
 export async function getASMetaData(asn: number) {
