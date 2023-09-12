@@ -33,7 +33,6 @@ export interface ASMetaData {
     appendix?: {
         [key: string]: string    
     }
-    html?: string
     customNode?: Object
 }
 

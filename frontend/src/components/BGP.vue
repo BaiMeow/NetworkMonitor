@@ -57,7 +57,6 @@ const option: any = reactive({
             }
 
             // dataType === node
-            console.log(params)
             if (!params.data.meta) {
                 return
             }
@@ -65,10 +64,6 @@ const option: any = reactive({
             params = params as Params<Node>
 
             const metadata: ASMetaData = params.data.meta
-
-            if (metadata.html) {
-                return metadata.html
-            }
 
             let output = `ASN: ${params.data.name}`
             if (metadata.display) {
