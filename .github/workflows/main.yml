@@ -13,6 +13,7 @@ env:
 
 jobs:
   build:
+    if: github.repository == 'BaiMeow/NetworkMonitor'
     runs-on: ubuntu-latest
      
     steps:
