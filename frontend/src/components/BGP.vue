@@ -22,6 +22,7 @@ interface Node {
     peer_num: number;
     symbolSize?: number;
     network: string[];
+    itemStyle?: any;
 }
 
 interface Params<T> {
@@ -36,7 +37,7 @@ function mergeObjects(obj1: any, obj2: any): any {
         && (obj1.hasOwnProperty(key)|| !(key in obj1))
     ) {
       if (typeof obj2[key] === 'object' && obj2[key] !== null && typeof obj1[key] === 'object' && obj1[key] !== null) {
-        obj1[key] = mergeObjects([key], obj2[key]);
+        mergeObjects(obj1[key], obj2[key]);
       } else {
         obj1[key] = obj2[key];
       }
@@ -109,6 +110,11 @@ const option: any = reactive({
                     return params.data.name;
                 },
             },
+            itemStyle: {
+                borderColor: "#000000",
+                borderWidth: 0.4,
+                shadowColor: "#2242a3",
+            },
             draggable: true,
             data: [],
             links: [],
@@ -157,12 +163,15 @@ getBGP().then((resp) => {
     }, [] as Node[]);
 
     nodes.forEach((node) => {
+        node = reactive(node);
         node.peer_num = resp.data.link.filter((lk) => {
             return lk.src === parseInt(node.name) || lk.dst === parseInt(node.name);
         }).length;
         node.value = '' + node.peer_num;
         node.symbolSize = Math.pow(node.peer_num, 1 / 2) * 7;
-        node = reactive(node);
+        node.itemStyle = {
+            shadowBlur:Math.pow(node.peer_num, 1 / 2) * 2,
+        }
         getASMetaData(parseInt(node.name)).catch((e) => {
             if (e.response.status !== 404) {
                 console.log(e)
