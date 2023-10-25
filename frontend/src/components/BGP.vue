@@ -1,5 +1,12 @@
 <script lang="ts" setup>
-import "echarts";
+import { use } from "echarts/core";
+import { CanvasRenderer } from "echarts/renderers";
+import { GraphChart } from "echarts/charts";
+import {
+    TooltipComponent,
+    TitleComponent,
+} from "echarts/components";
+
 import { reactive } from "vue";
 
 import VChart from "vue-echarts";
@@ -30,19 +37,26 @@ interface Params<T> {
     data: T;
 }
 
+use([
+    CanvasRenderer,
+    GraphChart,
+    TooltipComponent,
+    TitleComponent
+]);
+
 function mergeObjects(obj1: any, obj2: any): any {
-  for (const key in obj2) {
-    if (
-        obj2.hasOwnProperty(key)
-        && (obj1.hasOwnProperty(key)|| !(key in obj1))
-    ) {
-      if (typeof obj2[key] === 'object' && obj2[key] !== null && typeof obj1[key] === 'object' && obj1[key] !== null) {
-        mergeObjects(obj1[key], obj2[key]);
-      } else {
-        obj1[key] = obj2[key];
-      }
+    for (const key in obj2) {
+        if (
+            obj2.hasOwnProperty(key)
+            && (obj1.hasOwnProperty(key) || !(key in obj1))
+        ) {
+            if (typeof obj2[key] === 'object' && obj2[key] !== null && typeof obj1[key] === 'object' && obj1[key] !== null) {
+                mergeObjects(obj1[key], obj2[key]);
+            } else {
+                obj1[key] = obj2[key];
+            }
+        }
     }
-  }
 }
 
 const option: any = reactive({
@@ -62,7 +76,7 @@ const option: any = reactive({
             if (!params.data.meta) {
                 return
             }
-    
+
             params = params as Params<Node>
 
             const metadata: ASMetaData = params.data.meta
@@ -87,19 +101,17 @@ const option: any = reactive({
     roam: "scale",
     symbolSize: 50,
     animationDurationUpdate: 1500,
-    animationEasingUpdate: "quinticInOut" as any,
+    animationEasingUpdate: "quinticInOut",
     series: [
         {
             type: "graph",
             layout: "force",
-            animation: true,
             force: {
                 repulsion: 500,
                 gravity: 0.02,
                 friction: 0.15,
-                edgeLength: [10,140],
+                edgeLength: [10, 140],
             },
-            roam: true,
             label: {
                 show: true,
                 position: "right",
@@ -122,11 +134,17 @@ const option: any = reactive({
     ],
     lineStyle: {
         opacity: 0.9,
-        width: 2,
+        width: 2
     },
+    emphasis: {
+        focus: 'adjacency',
+        lineStyle: {
+            width: 10
+        }
+    }
 });
 
-getBGP().then((resp) => {
+getBGP().then(async (resp) => {
     if (!resp.data.as) {
         alert("no data")
         return
@@ -162,7 +180,7 @@ getBGP().then((resp) => {
         return nodes;
     }, [] as Node[]);
 
-    nodes.forEach((node) => {
+    for (let node of nodes) {
         node = reactive(node);
         node.peer_num = resp.data.link.filter((lk) => {
             return lk.src === parseInt(node.name) || lk.dst === parseInt(node.name);
@@ -170,22 +188,21 @@ getBGP().then((resp) => {
         node.value = '' + node.peer_num;
         node.symbolSize = Math.pow(node.peer_num, 1 / 2) * 7;
         node.itemStyle = {
-            shadowBlur:Math.pow(node.peer_num, 1 / 2) * 2,
+            shadowBlur: Math.pow(node.peer_num, 1 / 2) * 2,
         }
-        getASMetaData(parseInt(node.name)).catch((e) => {
-            if (e.response.status !== 404) {
-                console.log(e)
-            }
-        }).then((resp) => {
-            if (resp === undefined){
+        try {
+            const resp = await getASMetaData(parseInt(node.name));
+            if (resp === undefined) {
                 return
             }
-            if (resp.customNode){
+            if (resp.customNode) {
                 mergeObjects(node, resp.customNode)
             }
             node.meta = resp;
-        });
-    });
+        } catch (error) {
+            console.log(error)
+        }
+    }
 
     const edges = resp.data.link.reduce((edges, cur) => {
         const src = nodes.find((node) => node.name === cur.src.toString());
@@ -196,7 +213,7 @@ getBGP().then((resp) => {
         edges.push({
             source: cur.src.toString(),
             target: cur.dst.toString(),
-            value: 1/Math.pow(Math.min(src.peer_num,dst.peer_num),1/2)*100,
+            value: 1 / Math.pow(Math.min(src.peer_num, dst.peer_num), 1 / 2) * 100,
         });
         return edges;
     }, [] as Edge[]);
@@ -214,7 +231,7 @@ getBGP().then((resp) => {
 <style scoped>
 .graph {
     width: 100vw;
-    height: 100%;
+    height: 100dvh;
     top: 0;
     left: 0;
     position: absolute;
