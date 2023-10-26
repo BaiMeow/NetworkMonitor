@@ -7,12 +7,17 @@ import {
     TitleComponent,
 } from "echarts/components";
 
-import { reactive } from "vue";
+import { computed, reactive } from "vue";
 
 import VChart from "vue-echarts";
 import { Netmask } from "netmask";
 
 import { getASMetaData, getBGP, ASMetaData } from "../api/graph";
+
+const loadedCount = reactive([0, 0]);
+const loading = computed(() => {
+    return loadedCount[0] !== loadedCount[1] || loadedCount[1] === 0;
+});
 
 interface Edge {
     source: string;
@@ -97,11 +102,12 @@ const option: any = reactive({
             output += `<br/>Peer Count: <div class="peer_count"> ${params.data.peer_num} </div>`
             return output
         },
+        position: function () {
+            return [20, 50];
+        }
     },
     roam: "scale",
     symbolSize: 50,
-    animationDurationUpdate: 1500,
-    animationEasingUpdate: "quinticInOut",
     series: [
         {
             type: "graph",
@@ -110,7 +116,7 @@ const option: any = reactive({
                 repulsion: 500,
                 gravity: 0.02,
                 friction: 0.15,
-                edgeLength: [10, 140],
+                edgeLength: [10, 140]
             },
             label: {
                 show: true,
@@ -180,6 +186,8 @@ getBGP().then(async (resp) => {
         return nodes;
     }, [] as Node[]);
 
+    loadedCount[1] = nodes.length;
+
     for (let node of nodes) {
         node = reactive(node);
         node.peer_num = resp.data.link.filter((lk) => {
@@ -202,6 +210,7 @@ getBGP().then(async (resp) => {
         } catch (error) {
             console.log(error)
         }
+        loadedCount[0]++;
     }
 
     const edges = resp.data.link.reduce((edges, cur) => {
@@ -226,7 +235,12 @@ getBGP().then(async (resp) => {
 </script>
 
 <template>
-    <v-chart :option="option" class="graph" />
+    <div v-if="loading" class="graph loading">Loading...
+        <template v-if="loadedCount[1] != 0">
+            {{ loadedCount[0] }} / {{ loadedCount[1] }}
+        </template>
+    </div>
+    <v-chart v-else :option="option" class="graph" autoresize />
 </template>
 <style scoped>
 .graph {
@@ -235,5 +249,14 @@ getBGP().then(async (resp) => {
     top: 0;
     left: 0;
     position: absolute;
+}
+
+.loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 2rem;
+    font-weight: bold;
+    color: #2242a3;
 }
 </style>
