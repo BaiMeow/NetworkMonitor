@@ -1,5 +1,6 @@
-html body{
-    margin:0;
+html body {
+    margin: 0;
+    overflow: hidden;
 }
 
 .cost {
@@ -10,9 +11,9 @@ html body{
     text-align: center;
 }
 
-.peer_count  {
+.peer_count {
     font-size: 20px;
-    color: #DE3A0B;
+    color: #de3a0b;
     margin: 0;
     padding: 1rem;
     text-align: center;
