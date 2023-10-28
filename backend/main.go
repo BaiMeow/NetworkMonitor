@@ -32,7 +32,7 @@ func main() {
 	r := gin.Default()
 	r.Use(middleware.Cors())
 	r.StaticFS("/assets/", &staticRouter{"/static/assets"})
-	r.GET("/api/ospf/:as", controller.OSPF)
+	r.GET("/api/ospf/:asn", controller.OSPF)
 	r.GET("/api/bgp", controller.BGP)
 	r.StaticFileFS("/", "/", &staticRouter{"/static"})
 	r.StaticFileFS("/avatar.png", "/static/avatar.png", http.FS(FS))
