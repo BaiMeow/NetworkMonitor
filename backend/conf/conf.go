@@ -14,7 +14,6 @@ type Metadata struct {
 var (
 	Probes         []Probe
 	Interval, Port int
-	Metas          map[string]map[string]any
 	UpdateCallBack func()
 )
 
@@ -76,7 +75,6 @@ func update() error {
 		}
 		tmpMeta[name] = meta
 	}
-	Metas = tmpMeta
 
 	Interval = viper.GetInt("interval")
 
