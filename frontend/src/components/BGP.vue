@@ -92,13 +92,13 @@ const option: any = reactive({
             }
             if (metadata.appendix) {
                 for (let key in metadata.appendix) {
-                    if (typeof metadata.appendix[key] === 'string') {
-                        output += `<br/>${key}: ${metadata.appendix[key]}`
-                    }
-                    if (Array.isArray(metadata.appendix[key])) {
-                        output += `<br/>${key}:`
-                        for (let i in metadata.appendix[key]) {
-                            output += `<br/> - ${metadata.appendix[key][i]}`
+                    const value = metadata.appendix[key] as string | string[];
+                    if (typeof value === 'string') {
+                        output += `<br/>${key}: ${value}`;
+                    } else if (Array.isArray(value)) {
+                        output += `<br/>${key}:`;
+                        for (let i in value) {
+                            output += `<br/> - ${value[i]}`;
                         }
                     }
                 }
