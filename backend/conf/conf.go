@@ -62,20 +62,6 @@ func update() error {
 	}
 	Probes = tmp
 
-	//update metadata
-	var tmpMeta = make(map[string]map[string]any)
-	metas, ok := viper.Get("metadata").(map[string]any)
-	if !ok {
-		return nil
-	}
-	for name, meta := range metas {
-		meta, ok := meta.(map[string]any)
-		if !ok {
-			return fmt.Errorf("parse config error:invalid metadata:%v", meta)
-		}
-		tmpMeta[name] = meta
-	}
-
 	Interval = viper.GetInt("interval")
 
 	if UpdateCallBack != nil {
