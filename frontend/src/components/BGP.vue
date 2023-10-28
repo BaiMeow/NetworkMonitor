@@ -88,11 +88,19 @@ const option: any = reactive({
 
             let output = `ASN: ${params.data.name}`
             if (metadata.display) {
-                output += `<br/>name:${metadata.display}`
+                output += `<br/>name: ${metadata.display}`
             }
             if (metadata.appendix) {
                 for (let key in metadata.appendix) {
-                    output += `<br/>${key}: ${metadata.appendix[key]}`
+                    if (typeof metadata.appendix[key] === 'string') {
+                        output += `<br/>${key}: ${metadata.appendix[key]}`
+                    }
+                    if (Array.isArray(metadata.appendix[key])) {
+                        output += `<br/>${key}:`
+                        for (let i in metadata.appendix[key]) {
+                            output += `<br/> - ${metadata.appendix[key][i]}`
+                        }
+                    }
                 }
             }
             output += `<br/> network:`

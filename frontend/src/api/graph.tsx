@@ -31,7 +31,7 @@ export async function getBGP() {
 export interface ASMetaData {
     display: string
     appendix?: {
-        [key: string]: string    
+        [key: string]: string | string[]  
     }
     customNode?: Object
 }
