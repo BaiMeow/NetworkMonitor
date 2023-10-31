@@ -10,17 +10,24 @@
   },
   "dependencies": {
     "@antv/g6": "^4.8.10",
+    "@element-plus/icons-vue": "^2.1.0",
     "axios": "^1.4.0",
     "echarts": "^5.4.2",
+    "element-plus": "^2.4.1",
     "netmask": "^2.0.2",
+    "unplugin-icons": "^0.17.1",
     "vue": "^3.2.47",
     "vue-echarts": "^6.5.5"
   },
   "devDependencies": {
+    "@iconify-json/ep": "^1.1.12",
     "@types/netmask": "^2.0.1",
     "@types/node": "^20.1.1",
     "@vitejs/plugin-vue": "^4.1.0",
     "typescript": "^5.0.2",
+    "unplugin-auto-import": "^0.16.7",
+    "unplugin-element-plus": "^0.8.0",
+    "unplugin-vue-components": "^0.25.2",
     "vite": "^4.3.2",
     "vue-tsc": "^1.4.2"
   }

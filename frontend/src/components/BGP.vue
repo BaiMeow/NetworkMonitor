@@ -235,7 +235,6 @@ getBGP().then(async (resp) => {
         return edges;
     }, [] as Edge[]);
 
-    console.log(edges);
     option.series[0].data = [] as Node[];
     option.series[0].data.push(...nodes);
     option.series[0].links = edges;

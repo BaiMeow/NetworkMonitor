@@ -1,26 +1,15 @@
 <script lang="ts" setup>
 import "echarts";
-import { reactive } from "vue";
+import { reactive, ref } from "vue";
 
 import VChart from "vue-echarts";
-import axios from "axios";
+import { getOSPF } from "../api/ospf";
 
-interface Router {
-  router_id: string;
-  metadata?: Object;
-}
+const loading = ref(true);
 
-interface Link {
-  src: string;
-  dst: string;
-  cost: number;
-}
-
-interface Area {
-  area_id: string;
-  router: Router[];
-  links: Link[];
-}
+const props = defineProps<{
+  asn: number;
+}>();
 
 interface Edge {
   source: string;
@@ -47,7 +36,7 @@ interface Params<T> {
 
 const option: any = reactive({
   title: {
-    text: "DN11 OSPF Status",
+    text: `AS ${props.asn} OSPF Monitor`,
   },
   tooltip: {
     trigger: "item",
@@ -117,11 +106,11 @@ const option: any = reactive({
   },
 });
 
-axios.get("https://monitor.dn11.baimeow.cn/api/graph").then((response) => {
-  let areas: Area[] = response.data;
+getOSPF(props.asn).then(async resp => {
+  const areas = resp.data;
   const nodes = areas.reduce((nodes, cur) => {
-    if ((cur.router as Array<Router>) && cur.router.length !== 0) {
-      cur.router.forEach((router: Router) => {
+    if ((cur.router) && cur.router.length !== 0) {
+      cur.router.forEach((router) => {
         let index = nodes.findIndex((r) => r.name == router.router_id);
         if (index !== -1) {
           nodes[index].area.push(cur.area_id);
@@ -137,14 +126,16 @@ axios.get("https://monitor.dn11.baimeow.cn/api/graph").then((response) => {
     }
     return nodes;
   }, [] as Node[]);
-  const all_links = areas.reduce(
-    (links, cur) => (cur.links ? links.concat(cur.links) : links),
-    [] as Link[]
+
+  const all_links = areas.flatMap(
+    area => area.links
   );
-  const all_routers: Router[] = areas.reduce(
+
+  const all_routers = areas.reduce(
     (routers, cur) => {
-      if (cur.router === undefined || cur.router.length === 0)
+      if (cur.router === undefined || cur.router.length === 0) {
         return routers;
+      }
       cur.router.forEach((r) => {
         if (routers.findIndex((router) => router.router_id === r.router_id) === -1) {
           routers.push(r);
@@ -152,8 +143,9 @@ axios.get("https://monitor.dn11.baimeow.cn/api/graph").then((response) => {
       })
       return routers
     },
-    [] as Router[]
+    [] as (typeof areas)[number]['router']
   );
+
   // calculate node peers and size
   let { min, max } = all_links.reduce(
     ({ min, max }, cur) => {
@@ -182,10 +174,10 @@ axios.get("https://monitor.dn11.baimeow.cn/api/graph").then((response) => {
         return (lk.src === a.router_id && lk.dst === b.router_id) || (lk.src === b.router_id && lk.dst === a.router_id);
       });
 
-      let lines: Array<Link> = [];
-      let arrows: Array<Link> = [];
+      let lines: typeof all_links = [];
+      let arrows: typeof all_links = [];
       while (links.length !== 0) {
-        let cur = links.pop() as Link;
+        let cur = links.pop() as NonNullable<(typeof links)[number]>;
         let pair_idx = links.findIndex((lk) =>
           lk.src === cur.dst && lk.dst === cur.src && lk.cost === cur.cost
         );
@@ -199,64 +191,69 @@ axios.get("https://monitor.dn11.baimeow.cn/api/graph").then((response) => {
 
       let curveness = 0.07;
       if (lines.length % 2 === 1) {
-        const line = lines.pop() as Link
+        const line = lines.pop() as NonNullable<(typeof lines)[number]>;
         edges.push({
           source: line.src,
           target: line.dst,
-          value: 100/line.cost,
+          value: 100 / line.cost,
           cost: line.cost
         })
       }
       let next_curveness = false
-      while(lines.length!==0){
-        const l1 = lines.pop() as Link;
+      while (lines.length !== 0) {
+        const l1 = lines.pop() as NonNullable<(typeof lines)[number]>;
         edges.push({
           source: l1.src,
           target: l1.dst,
-          value: 100/l1.cost,
+          value: 100 / l1.cost,
           cost: l1.cost,
-          lineStyle:{
-            curveness: next_curveness?-curveness:curveness
+          lineStyle: {
+            curveness: next_curveness ? -curveness : curveness
           }
         });
-        if (next_curveness){
+        if (next_curveness) {
           curveness += 0.07;
           next_curveness = false;
-        }else
+        } else
           next_curveness = true;
       }
 
-      let pre_source = arrows[arrows.length-1]?.src;
-      while(arrows.length!==0){
-        const arrow = arrows.pop() as Link;
+      let pre_source = arrows[arrows.length - 1]?.src;
+      while (arrows.length !== 0) {
+        const arrow = arrows.pop() as NonNullable<(typeof lines)[number]>;
         edges.push({
-          source:arrow.src,
-          target:arrow.dst,
-          value: 100/arrow.cost,
+          source: arrow.src,
+          target: arrow.dst,
+          value: 100 / arrow.cost,
           cost: arrow.cost,
-          lineStyle:{
-            curveness:pre_source===arrow.src&&next_curveness?-curveness:curveness
+          lineStyle: {
+            curveness: pre_source === arrow.src && next_curveness ? -curveness : curveness
           },
-          symbol:['','arrow']
+          symbol: ['', 'arrow']
         })
-        if (next_curveness){
+        if (next_curveness) {
           curveness += 0.07;
           next_curveness = false;
-        }else
+        } else
           next_curveness = true;
       }
-
     });
   });
 
-  option.series[0].force.edgeLength = [(300 * min) / max, 300];
-  option.series[0].force.repulsion = [(120 * max) / min, 200];
+  loading.value = false;
+
+  option.series[0].force.edgeLength = [(150 * min) / max, 150];
+  option.series[0].force.repulsion = [(100 * max) / min, 100];
   option.series[0].data = nodes;
   option.series[0].links = edges;
-});
+})
+
 </script>
 
 <template>
+  <div v-if="loading" class="graph loading">
+    Loading...
+  </div>
   <v-chart :option="option" class="graph" />
 </template>
 <style scoped>
@@ -266,5 +263,14 @@ axios.get("https://monitor.dn11.baimeow.cn/api/graph").then((response) => {
   top: 0;
   left: 0;
   position: absolute;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 2rem;
+  font-weight: bold;
+  color: #2242a3;
 }
 </style>

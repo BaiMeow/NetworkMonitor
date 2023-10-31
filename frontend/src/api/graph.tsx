@@ -1,11 +1,5 @@
 import axios from "axios";
-import { MetadataHost }from "./consts";
-
-interface Resp<T> {
-    status_code: number
-    status_msg: string
-    data: T
-}
+import { MetadataHost,Resp } from "./consts";
 
 interface BGP {
     as: AS[]
