@@ -19,7 +19,7 @@ func init() {
 		if !ok {
 			return nil, fmt.Errorf("server is not string")
 		}
-		Type, ok := config["type"].(string)
+		Type, ok := config["req-type"].(string)
 		if !ok {
 			return nil, fmt.Errorf("type is not string")
 		}
