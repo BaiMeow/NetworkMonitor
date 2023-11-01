@@ -22,6 +22,10 @@ RUN go mod tidy && go build -o /app/main
 
 FROM ubuntu:devel
 
+RUN apt update &&  \
+    apt install -y ca-certificates &&  \
+    rm -rf /var/lib/apt/lists/*
+
 COPY --from=builder /app/main /app/main
 
 WORKDIR "/config"
