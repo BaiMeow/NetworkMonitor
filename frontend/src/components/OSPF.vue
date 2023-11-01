@@ -1,9 +1,10 @@
 <script lang="ts" setup>
 import "echarts";
-import { reactive, ref } from "vue";
+import { reactive, ref, watchEffect } from "vue";
 
 import VChart from "vue-echarts";
 import { getOSPF } from "../api/ospf";
+import { getASMetaData } from "../api/meta";
 
 const loading = ref(true);
 
@@ -36,7 +37,7 @@ interface Params<T> {
 
 const option: any = reactive({
   title: {
-    text: `AS ${props.asn} OSPF Monitor`,
+    text: '',
   },
   tooltip: {
     trigger: "item",
@@ -106,145 +107,148 @@ const option: any = reactive({
   },
 });
 
-getOSPF(props.asn).then(async areas => {
-  const nodes = areas.reduce((nodes, cur) => {
-    if ((cur.router) && cur.router.length !== 0) {
-      cur.router.forEach((router) => {
-        let index = nodes.findIndex((r) => r.name == router.router_id);
-        if (index !== -1) {
-          nodes[index].area.push(cur.area_id);
-          return;
-        }
-        nodes.push({
-          name: router.router_id,
-          value: router.router_id,
-          meta: router.metadata ? router.metadata : {},
-          area: [cur.area_id],
-        });
-      });
-    }
-    return nodes;
-  }, [] as Node[]);
-
-  const all_links = areas.flatMap(
-    area => area.links
-  );
-
-  const all_routers = areas.reduce(
-    (routers, cur) => {
-      if (cur.router === undefined || cur.router.length === 0) {
-        return routers;
-      }
-      cur.router.forEach((r) => {
-        if (routers.findIndex((router) => router.router_id === r.router_id) === -1) {
-          routers.push(r);
-        }
-      })
-      return routers
-    },
-    [] as (typeof areas)[number]['router']
-  );
-
-  // calculate node peers and size
-  let { min, max } = all_links.reduce(
-    ({ min, max }, cur) => {
-      return {
-        min: Math.min(min, cur.cost),
-        max: Math.max(max, cur.cost),
-      };
-    },
-    { min: all_links[0].cost, max: all_links[0].cost }
-  );
-
-  nodes.forEach((node) => {
-    node.peer_num = all_links.filter((lk) => {
-      return lk.src === node.name;
-    }).length;
-    node.symbolSize = Math.pow(node.peer_num, 1 / 2) * 7;
-  });
-
-  let edges: Edge[] = [];
-  // prepare edges fro render
-  all_routers.forEach((a) => {
-    all_routers.forEach((b) => {
-      if (a.router_id >= b.router_id) return;
-
-      let links = all_links.filter((lk) => {
-        return (lk.src === a.router_id && lk.dst === b.router_id) || (lk.src === b.router_id && lk.dst === a.router_id);
-      });
-
-      let lines: typeof all_links = [];
-      let arrows: typeof all_links = [];
-      while (links.length !== 0) {
-        let cur = links.pop() as NonNullable<(typeof links)[number]>;
-        let pair_idx = links.findIndex((lk) =>
-          lk.src === cur.dst && lk.dst === cur.src && lk.cost === cur.cost
-        );
-        if (pair_idx !== -1) {
-          links.splice(pair_idx, 1)[0];
-          lines.push(cur);
-        } else {
-          arrows.push(cur);
-        }
-      }
-
-      let curveness = 0.07;
-      if (lines.length % 2 === 1) {
-        const line = lines.pop() as NonNullable<(typeof lines)[number]>;
-        edges.push({
-          source: line.src,
-          target: line.dst,
-          value: 100 / line.cost,
-          cost: line.cost
-        })
-      }
-      let next_curveness = false
-      while (lines.length !== 0) {
-        const l1 = lines.pop() as NonNullable<(typeof lines)[number]>;
-        edges.push({
-          source: l1.src,
-          target: l1.dst,
-          value: 100 / l1.cost,
-          cost: l1.cost,
-          lineStyle: {
-            curveness: next_curveness ? -curveness : curveness
+watchEffect(async () => {
+  loading.value = true
+  getOSPF(props.asn).then(async areas => {
+    const nodes = areas.reduce((nodes, cur) => {
+      if ((cur.router) && cur.router.length !== 0) {
+        cur.router.forEach((router) => {
+          let index = nodes.findIndex((r) => r.name == router.router_id);
+          if (index !== -1) {
+            nodes[index].area.push(cur.area_id);
+            return;
           }
+          nodes.push({
+            name: router.router_id,
+            value: router.router_id,
+            meta: router.metadata ? router.metadata : {},
+            area: [cur.area_id],
+          });
         });
-        if (next_curveness) {
-          curveness += 0.07;
-          next_curveness = false;
-        } else
-          next_curveness = true;
       }
+      return nodes;
+    }, [] as Node[]);
 
-      let pre_source = arrows[arrows.length - 1]?.src;
-      while (arrows.length !== 0) {
-        const arrow = arrows.pop() as NonNullable<(typeof lines)[number]>;
-        edges.push({
-          source: arrow.src,
-          target: arrow.dst,
-          value: 100 / arrow.cost,
-          cost: arrow.cost,
-          lineStyle: {
-            curveness: pre_source === arrow.src && next_curveness ? -curveness : curveness
-          },
-          symbol: ['', 'arrow']
+    const all_links = areas.flatMap(
+      area => area.links
+    );
+
+    const all_routers = areas.reduce(
+      (routers, cur) => {
+        if (cur.router === undefined || cur.router.length === 0) {
+          return routers;
+        }
+        cur.router.forEach((r) => {
+          if (routers.findIndex((router) => router.router_id === r.router_id) === -1) {
+            routers.push(r);
+          }
         })
-        if (next_curveness) {
-          curveness += 0.07;
-          next_curveness = false;
-        } else
-          next_curveness = true;
-      }
+        return routers
+      },
+      [] as (typeof areas)[number]['router']
+    );
+
+    // calculate node peers and size
+    let { min, max } = all_links.reduce(
+      ({ min, max }, cur) => {
+        return {
+          min: Math.min(min, cur.cost),
+          max: Math.max(max, cur.cost),
+        };
+      },
+      { min: all_links[0].cost, max: all_links[0].cost }
+    );
+
+    nodes.forEach((node) => {
+      node.peer_num = all_links.filter((lk) => {
+        return lk.src === node.name;
+      }).length;
+      node.symbolSize = Math.pow(node.peer_num, 1 / 2) * 7;
     });
-  });
 
-  loading.value = false;
+    let edges: Edge[] = [];
+    // prepare edges fro render
+    all_routers.forEach((a) => {
+      all_routers.forEach((b) => {
+        if (a.router_id >= b.router_id) return;
 
-  option.series[0].force.edgeLength = [(150 * min) / max, 150];
-  option.series[0].force.repulsion = [(100 * max) / min, 100];
-  option.series[0].data = nodes;
-  option.series[0].links = edges;
+        let links = all_links.filter((lk) => {
+          return (lk.src === a.router_id && lk.dst === b.router_id) || (lk.src === b.router_id && lk.dst === a.router_id);
+        });
+
+        let lines: typeof all_links = [];
+        let arrows: typeof all_links = [];
+        while (links.length !== 0) {
+          let cur = links.pop() as NonNullable<(typeof links)[number]>;
+          let pair_idx = links.findIndex((lk) =>
+            lk.src === cur.dst && lk.dst === cur.src && lk.cost === cur.cost
+          );
+          if (pair_idx !== -1) {
+            links.splice(pair_idx, 1)[0];
+            lines.push(cur);
+          } else {
+            arrows.push(cur);
+          }
+        }
+
+        let curveness = 0.07;
+        if (lines.length % 2 === 1) {
+          const line = lines.pop() as NonNullable<(typeof lines)[number]>;
+          edges.push({
+            source: line.src,
+            target: line.dst,
+            value: 100 / line.cost,
+            cost: line.cost
+          })
+        }
+        let next_curveness = false
+        while (lines.length !== 0) {
+          const l1 = lines.pop() as NonNullable<(typeof lines)[number]>;
+          edges.push({
+            source: l1.src,
+            target: l1.dst,
+            value: 100 / l1.cost,
+            cost: l1.cost,
+            lineStyle: {
+              curveness: next_curveness ? -curveness : curveness
+            }
+          });
+          if (next_curveness) {
+            curveness += 0.07;
+            next_curveness = false;
+          } else
+            next_curveness = true;
+        }
+
+        let pre_source = arrows[arrows.length - 1]?.src;
+        while (arrows.length !== 0) {
+          const arrow = arrows.pop() as NonNullable<(typeof lines)[number]>;
+          edges.push({
+            source: arrow.src,
+            target: arrow.dst,
+            value: 100 / arrow.cost,
+            cost: arrow.cost,
+            lineStyle: {
+              curveness: pre_source === arrow.src && next_curveness ? -curveness : curveness
+            },
+            symbol: ['', 'arrow']
+          })
+          if (next_curveness) {
+            curveness += 0.07;
+            next_curveness = false;
+          } else
+            next_curveness = true;
+        }
+      });
+    });
+
+    option.series[0].force.edgeLength = [(150 * min) / max, 150];
+    option.series[0].force.repulsion = [(100 * max) / min, 100];
+    option.series[0].data = nodes;
+    option.series[0].links = edges;
+    option.title.text = `${(await getASMetaData(props.asn)).display} Network`;
+    loading.value = false; 
+  })
 })
 
 </script>

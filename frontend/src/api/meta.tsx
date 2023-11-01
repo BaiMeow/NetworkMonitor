@@ -11,5 +11,5 @@ export interface ASMetaData {
 
 export async function getASMetaData(asn: number) {
   const res = await axios.get(`${MetadataHost}/as/${asn}.json`);
-  return res.data;
+  return res.data as ASMetaData;
 }

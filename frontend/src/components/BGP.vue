@@ -67,7 +67,7 @@ function mergeObjects(obj1: any, obj2: any): any {
 
 const option: any = reactive({
     title: {
-        text: "DN11 & Vidar Network Monitor",
+        text: "DN11 & Vidar Network",
     },
     tooltip: {
         trigger: "item",
