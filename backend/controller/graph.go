@@ -32,3 +32,12 @@ func BGP(c *gin.Context) {
 		Data: gh,
 	})
 }
+
+func List(c *gin.Context) {
+	ls := service.ListAvailable()
+	c.JSON(200, Resp{
+		Code: 0,
+		Msg:  "ok",
+		Data: ls,
+	})
+}

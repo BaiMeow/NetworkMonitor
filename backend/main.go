@@ -34,6 +34,7 @@ func main() {
 	r.StaticFS("/assets/", &staticRouter{"/static/assets"})
 	r.GET("/api/ospf/:asn", controller.OSPF)
 	r.GET("/api/bgp", controller.BGP)
+	r.GET("/api/list", controller.List)
 	r.StaticFileFS("/", "/", &staticRouter{"/static"})
 	r.StaticFileFS("/avatar.png", "/static/avatar.png", http.FS(FS))
 	r.Run(":" + strconv.Itoa(conf.Port))
