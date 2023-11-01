@@ -2,6 +2,7 @@
 import BGP from "./components/BGP.vue"
 import OSPF from "./components/OSPF.vue"
 import { getList } from "./api/list";
+import { getASMetaData } from "./api/meta";
 import { ref, reactive } from "vue"
 
 const asn = ref(0);
@@ -30,15 +31,19 @@ class bgp {
 
 class ospf {
   asn: number;
+  name!: string;
   constructor(asn: number) {
     this.asn = asn;
+  }
+  async init(){
+    this.name = (await getASMetaData(this.asn)).display
   }
   enable() {
     graph_type.value = "ospf"
     asn.value = this.asn
   }
   display() {
-    return 'AS' + this.asn
+    return this.name?`${this.name} Network`:`AS ${this.asn}`
   }
 }
 
@@ -54,13 +59,15 @@ const handle_select = (idx: string) => {
 }
 
 getList().then((list)=>{
-  list.forEach((graph)=>{
+  list.forEach(async (graph)=>{
     switch (graph.type){
       case "bgp":
         graph_list.push(new bgp())
         break
       case "ospf":
-        graph_list.push(new ospf(graph.asn))
+        const gr = new ospf(graph.asn);
+        gr.init()
+        graph_list.push(gr)
         break
     }
   })
