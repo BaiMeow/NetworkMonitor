@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/BaiMeow/NetworkMonitor/utils"
 	"io"
 	"net/http"
 )
@@ -43,17 +44,19 @@ type BirdLgGo struct {
 }
 
 type birdLgGoPayload struct {
-	Servers []string `json:"servers,omitempty"`
-	Type    string   `json:"type,omitempty"`
-	Args    string   `json:"args,omitempty"`
+	Servers []string `json:"servers"`
+	Type    string   `json:"type"`
+	Args    string   `json:"args"`
 }
 
 type birdLgGoResp struct {
-	Error  string `json:"error,omitempty"`
-	Result []struct {
-		Server string `json:"server,omitempty"`
-		Data   string `json:"data,omitempty"`
-	} `json:"result"`
+	Error  string           `json:"error"`
+	Result []birdLgGoResult `json:"result"`
+}
+
+type birdLgGoResult struct {
+	Server string `json:"server"`
+	Data   string `json:"data"`
 }
 
 func (b *BirdLgGo) GetData() ([]byte, error) {
@@ -88,5 +91,12 @@ func (b *BirdLgGo) GetData() ([]byte, error) {
 	if len(res.Result) <= 0 {
 		return nil, fmt.Errorf("empty bird-lg-go result:%v", res.Result)
 	}
-	return []byte(res.Result[0].Data), nil
+	data, ok := utils.FindFunc(res.Result, func(s birdLgGoResult) bool {
+		return s.Server == b.Server
+	})
+	if !ok {
+		return nil, fmt.Errorf("target bird-lg-go result not found")
+	}
+
+	return []byte(data.Data), nil
 }
