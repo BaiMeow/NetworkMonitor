@@ -106,8 +106,7 @@ const option: any = reactive({
   },
 });
 
-getOSPF(props.asn).then(async resp => {
-  const areas = resp.data;
+getOSPF(props.asn).then(async areas => {
   const nodes = areas.reduce((nodes, cur) => {
     if ((cur.router) && cur.router.length !== 0) {
       cur.router.forEach((router) => {

@@ -20,5 +20,9 @@ interface Area {
 
 export async function getOSPF(asn: number) {
   const res = await axios.get(`${ApiHost}/api/ospf/${asn}`);
-  return res.data as Resp<Array<Area>>;
+  const data = res.data as Resp<Array<Area>>;
+  if (data.code!==0){
+    throw new Error(data.msg)
+  }  
+  return data.data
 }

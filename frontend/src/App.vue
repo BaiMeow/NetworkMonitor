@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import BGP from "./components/BGP.vue"
 import OSPF from "./components/OSPF.vue"
+import { getList } from "./api/list";
 import { ref, reactive } from "vue"
 
 const asn = ref(0);
@@ -52,9 +53,18 @@ const handle_select = (idx: string) => {
   graph_list[+idx].enable()
 }
 
-graph_list.push(new bgp())
-//test only
-graph_list.push(new ospf(4220084444))
+getList().then((list)=>{
+  list.forEach((graph)=>{
+    switch (graph.type){
+      case "bgp":
+        graph_list.push(new bgp())
+        break
+      case "ospf":
+        graph_list.push(new ospf(graph.asn))
+        break
+    }
+  })
+})
 
 </script>
 <template>

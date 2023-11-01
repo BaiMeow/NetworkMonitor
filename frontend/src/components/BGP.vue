@@ -12,7 +12,8 @@ import { computed, reactive } from "vue";
 import VChart from "vue-echarts";
 import { Netmask } from "netmask";
 
-import { getASMetaData, getBGP, ASMetaData } from "../api/graph";
+import { getBGP } from "../api/bgp";
+import { getASMetaData,ASMetaData } from "../api/meta";
 
 const loadedCount = reactive([0, 0]);
 const loading = computed(() => {
@@ -159,12 +160,12 @@ const option: any = reactive({
 });
 
 getBGP().then(async (resp) => {
-    if (!resp.data.as) {
+    if (!resp.as) {
         alert("no data")
         return
     }
 
-    const nodes = resp.data.as.reduce((nodes, cur) => {
+    const nodes = resp.as.reduce((nodes, cur) => {
         nodes.push({
             name: cur.asn.toString(),
             value: cur.asn.toString(),
@@ -198,7 +199,7 @@ getBGP().then(async (resp) => {
 
     for (let node of nodes) {
         node = reactive(node);
-        node.peer_num = resp.data.link.filter((lk) => {
+        node.peer_num = resp.link.filter((lk) => {
             return lk.src === parseInt(node.name) || lk.dst === parseInt(node.name);
         }).length;
         node.value = '' + node.peer_num;
@@ -216,12 +217,11 @@ getBGP().then(async (resp) => {
             }
             node.meta = resp;
         } catch (error) {
-            console.log(error)
         }
         loadedCount[0]++;
     }
 
-    const edges = resp.data.link.reduce((edges, cur) => {
+    const edges = resp.link.reduce((edges, cur) => {
         const src = nodes.find((node) => node.name === cur.src.toString());
         const dst = nodes.find((node) => node.name === cur.dst.toString());
         if (src == null || dst == null) {
@@ -266,4 +266,4 @@ getBGP().then(async (resp) => {
     font-weight: bold;
     color: #2242a3;
 }
-</style>
+</style>../api/bgp
