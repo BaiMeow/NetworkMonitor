@@ -1,5 +1,5 @@
 import axios from "axios";
-import { Resp } from "./consts";
+import { Resp, ApiHost } from "./consts";
 
 interface Router {
   router_id: string;
@@ -19,6 +19,6 @@ interface Area {
 }
 
 export async function getOSPF(asn: number) {
-  const res = await axios.get(`/api/ospf/${asn}`);
+  const res = await axios.get(`${ApiHost}/api/ospf/${asn}`);
   return res.data as Resp<Array<Area>>;
 }
