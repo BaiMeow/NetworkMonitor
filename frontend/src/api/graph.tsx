@@ -1,5 +1,5 @@
 import axios from "axios";
-import { MetadataHost,Resp } from "./consts";
+import { MetadataHost,Resp,ApiHost } from "./consts";
 
 interface BGP {
     as: AS[]
@@ -18,7 +18,7 @@ interface Link {
 }
 
 export async function getBGP() {
-  const res = await axios.get('/api/bgp');
+  const res = await axios.get(`${ApiHost}/api/bgp`);
   return res.data as Resp<BGP>;
 }
 
