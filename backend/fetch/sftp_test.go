@@ -1,6 +1,9 @@
 package fetch
 
 import (
+	"encoding/base64"
+	"golang.org/x/crypto/ssh"
+	"net"
 	"testing"
 )
 
@@ -22,4 +25,17 @@ func TestSftpWithPassword_GetData(t *testing.T) {
 		return
 	}
 	t.Log(data)
+}
+
+func TestReadPublicKey(t *testing.T) {
+	_, err := ssh.Dial("tcp", "172.16.4.5:22", &ssh.ClientConfig{
+		User: "root",
+		HostKeyCallback: func(hostname string, remote net.Addr, key ssh.PublicKey) error {
+			t.Log(base64.StdEncoding.EncodeToString(key.Marshal()))
+			return nil
+		},
+	})
+	if err != nil {
+		t.Error(err)
+	}
 }
