@@ -62,8 +62,10 @@ func (p *BirdOSPF) ParseAndMerge(drawing *Drawing) (err error) {
 		case "other":
 			// skip other areas
 			return nil
-		case "unreachable", "network":
-			err = p.jumpBlankLine(fields)
+		case "unreachable":
+			err = p.parseUnreachable(fields)
+		case "network":
+			err = p.parseNetwork(fields)
 		case "":
 			p.leftRouter()
 		}
@@ -103,8 +105,8 @@ func (p *BirdOSPF) parseRouter(fields []string) error {
 	return fmt.Errorf("invalid bird format:%v", fields)
 }
 
-func (p *BirdOSPF) skip(words int) bool {
-	for ; words > 0; words-- {
+func (p *BirdOSPF) skip(lines int) bool {
+	for ; lines > 0; lines-- {
 		if !p.s.Scan() {
 			return false
 		}
@@ -116,12 +118,63 @@ func (p *BirdOSPF) leftRouter() {
 	p.router = ""
 }
 
-func (p *BirdOSPF) jumpBlankLine(fields []string) error {
+func (p *BirdOSPF) parseUnreachable(fields []string) error {
+	if len(fields) != 1 {
+		return fmt.Errorf("invalid bird format:%v", fields)
+	}
 	for {
 		if p.s.Text() == "" || !p.s.Scan() {
 			break
 		}
 	}
+	p.leftRouter()
+	return nil
+}
+
+func (p *BirdOSPF) parseNetwork(fields []string) error {
+	if len(fields) == 4 && p.router != "" && p.area != "" {
+		return nil
+	}
+
+	if len(fields) != 2 {
+		return fmt.Errorf("invalid bird format:%v", fields)
+	}
+
+	// read and skip dr
+	p.s.Scan()
+
+	// read distance
+	p.s.Scan()
+	fields = strings.Split(strings.TrimSpace(p.s.Text()), " ")
+	if len(fields) != 2 {
+		return fmt.Errorf("invalid bird format:%s", p.s.Text())
+	}
+
+	distance, err := strconv.Atoi(fields[1])
+	if err != nil {
+		return fmt.Errorf("invalid bird format:%s", p.s.Text())
+	}
+
+	var routers []string
+
+	for {
+		if p.s.Text() == "" || !p.s.Scan() {
+			break
+		}
+		fields = strings.Split(strings.TrimSpace(p.s.Text()), " ")
+		if len(fields) == 2 && fields[0] == "router" {
+			routers = append(routers, fields[1])
+		}
+	}
+
+	for _, router := range routers {
+		for _, router2 := range routers {
+			if router != router2 {
+				p.graph.addLink(p.area, router, router2, distance)
+			}
+		}
+	}
+
 	p.leftRouter()
 	return nil
 }
