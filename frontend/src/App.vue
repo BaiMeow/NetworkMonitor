@@ -6,7 +6,7 @@ import { getASMetaData } from "./api/meta";
 import { ref, reactive } from "vue"
 
 const asn = ref(0);
-const graph_type = ref("bgp");
+const graph_type = ref('');
 const isCollapse = ref(true);
 const menu_rotate = ref('');
 const click_fold = ()=>{
@@ -71,6 +71,11 @@ getList().then((list)=>{
         break
     }
   })
+  if (graph_list.length!==0){
+    graph_list[0]?.enable()
+  }else{
+    alert("no data");
+  }
 })
 
 </script>
