@@ -62,7 +62,12 @@ func draw() {
 		p := p
 		go func() {
 			defer wg.Done()
+			t := time.Now()
 			err := p.DrawAndMerge(&drawing)
+			dur := time.Since(t)
+			if dur > time.Second*5 {
+				log.Printf("probe %s slow draw: %v\n", p.Name, dur)
+			}
 			if err != nil {
 				log.Println(err)
 			}
@@ -70,6 +75,7 @@ func draw() {
 	}
 
 	wg.Wait()
+
 	OSPF = drawing.OSPF
 	BGP = drawing.BGP
 }
