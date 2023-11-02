@@ -62,10 +62,10 @@ func (p *BirdOSPF) ParseAndMerge(drawing *Drawing) (err error) {
 		case "other":
 			// skip other areas
 			return nil
-		case "unreachable":
-			err = p.parseUnreachable(fields)
+		case "unreachable", "network":
+			err = p.jumpBlankLine(fields)
 		case "":
-			p.left()
+			p.leftRouter()
 		}
 		if err != nil {
 			return
@@ -112,22 +112,16 @@ func (p *BirdOSPF) skip(words int) bool {
 	return true
 }
 
-func (p *BirdOSPF) left() {
-	if p.router != "" {
-		p.router = ""
-		return
-	}
+func (p *BirdOSPF) leftRouter() {
+	p.router = ""
 }
 
-func (p *BirdOSPF) parseUnreachable(fields []string) error {
-	if len(fields) != 1 {
-		return fmt.Errorf("invalid bird format:%v", fields)
-	}
-	p.router = ""
+func (p *BirdOSPF) jumpBlankLine(fields []string) error {
 	for {
 		if p.s.Text() == "" || !p.s.Scan() {
 			break
 		}
 	}
+	p.leftRouter()
 	return nil
 }
