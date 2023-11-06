@@ -45,7 +45,7 @@ func init() {
 			Port:     port,
 			User:     user,
 			Password: password,
-			filepath: filepathTpl.ExecuteString,
+			filepath: filepathTpl,
 		}
 
 		b64pubkey, ok := config["public-key"].(string)
@@ -75,7 +75,7 @@ type SftpWithPassword struct {
 	Password  string
 	PublicKey ssh.PublicKey
 	// filepath use template to parse filepath, it's for reading rotate log file (like .mrt)
-	filepath func() (string, error)
+	filepath *template.Template
 }
 
 func (s *SftpWithPassword) GetData() ([]byte, error) {
@@ -104,7 +104,7 @@ func (s *SftpWithPassword) GetData() ([]byte, error) {
 	}
 	defer sftpc.Close()
 
-	fp, err := s.filepath()
+	fp, err := s.filepath.ExecuteString()
 	if err != nil {
 		return nil, fmt.Errorf("fail to get filepath: %v", err)
 	}

@@ -1,6 +1,7 @@
 package template
 
 import (
+	"fmt"
 	"strings"
 	"text/template"
 	"time"
@@ -20,6 +21,14 @@ func init() {
 	Funcs["Second"] = func(n int) time.Duration {
 		return time.Second * time.Duration(n)
 	}
+}
+
+func ParseInterface(tmpl any) (*Template, error) {
+	tmplStr, ok := tmpl.(string)
+	if !ok {
+		return nil, fmt.Errorf("template shoule be string")
+	}
+	return Parse(tmplStr)
 }
 
 func Parse(tmpl string) (*Template, error) {
