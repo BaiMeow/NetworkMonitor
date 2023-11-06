@@ -13,7 +13,7 @@ import VChart from "vue-echarts";
 import { Netmask } from "netmask";
 
 import { getBGP } from "../api/bgp";
-import { getASMetaData,ASMetaData } from "../api/meta";
+import { getASMetaData, ASMetaData } from "../api/meta";
 
 const loadedCount = reactive([0, 0]);
 const loading = computed(() => {
@@ -79,27 +79,25 @@ const option: any = reactive({
             }
 
             // dataType === node
-            if (!params.data.meta) {
-                return
-            }
-
             params = params as Params<Node>
-
-            const metadata: ASMetaData = params.data.meta
-
             let output = `ASN: ${params.data.name}`
-            if (metadata.display) {
-                output += `<br/>name: ${metadata.display}`
-            }
-            if (metadata.appendix) {
-                for (let key in metadata.appendix) {
-                    const value = metadata.appendix[key] as string | string[];
-                    if (typeof value === 'string') {
-                        output += `<br/>${key}: ${value}`;
-                    } else if (Array.isArray(value)) {
-                        output += `<br/>${key}:`;
-                        for (let i in value) {
-                            output += `<br/> - ${value[i]}`;
+
+            if (params.data.meta) {
+                const metadata: ASMetaData = params.data.meta
+
+                if (metadata.display) {
+                    output += `<br/>name: ${metadata.display}`
+                }
+                if (metadata.appendix) {
+                    for (let key in metadata.appendix) {
+                        const value = metadata.appendix[key] as string | string[];
+                        if (typeof value === 'string') {
+                            output += `<br/>${key}: ${value}`;
+                        } else if (Array.isArray(value)) {
+                            output += `<br/>${key}:`;
+                            for (let i in value) {
+                                output += `<br/> - ${value[i]}`;
+                            }
                         }
                     }
                 }
@@ -215,6 +213,7 @@ getBGP().then(async (resp) => {
             if (resp.customNode) {
                 mergeObjects(node, resp.customNode)
             }
+            resp.customNode = undefined;
             node.meta = resp;
         } catch (error) {
         }
