@@ -195,34 +195,35 @@ getBGP().then(async (resp) => {
 
     loadedCount[1] = nodes.length;
 
-    nodes.map((node) => {
-        return (async function () {
-            node = reactive(node);
-            node.peer_num = resp.link.filter((lk) => {
-                return lk.src === parseInt(node.name) || lk.dst === parseInt(node.name);
-            }).length;
-            node.value = '' + node.peer_num;
-            node.symbolSize = Math.pow(node.peer_num, 1 / 2) * 7;
-            node.itemStyle = {
-                shadowBlur: Math.pow(node.peer_num, 1 / 2) * 2,
-            }
-            try {
-                const resp = await getASMetaData(parseInt(node.name))
-                if (resp === undefined) {
-                    return
-                }
-                if (resp.customNode) {
-                    mergeObjects(node, resp.customNode)
-                }
-                resp.customNode = undefined;
-                node.meta = resp;
-            } catch {
-            }
-            finally {
-                loadedCount[0]++;
-            }
-        })()
-    })
+    await Promise.all(nodes.map((node) => {
+          return (async function () {
+              node = reactive(node);
+              node.peer_num = resp.link.filter((lk) => {
+                  return lk.src === parseInt(node.name) || lk.dst === parseInt(node.name);
+              }).length;
+              node.value = '' + node.peer_num;
+              node.symbolSize = Math.pow(node.peer_num, 1 / 2) * 7;
+              node.itemStyle = {
+                  shadowBlur: Math.pow(node.peer_num, 1 / 2) * 2,
+              }
+              try {
+                  const resp = await getASMetaData(parseInt(node.name))
+                  if (resp === undefined) {
+                      return
+                  }
+                  if (resp.customNode) {
+                      mergeObjects(node, resp.customNode)
+                  }
+                  resp.customNode = undefined;
+                  node.meta = resp;
+              } catch {
+              }
+              finally {
+                  loadedCount[0]++;
+              }
+          })()
+      })
+    );
 
     const edges = resp.link.reduce((edges, cur) => {
         const src = nodes.find((node) => node.name === cur.src.toString());
