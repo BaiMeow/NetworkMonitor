@@ -109,7 +109,6 @@ getList().then((list)=>{
   display: flex;
   align-items: center;
   z-index: 10;
-  max-height: 80vw;
   flex-direction: column;
 }
 
