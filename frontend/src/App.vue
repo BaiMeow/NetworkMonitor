@@ -105,7 +105,7 @@ getList().then((list)=>{
   width: fit-content;
 }
 
-.menu{
+.menu {
   display: flex;
   align-items: center;
   z-index: 10;
@@ -154,21 +154,21 @@ getList().then((list)=>{
   border-radius: 20px;
 }
 
-.menu{
+.menu {
   background-color: rgba(255, 255, 255, 0.5);
   backdrop-filter: blur(3px);
   box-shadow: 1.5px 1.5px 1.5px 1.5px rgba(53, 62, 51, 0.3);
   border-radius: 20px;
 }
 
-.menu-list{
+.menu-list {
   border-right: 0px;
   background-color: rgba(255, 255, 255, 0);
-  transition: 
-    height 1s,
+  transition: height 1s;
+  overflow: scroll;
 }
 
-.menu-button{
+.menu-button {
   margin:2px;
 }
 
