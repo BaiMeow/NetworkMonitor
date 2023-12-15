@@ -13,6 +13,7 @@ import VChart from "vue-echarts";
 import { Netmask } from "netmask";
 
 import { getBGP } from "../api/bgp";
+import { prettierNet } from "../utils/colornet";
 import { getASMetaData, ASMetaData } from "../api/meta";
 
 const loadedCount = reactive([0, 0]);
@@ -103,10 +104,8 @@ const option: any = reactive({
                 }
             }
             output += `<br/> network:`
-            params.data.network.forEach((net: string) => {
-                output += `<br/>${net}`
-            });
-            output += `<br/>Peer Count: <div class="peer_count"> ${params.data.peer_num} </div>`
+            output += prettierNet(params.data.network,params.data.name)
+            output += `Peer Count: <div class="peer_count"> ${params.data.peer_num} </div>`
             return output
         },
         position: function () {
@@ -269,4 +268,4 @@ getBGP().then(async (resp) => {
     font-weight: bold;
     color: #2242a3;
 }
-</style>../api/bgp
+</style>
