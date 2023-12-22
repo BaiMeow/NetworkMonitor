@@ -1,15 +1,17 @@
 <script lang="ts" setup>
 import "echarts";
-import { reactive, ref, watchEffect } from "vue";
+import { reactive, watchEffect } from "vue";
 
 import VChart from "vue-echarts";
 import { getOSPF } from "../api/ospf";
-import { getASMetaData } from "../api/meta";
 
-const loading = ref(true);
+import { inject ,ref } from "vue";
+import { ASDataKey } from "../inject/key";
+import { ASData } from "../api/meta";
 
 const props = defineProps<{
   asn: number;
+  loaded: () => void;
 }>();
 
 interface Edge {
@@ -34,6 +36,10 @@ interface Params<T> {
   dataType: string;
   data: T;
 }
+
+const loading = ref(true);
+
+const asdata = inject(ASDataKey)?.value as ASData;
 
 const option: any = reactive({
   title: {
@@ -246,8 +252,8 @@ watchEffect(async () => {
     option.series[0].force.repulsion = [(100 * max) / min, 100];
     option.series[0].data = nodes;
     option.series[0].links = edges;
-    option.title.text = `${(await getASMetaData(props.asn)).display} Network`;
-    loading.value = false; 
+    option.title.text = `${asdata.metadata[props.asn].display} Network`;
+    loading.value = false;
   })
 })
 

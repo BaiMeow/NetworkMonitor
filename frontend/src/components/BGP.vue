@@ -7,19 +7,20 @@ import {
     TitleComponent,
 } from "echarts/components";
 
-import { computed, reactive } from "vue";
+import { reactive, inject,ref } from "vue";
 
 import VChart from "vue-echarts";
 import { Netmask } from "netmask";
 
 import { getBGP } from "../api/bgp";
 import { prettierNet } from "../utils/colornet";
-import { getASMetaData, ASMetaData } from "../api/meta";
+import { ASData } from "../api/meta";
 
-const loadedCount = reactive([0, 0]);
-const loading = computed(() => {
-    return loadedCount[0] !== loadedCount[1] || loadedCount[1] === 0;
-});
+import { ASDataKey } from "../inject/key"
+
+const loading = ref(true);
+
+const asdata = inject(ASDataKey)?.value;
 
 interface Edge {
     source: string;
@@ -84,14 +85,14 @@ const option: any = reactive({
             let output = `ASN: ${params.data.name}`
 
             if (params.data.meta) {
-                const metadata: ASMetaData = params.data.meta
-
+                const metadata: ASData['metadata'][''] = params.data.meta
                 if (metadata.display) {
                     output += `<br/>name: ${metadata.display}`
                 }
-                if (metadata.appendix) {
-                    for (let key in metadata.appendix) {
-                        const value = metadata.appendix[key] as string | string[];
+                if (metadata?.monitor?.appendix) {
+                    const { monitor: { appendix } } = metadata
+                    for (let key in appendix) {
+                        const value = appendix[key] as string | string[];
                         if (typeof value === 'string') {
                             output += `<br/>${key}: ${value}`;
                         } else if (Array.isArray(value)) {
@@ -103,8 +104,13 @@ const option: any = reactive({
                     }
                 }
             }
-            output += `<br/> network:`
-            output += prettierNet(params.data.network,params.data.name)
+            output += `<br/> network:<br/>`
+            if (asdata){
+                output += prettierNet(params.data.network, params.data.name, asdata.announcements)
+            }else{
+                output += params.data.network.join('<br/>')
+                output += `<br/>`
+            }
             output += `Peer Count: <div class="peer_count"> ${params.data.peer_num} </div>`
             return output
         },
@@ -192,35 +198,23 @@ getBGP().then(async (resp) => {
         return nodes;
     }, [] as Node[]);
 
-    loadedCount[1] = nodes.length;
-
     nodes.map((node) => {
-        return (async function () {
-            node = reactive(node);
-            node.peer_num = resp.link.filter((lk) => {
-                return lk.src === parseInt(node.name) || lk.dst === parseInt(node.name);
-            }).length;
-            node.value = '' + node.peer_num;
-            node.symbolSize = Math.pow(node.peer_num, 1 / 2) * 7;
-            node.itemStyle = {
-                shadowBlur: Math.pow(node.peer_num, 1 / 2) * 2,
+        node = reactive(node);
+        node.peer_num = resp.link.filter((lk) => {
+            return lk.src === parseInt(node.name) || lk.dst === parseInt(node.name);
+        }).length;
+        node.value = '' + node.peer_num;
+        node.symbolSize = Math.pow(node.peer_num, 1 / 2) * 7;
+        node.itemStyle = {
+            shadowBlur: Math.pow(node.peer_num, 1 / 2) * 2,
+        }
+        if (asdata && asdata.metadata && node.name in asdata?.metadata) {
+            const customNode = asdata.metadata[node.name].monitor?.customNode
+            if (customNode) {
+                mergeObjects(node, asdata.metadata[node.name].monitor?.customNode)
             }
-            try {
-                const resp = await getASMetaData(parseInt(node.name))
-                if (resp === undefined) {
-                    return
-                }
-                if (resp.customNode) {
-                    mergeObjects(node, resp.customNode)
-                }
-                resp.customNode = undefined;
-                node.meta = resp;
-            } catch {
-            }
-            finally {
-                loadedCount[0]++;
-            }
-        })()
+            node.meta = asdata.metadata[node.name];
+        }
     })
 
     const edges = resp.link.reduce((edges, cur) => {
@@ -240,14 +234,13 @@ getBGP().then(async (resp) => {
     option.series[0].data = [] as Node[];
     option.series[0].data.push(...nodes);
     option.series[0].links = edges;
+    loading.value = false;
 });
 </script>
 
 <template>
-    <div v-if="loading" class="graph loading">Loading...
-        <template v-if="loadedCount[1] != 0">
-            {{ loadedCount[0] }} / {{ loadedCount[1] }}
-        </template>
+    <div v-if="loading" class="graph loading">
+        Loading...
     </div>
     <v-chart v-else :option="option" class="graph" autoresize />
 </template>

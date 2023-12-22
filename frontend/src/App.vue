@@ -2,23 +2,29 @@
 import BGP from "./components/BGP.vue"
 import OSPF from "./components/OSPF.vue"
 import { getList } from "./api/list";
-import { getASMetaData } from "./api/meta";
-import { ref, reactive } from "vue"
+import { ASData, loadASData } from "./api/meta";
+import { provide, ref, reactive } from "vue"
+import { ASDataKey } from "./inject/key"
 
 const asn = ref(0);
 const graph_type = ref('');
 const isCollapse = ref(true);
 const menu_rotate = ref('');
-const click_fold = ()=>{
-  if (menu_rotate.value == 'rotate-open'){
+const loading = ref(true);
+const dataReady = ref(false);
+const loaded = () => { loading.value = false }
+const click_fold = () => {
+  if (menu_rotate.value == 'rotate-open') {
     menu_rotate.value = 'rotate-close';
     isCollapse.value = true;
-  }else{
+  } else {
     menu_rotate.value = 'rotate-open';
     isCollapse.value = false;
   }
 }
 
+const asdata = ref({} as ASData);
+provide(ASDataKey, asdata);
 
 class bgp {
   enable() {
@@ -35,15 +41,15 @@ class ospf {
   constructor(asn: number) {
     this.asn = asn;
   }
-  async init(){
-    this.name = (await getASMetaData(this.asn)).display
+  async init() {
+    this.name = asdata.value.metadata[this.asn].display;
   }
   enable() {
     graph_type.value = "ospf"
     asn.value = this.asn
   }
   display() {
-    return this.name?`${this.name} Network`:`AS ${this.asn}`
+    return this.name ? `${this.name} Network` : `AS ${this.asn}`
   }
 }
 
@@ -52,48 +58,61 @@ interface graph {
   display(): string
 }
 
-const graph_list: Array<graph> = reactive([] as Array<graph>)
+const graph_list = reactive([] as Array<graph>)
 
 const handle_select = (idx: string) => {
+  loading.value = true;
   graph_list[+idx].enable()
 }
 
-getList().then((list)=>{
-  list.forEach(async (graph)=>{
-    switch (graph.type){
-      case "bgp":
-        graph_list.push(new bgp())
-        break
-      case "ospf":
-        const gr = new ospf(graph.asn);
-        gr.init()
-        graph_list.push(gr)
-        break
-    }
-  })
-  if (graph_list.length!==0){
-    graph_list[0]?.enable()
-  }else{
-    alert("no data");
+loadASData().then((data) => {
+  if (!data) {
+    alert("no metadata");
+    return;
   }
+  asdata.value = data;
+}).then(() => {
+  getList().then((list) => {
+    list.forEach(async (graph) => {
+      switch (graph.type) {
+        case "bgp":
+          graph_list.push(new bgp())
+          break
+        case "ospf":
+          const gr = new ospf(graph.asn);
+          gr.init()
+          graph_list.push(gr)
+          break
+      }
+    })
+    if (graph_list.length !== 0) {
+      graph_list[0]?.enable()
+    } else {
+      alert("no data");
+    }
+    dataReady.value = true;
+  })
 })
-
 </script>
 <template>
   <div class="aside">
     <div class="menu">
-       <el-button type="primary" circle class="menu-buttom" :class="menu_rotate" @click="click_fold">
-        <i-ep-arrow-right-bold/>
+      <el-button type="primary" circle class="menu-buttom" :class="menu_rotate" @click="click_fold">
+        <i-ep-arrow-right-bold />
       </el-button>
-      <el-menu collapse-transition="false" class="menu-list" :collapse="isCollapse" default-active="0" @select="handle_select">
-        <el-menu-item class="menu-item"  v-for="(graph, index) in graph_list" :index="index.toString()">
-          <span>{{graph.display()}}</span>
+      <el-menu collapse-transition="false" class="menu-list" :collapse="isCollapse" default-active="0"
+        @select="handle_select">
+        <el-menu-item class="menu-item" v-for="(graph, index) in graph_list" :index="index.toString()">
+          <span>{{ graph.display() }}</span>
         </el-menu-item>
       </el-menu>
     </div>
   </div>
-  <OSPF v-if="graph_type === 'ospf'" :asn="asn" />
-  <BGP v-else-if="graph_type === 'bgp'" />
+  <template v-if="dataReady">
+      <OSPF v-if="graph_type === 'ospf' && asn != null && dataReady" :asn="asn" :loaded="loaded" />
+      <BGP v-else-if="graph_type === 'bgp' && dataReady" :loaded="loaded" />
+  </template>
+
 </template>
 
 <style scoped>
@@ -117,6 +136,7 @@ getList().then((list)=>{
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(180deg);
   }
@@ -126,16 +146,18 @@ getList().then((list)=>{
   from {
     transform: rotate(180deg);
   }
+
   to {
     transform: rotate(360deg);
   }
 }
 
-@keyframes scale-min{
+@keyframes scale-min {
   from {
     height: fit-content;
     width: fit-content;
   }
+
   to {
     height: 0px;
     width: 0px;
@@ -150,7 +172,7 @@ getList().then((list)=>{
   animation: rotation-close 0.5s forwards;
 }
 
-.menu-item{
+.menu-item {
   border-radius: 20px;
 }
 
@@ -169,7 +191,7 @@ getList().then((list)=>{
 }
 
 .menu-button {
-  margin:2px;
+  margin: 2px;
 }
 
 .menu-list.el-menu--collapse {
@@ -181,6 +203,4 @@ getList().then((list)=>{
   height: 0px;
   width: 0px;
 }
-
-
 </style>
