@@ -8,18 +8,18 @@ import { ASDataKey } from "./inject/key"
 
 const asn = ref(0);
 const graph_type = ref('');
-const isCollapse = ref(true);
-const menu_rotate = ref('');
+const menu_rotate = ref('rotate-closed-margin');
 const loading = ref(true);
 const dataReady = ref(false);
 const loaded = () => { loading.value = false }
+const menu_scale = ref('');
 const click_fold = () => {
   if (menu_rotate.value == 'rotate-open') {
-    menu_rotate.value = 'rotate-close';
-    isCollapse.value = true;
+    menu_rotate.value = 'rotate-close rotate-closed-margin';
+    menu_scale.value = 'menu-fold'
   } else {
     menu_rotate.value = 'rotate-open';
-    isCollapse.value = false;
+    menu_scale.value = 'menu-expend';
   }
 }
 
@@ -96,13 +96,13 @@ loadASData().then((data) => {
 </script>
 <template>
   <div class="aside">
-    <div class="menu">
-      <el-button type="primary" circle class="menu-buttom" :class="menu_rotate" @click="click_fold">
+    <div class="menu" >
+      <el-button type="primary" circle class="menu-button" :class="menu_rotate" @click="click_fold">
         <i-ep-arrow-right-bold />
       </el-button>
-      <el-menu collapse-transition="false" class="menu-list" :collapse="isCollapse" default-active="0"
+      <el-menu :collapse-transition=false class="menu-list" :class="menu_scale" default-active="0"
         @select="handle_select">
-        <el-menu-item class="menu-item" v-for="(graph, index) in graph_list" :index="index.toString()">
+        <el-menu-item class="menu-item" v-for="(graph, index) in graph_list" :index="index.toString()" >
           <span>{{ graph.display() }}</span>
         </el-menu-item>
       </el-menu>
@@ -128,7 +128,7 @@ loadASData().then((data) => {
   display: flex;
   align-items: center;
   z-index: 10;
-  max-height: 80vw;
+  max-height: 80vh;
   flex-direction: column;
 }
 
@@ -152,24 +152,16 @@ loadASData().then((data) => {
   }
 }
 
-@keyframes scale-min {
-  from {
-    height: fit-content;
-    width: fit-content;
-  }
-
-  to {
-    height: 0px;
-    width: 0px;
-  }
-}
-
 .rotate-open {
   animation: rotation-open 0.5s forwards;
 }
 
 .rotate-close {
   animation: rotation-close 0.5s forwards;
+}
+
+.rotate-closed-margin{
+  margin: 0px !important
 }
 
 .menu-item {
@@ -186,21 +178,21 @@ loadASData().then((data) => {
 .menu-list {
   border-right: 0px;
   background-color: rgba(255, 255, 255, 0);
-  transition: height 1s;
-  overflow: scroll;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  width: 0px;
+  height: 0vw;
+  transition: all,0.6s;
+  transition-timing-function: ease-in-out;
 }
 
 .menu-button {
   margin: 2px;
 }
 
-.menu-list.el-menu--collapse {
-  height: 0px;
-  width: 0px;
+.menu-expend {
+  height: 70vh;
+  width: 12em;
 }
 
-.menu-list.el-menu--collapse>.menu-item {
-  height: 0px;
-  width: 0px;
-}
 </style>
