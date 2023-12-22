@@ -5,7 +5,7 @@ import { reactive, watchEffect } from "vue";
 import VChart from "vue-echarts";
 import { getOSPF } from "../api/ospf";
 
-import { inject ,ref } from "vue";
+import { inject, ref } from "vue";
 import { ASDataKey } from "../inject/key";
 import { ASData } from "../api/meta";
 
@@ -48,6 +48,8 @@ const option: any = reactive({
   tooltip: {
     trigger: "item",
     triggerOn: "mousemove",
+    confine: true,
+    enterable: true,
     formatter: (params: Params<any>) => {
       if (params.dataType === "edge") {
         params = params as Params<Edge>;
@@ -67,7 +69,6 @@ const option: any = reactive({
       }
     },
   },
-  roam: "scale",
   symbolSize: 50,
   animationDurationUpdate: 1500,
   animationEasingUpdate: "quinticInOut" as any,
@@ -86,7 +87,6 @@ const option: any = reactive({
         edgeLength: [40, 300],
         friction: 0.15
       },
-      zoom: 1,
       roam: true,
       label: {
         show: true,
@@ -105,6 +105,12 @@ const option: any = reactive({
       },
       data: [],
       links: [],
+      emphasis: {
+        focus: 'adjacency',
+        lineStyle: {
+          width: 10
+        }
+      }
     },
   ],
   lineStyle: {
@@ -263,7 +269,7 @@ watchEffect(async () => {
   <div v-if="loading" class="graph loading">
     Loading...
   </div>
-  <v-chart :option="option" class="graph" />
+  <v-chart :option="option" class="graph" autoresize />
 </template>
 <style scoped>
 .graph {

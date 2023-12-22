@@ -7,7 +7,7 @@ import {
     TitleComponent,
 } from "echarts/components";
 
-import { reactive, inject,ref } from "vue";
+import { reactive, inject, ref } from "vue";
 
 import VChart from "vue-echarts";
 import { Netmask } from "netmask";
@@ -74,6 +74,8 @@ const option: any = reactive({
     tooltip: {
         trigger: "item",
         triggerOn: "mousemove",
+        confine: true,
+        enterable: true,
         formatter: (params: Params<any>) => {
             if (params.dataType === "edge") {
                 params = params as Params<Edge>
@@ -105,9 +107,9 @@ const option: any = reactive({
                 }
             }
             output += `<br/> network:<br/>`
-            if (asdata){
+            if (asdata) {
                 output += prettierNet(params.data.network, params.data.name, asdata.announcements)
-            }else{
+            } else {
                 output += params.data.network.join('<br/>')
                 output += `<br/>`
             }
@@ -118,8 +120,9 @@ const option: any = reactive({
             return [20, 50];
         }
     },
-    roam: "scale",
     symbolSize: 50,
+    animationDurationUpdate: 1500,
+    animationEasingUpdate: "quinticInOut" as any,
     series: [
         {
             type: "graph",
@@ -130,6 +133,7 @@ const option: any = reactive({
                 friction: 0.15,
                 edgeLength: [10, 140]
             },
+            roam: true,
             label: {
                 show: true,
                 position: "right",
@@ -148,17 +152,17 @@ const option: any = reactive({
             draggable: true,
             data: [],
             links: [],
+            emphasis: {
+                focus: 'adjacency',
+                lineStyle: {
+                    width: 10
+                }
+            }
         },
     ],
     lineStyle: {
         opacity: 0.9,
         width: 2
-    },
-    emphasis: {
-        focus: 'adjacency',
-        lineStyle: {
-            width: 10
-        }
     }
 });
 
