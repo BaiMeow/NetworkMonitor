@@ -44,6 +44,7 @@ const asdata = inject(ASDataKey)?.value as ASData;
 const option: any = reactive({
   title: {
     text: '',
+    subtext: '',
   },
   tooltip: {
     trigger: "item",
@@ -259,6 +260,7 @@ watchEffect(async () => {
     option.series[0].data = nodes;
     option.series[0].links = edges;
     option.title.text = `${asdata.metadata[props.asn].display} Network`;
+    option.title.subtext = `Nodes: ${nodes.length} Peers: ${Math.floor(all_links.length/2)}`;
     loading.value = false;
   })
 })

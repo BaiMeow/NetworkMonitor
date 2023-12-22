@@ -70,6 +70,7 @@ function mergeObjects(obj1: any, obj2: any): any {
 const option: any = reactive({
     title: {
         text: "DN11 & Vidar Network",
+        subtext: "",
     },
     tooltip: {
         trigger: "item",
@@ -120,50 +121,43 @@ const option: any = reactive({
             return [20, 50];
         }
     },
-    symbolSize: 50,
-    animationDurationUpdate: 1500,
-    animationEasingUpdate: "quinticInOut" as any,
-    series: [
-        {
-            type: "graph",
-            layout: "force",
-            force: {
-                repulsion: 500,
-                gravity: 0.02,
-                friction: 0.15,
-                edgeLength: [10, 140]
-            },
-            roam: true,
-            label: {
-                show: true,
-                position: "right",
-                formatter: (params: any) => {
-                    if (params.data.meta && params.data.meta.display) {
-                        return params.data.meta.display;
-                    }
-                    return params.data.name;
-                },
-            },
-            itemStyle: {
-                borderColor: "#000000",
-                borderWidth: 0.4,
-                shadowColor: "#2242a3",
-            },
-            draggable: true,
-            data: [],
-            links: [],
-            emphasis: {
-                focus: 'adjacency',
-                lineStyle: {
-                    width: 10
-                }
-            }
+    series: [{
+        type: "graph",
+        symbolSize: 50,
+        layout: "force",
+
+        force: {
+            repulsion: 500,
+            gravity: 0.02,
+            friction: 0.15,
+            edgeLength: [10, 140]
         },
-    ],
-    lineStyle: {
-        opacity: 0.9,
-        width: 2
-    }
+        roam: true,
+        label: {
+            show: true,
+            position: "right",
+            formatter: (params: any) => {
+                if (params.data.meta && params.data.meta.display) {
+                    return params.data.meta.display;
+                }
+                return params.data.name;
+            },
+        },
+        itemStyle: {
+            borderColor: "#000000",
+            borderWidth: 0.4,
+            shadowColor: "#2242a3",
+        },
+        draggable: true,
+        data: [],
+        links: [],
+        emphasis: {
+            focus: 'adjacency',
+            lineStyle: {
+                width: 10
+            }
+        }
+    }],
 });
 
 getBGP().then(async (resp) => {
@@ -238,6 +232,7 @@ getBGP().then(async (resp) => {
     option.series[0].data = [] as Node[];
     option.series[0].data.push(...nodes);
     option.series[0].links = edges;
+    option.title.subtext = `Nodes: ${nodes.length} Peers: ${edges.length}`;
     loading.value = false;
 });
 </script>

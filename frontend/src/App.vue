@@ -187,7 +187,7 @@ loadASData().then((data) => {
 }
 
 .menu-button {
-  margin: 2px;
+  margin-top: 1vh;
 }
 
 .menu-expend {
