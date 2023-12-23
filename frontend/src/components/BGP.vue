@@ -10,6 +10,7 @@ import {
 import { reactive, inject, ref } from "vue";
 
 import VChart from "vue-echarts";
+import { ECElementEvent } from "echarts/types/dist/shared";
 import { Netmask } from "netmask";
 
 import { getBGP } from "../api/bgp";
@@ -17,6 +18,9 @@ import { prettierNet } from "../utils/colornet";
 import { ASData } from "../api/meta";
 
 import { ASDataKey } from "../inject/key"
+import { ECharts } from "echarts";
+
+const chart = ref<ECharts | null>(null)
 
 const loading = ref(true);
 
@@ -125,12 +129,12 @@ const option: any = reactive({
         type: "graph",
         symbolSize: 50,
         layout: "force",
-
         force: {
             repulsion: 500,
             gravity: 0.02,
-            friction: 0.15,
-            edgeLength: [10, 140]
+            friction: 1,
+            edgeLength: [10, 140],
+            layoutAnimation: false
         },
         roam: true,
         label: {
@@ -235,13 +239,46 @@ getBGP().then(async (resp) => {
     option.title.subtext = `Nodes: ${nodes.length} Peers: ${edges.length}`;
     loading.value = false;
 });
+
+const isForce = ref(false)
+const mouseDown = ref(false)
+let timer:NodeJS.Timeout|null = null
+
+const handle_mouse_down = (_: ECElementEvent) => {
+    chart.value?.convertToPixel
+    
+    
+    if (timer) {
+        clearTimeout(timer)
+    }
+    option.series[0].force.friction = 0.15
+    option.series[0].force.layoutAnimation = true
+    isForce.value = true
+    mouseDown.value = true
+}
+
+const handle_mouse_move = (e: ECElementEvent) => {
+    if (e.dataType === 'edge' && isForce.value || mouseDown.value) {
+        throw ('throw error to cancel highlight')
+    }
+}
+
+const handle_mouse_up = (_: any) => {
+    mouseDown.value = false
+    timer = setTimeout(() => {
+        option.series[0].force.layoutAnimation = false
+        isForce.value = false
+    }, 6000);
+}
+
 </script>
 
 <template>
     <div v-if="loading" class="graph loading">
         Loading...
     </div>
-    <v-chart v-else :option="option" class="graph" autoresize />
+    <v-chart ref="chart" v-else :option="option" class="graph" autoresize @mousemove="handle_mouse_move"
+        @mousedown="handle_mouse_down" @mouseup="handle_mouse_up" />
 </template>
 <style scoped>
 .graph {

@@ -181,7 +181,7 @@ loadASData().then((data) => {
   overflow-y: scroll;
   overflow-x: hidden;
   width: 0px;
-  height: 0vw;
+  max-height: 0vw;
   transition: all,0.6s;
   transition-timing-function: ease-in-out;
 }
@@ -191,7 +191,7 @@ loadASData().then((data) => {
 }
 
 .menu-expend {
-  height: 70vh;
+  max-height: 70vh;
   width: 12em;
 }
 

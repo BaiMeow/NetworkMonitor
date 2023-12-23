@@ -80,13 +80,13 @@ const option: any = reactive({
       circular: {
         rotateLabel: true,
       },
-      animation: true,
       force: {
         initLayout: "circular",
         repulsion: 120,
         gravity: 0.02,
         edgeLength: [40, 300],
-        friction: 0.15
+        friction: 0.15,
+        layoutAnimation: false
       },
       roam: true,
       label: {
