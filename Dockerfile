@@ -4,9 +4,9 @@ COPY frontend /app
 
 WORKDIR /app
 
-RUN npm install 
+RUN npm install -g pnpm
 
-RUN npm run build
+RUN pnpm install --force && pnpm run build
 
 FROM golang:1.20 as builder
 
@@ -20,10 +20,10 @@ COPY --from=frontend /backend/static /app/static
 
 RUN go mod tidy && go build -o /app/main
 
-FROM ubuntu:devel
+FROM ubuntu:latest
 
-RUN apt update &&  \
-    apt install -y ca-certificates &&  \
+RUN apt-get update &&  \
+    apt-get install -y ca-certificates &&  \
     rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /app/main /app/main

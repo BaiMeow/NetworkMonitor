@@ -8,7 +8,7 @@ specifiers:
   '@types/node': ^20.1.1
   '@vitejs/plugin-vue': ^4.1.0
   axios: ^1.4.0
-  echarts: ^5.4.2
+  echarts: ^5.4.3
   element-plus: ^2.4.1
   netmask: ^2.0.2
   typescript: ^5.0.2
@@ -18,7 +18,7 @@ specifiers:
   unplugin-vue-components: ^0.25.2
   vite: ^4.3.2
   vue: ^3.2.47
-  vue-echarts: ^6.5.5
+  vue-echarts: ^6.6.5
   vue-tsc: ^1.4.2
 
 dependencies:
@@ -30,7 +30,7 @@ dependencies:
   netmask: registry.npmmirror.com/netmask/2.0.2
   unplugin-icons: registry.npmmirror.com/unplugin-icons/0.17.1
   vue: registry.npmmirror.com/vue/3.3.7_typescript@5.2.2
-  vue-echarts: registry.npmmirror.com/vue-echarts/6.6.1_echarts@5.4.3+vue@3.3.7
+  vue-echarts: registry.npmmirror.com/vue-echarts/6.6.5_echarts@5.4.3+vue@3.3.7
 
 devDependencies:
   '@iconify-json/ep': registry.npmmirror.com/@iconify-json/ep/1.1.12
@@ -2318,11 +2318,11 @@ packages:
       vue: registry.npmmirror.com/vue/3.3.7_typescript@5.2.2
     dev: false
 
-  registry.npmmirror.com/vue-echarts/6.6.1_echarts@5.4.3+vue@3.3.7:
-    resolution: {integrity: sha512-EpreTzlNeJ+eaUn0AhXEmKJk98xJGecgTqAdyZovoXWnhTxnlW2HuBM0ei3y8rLw1JCUabf8/sYvxjlr8SzBKQ==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/vue-echarts/-/vue-echarts-6.6.1.tgz}
-    id: registry.npmmirror.com/vue-echarts/6.6.1
+  registry.npmmirror.com/vue-echarts/6.6.5_echarts@5.4.3+vue@3.3.7:
+    resolution: {integrity: sha512-LO+jQrBu3OZMMp1O00VOdeU1Lnc1tqY1UFmTha8G5ntOsz7NxLYs3+S3l32E53dHdax+YlEh8ZWMHMZGAuELig==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/vue-echarts/-/vue-echarts-6.6.5.tgz}
+    id: registry.npmmirror.com/vue-echarts/6.6.5
     name: vue-echarts
-    version: 6.6.1
+    version: 6.6.5
     requiresBuild: true
     peerDependencies:
       '@vue/composition-api': ^1.0.5

@@ -10,7 +10,7 @@ import {
 import { reactive, inject, ref } from "vue";
 
 import VChart from "vue-echarts";
-import { ECElementEvent } from "echarts/types/dist/shared";
+import { ECElementEvent, ECharts } from "echarts";
 import { Netmask } from "netmask";
 
 import { getBGP } from "../api/bgp";
@@ -18,7 +18,6 @@ import { prettierNet } from "../utils/colornet";
 import { ASData } from "../api/meta";
 
 import { ASDataKey } from "../inject/key"
-import { ECharts } from "echarts";
 
 const chart = ref<ECharts | null>(null)
 
@@ -263,7 +262,7 @@ const handle_mouse_move = (e: ECElementEvent) => {
     }
 }
 
-const handle_mouse_up = (_: any) => {
+const handle_mouse_up = (_: ECElementEvent) => {
     mouseDown.value = false
     timer = setTimeout(() => {
         option.series[0].force.layoutAnimation = false

@@ -12,12 +12,12 @@
     "@antv/g6": "^4.8.10",
     "@element-plus/icons-vue": "^2.1.0",
     "axios": "^1.4.0",
-    "echarts": "^5.4.2",
+    "echarts": "^5.4.3",
     "element-plus": "^2.4.1",
     "netmask": "^2.0.2",
     "unplugin-icons": "^0.17.1",
     "vue": "^3.2.47",
-    "vue-echarts": "^6.5.5"
+    "vue-echarts": "^6.6.5"
   },
   "devDependencies": {
     "@iconify-json/ep": "^1.1.12",
