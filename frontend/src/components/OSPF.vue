@@ -9,6 +9,8 @@ import { inject, ref } from "vue";
 import { ASDataKey } from "../inject/key";
 import { ASData } from "../api/meta";
 
+import { ECElementEvent } from "echarts";
+
 const props = defineProps<{
   asn: number;
   loaded: () => void;
@@ -260,10 +262,26 @@ watchEffect(async () => {
     option.series[0].data = nodes;
     option.series[0].links = edges;
     option.title.text = `${asdata.metadata[props.asn].display} Network`;
-    option.title.subtext = `Nodes: ${nodes.length} Peers: ${Math.floor(all_links.length/2)}`;
+    option.title.subtext = `Nodes: ${nodes.length} Peers: ${Math.floor(all_links.length / 2)}`;
     loading.value = false;
   })
 })
+
+let timer: NodeJS.Timeout | null = null
+
+const handle_mouse_down = (_: ECElementEvent) => {
+  if (timer) {
+    clearTimeout(timer)
+  }
+  option.series[0].force.friction = 0.15
+  option.series[0].force.layoutAnimation = true
+}
+
+const handle_mouse_up = (_: ECElementEvent) => {
+  timer = setTimeout(() => {
+    option.series[0].force.layoutAnimation = false
+  }, 6000);
+}
 
 </script>
 
@@ -271,7 +289,7 @@ watchEffect(async () => {
   <div v-if="loading" class="graph loading">
     Loading...
   </div>
-  <v-chart :option="option" class="graph" autoresize />
+  <v-chart :option="option" class="graph" autoresize @mousedown="handle_mouse_down" @mouseup="handle_mouse_up" />
 </template>
 <style scoped>
 .graph {

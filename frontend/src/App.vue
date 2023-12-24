@@ -180,7 +180,7 @@ loadASData().then((data) => {
   background-color: rgba(255, 255, 255, 0);
   overflow-y: scroll;
   overflow-x: hidden;
-  width: 0px;
+  max-width: 0px;
   max-height: 0vw;
   transition: all,0.6s;
   transition-timing-function: ease-in-out;
@@ -192,7 +192,7 @@ loadASData().then((data) => {
 
 .menu-expend {
   max-height: 70vh;
-  width: 12em;
+  max-width: 12em;
 }
 
 </style>

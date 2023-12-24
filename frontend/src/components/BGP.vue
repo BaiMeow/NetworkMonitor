@@ -31,6 +31,7 @@ interface Edge {
     value: number
     lineStyle?: any;
     symbol?: string[];
+    emphasis?: any;
 }
 
 interface Node {
@@ -239,34 +240,19 @@ getBGP().then(async (resp) => {
     loading.value = false;
 });
 
-const isForce = ref(false)
-const mouseDown = ref(false)
-let timer:NodeJS.Timeout|null = null
+let timer: NodeJS.Timeout | null = null
 
 const handle_mouse_down = (_: ECElementEvent) => {
-    chart.value?.convertToPixel
-    
-    
     if (timer) {
         clearTimeout(timer)
     }
     option.series[0].force.friction = 0.15
     option.series[0].force.layoutAnimation = true
-    isForce.value = true
-    mouseDown.value = true
-}
-
-const handle_mouse_move = (e: ECElementEvent) => {
-    if (e.dataType === 'edge' && isForce.value || mouseDown.value) {
-        throw ('throw error to cancel highlight')
-    }
 }
 
 const handle_mouse_up = (_: ECElementEvent) => {
-    mouseDown.value = false
     timer = setTimeout(() => {
         option.series[0].force.layoutAnimation = false
-        isForce.value = false
     }, 6000);
 }
 
@@ -276,13 +262,14 @@ const handle_mouse_up = (_: ECElementEvent) => {
     <div v-if="loading" class="graph loading">
         Loading...
     </div>
-    <v-chart ref="chart" v-else :option="option" class="graph" autoresize @mousemove="handle_mouse_move"
-        @mousedown="handle_mouse_down" @mouseup="handle_mouse_up" />
+    <v-chart ref="chart" :option="option" class="graph" autoresize @mousedown="handle_mouse_down"
+        @mouseup="handle_mouse_up" />
 </template>
+
 <style scoped>
 .graph {
-    width: 100vw;
     height: 100dvh;
+    width: 100vw;
     top: 0;
     left: 0;
     position: absolute;
