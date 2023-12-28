@@ -97,10 +97,10 @@ loadASData().then((data) => {
 <template>
   <div class="aside">
     <div class="menu" >
-      <el-button type="primary" circle class="menu-button" :class="menu_rotate" @click="click_fold">
+      <el-button type="primary" circle class="menu-button transition-06s" :class="menu_rotate" @click="click_fold">
         <i-ep-arrow-right-bold />
       </el-button>
-      <el-menu :collapse-transition=false class="menu-list" :class="menu_scale" default-active="0"
+      <el-menu :collapse-transition=false class="menu-list transition-06s" :class="menu_scale" default-active="0"
         @select="handle_select">
         <el-menu-item class="menu-item" v-for="(graph, index) in graph_list" :index="index.toString()" >
           <span>{{ graph.display() }}</span>
@@ -182,8 +182,15 @@ loadASData().then((data) => {
   overflow-x: hidden;
   max-width: 0px;
   max-height: 0vw;
+}
+
+.transition-06s {
   transition: all,0.6s;
   transition-timing-function: ease-in-out;
+}
+
+.menu-list::-webkit-scrollbar{
+  display: none;
 }
 
 .menu-button {

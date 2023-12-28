@@ -87,7 +87,7 @@ const option: any = reactive({
         repulsion: 120,
         gravity: 0.02,
         edgeLength: [40, 300],
-        friction: 0.15,
+        friction: 1,
         layoutAnimation: false
       },
       roam: true,
