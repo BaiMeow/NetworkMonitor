@@ -56,6 +56,8 @@ func init() {
 	})
 }
 
+var _ Fetcher = (*HTTP)(nil)
+
 type HTTP struct {
 	URL    *template.Template
 	Body   *template.Template

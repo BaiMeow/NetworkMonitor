@@ -59,6 +59,8 @@ func init() {
 	})
 }
 
+var _ Fetcher = (*SshWithPassword)(nil)
+
 type SshWithPassword struct {
 	Host      string
 	Port      int

@@ -16,6 +16,8 @@ func init() {
 	})
 }
 
+var _ Fetcher = (*Command)(nil)
+
 type Command struct {
 	Command string
 }

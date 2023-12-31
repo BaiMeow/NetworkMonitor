@@ -36,6 +36,8 @@ func init() {
 	})
 }
 
+var _ Fetcher = (*BirdLgGo)(nil)
+
 type BirdLgGo struct {
 	API    string
 	Server string
