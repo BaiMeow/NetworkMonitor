@@ -12,12 +12,12 @@ import (
 func init() {
 	gob.Register(&proto.Sentence{})
 
-	Register("ros6-ospf", func(m map[string]any) (Parser, error) {
+	Register("ros-ospf", func(m map[string]any) (Parser, error) {
 		asn, ok := m["asn"].(int)
 		if !ok {
 			return nil, fmt.Errorf("asn is not int")
 		}
-		return &ROS6OSPF{
+		return &RosOSPF{
 			asn: uint32(asn),
 		}, nil
 	})
@@ -25,22 +25,23 @@ func init() {
 
 var (
 	ros6BodyPtpReg = regexp.MustCompile(`Point-To-Point ((?:[0-9]{1,3}\.){3}[0-9]{1,3}) (?:[0-9]{1,3}\.){3}[0-9]{1,3} (\d+)`)
+	ros7BodyPtpReg = regexp.MustCompile(`type=p2p id=((?:[0-9]{1,3}\.){3}[0-9]{1,3}) data=(?:[0-9]{1,3}\.){3}[0-9]{1,3} metric=(\d+)`)
 )
 
-var _ Parser = (*ROS6OSPF)(nil)
+var _ Parser = (*RosOSPF)(nil)
 
-type ROS6OSPF struct {
+type RosOSPF struct {
 	asn uint32
 
 	raw   []byte
 	graph OSPF
 }
 
-func (p *ROS6OSPF) Init(input []byte) {
+func (p *RosOSPF) Init(input []byte) {
 	p.raw = input
 }
 
-func (p *ROS6OSPF) ParseAndMerge(drawing *Drawing) (err error) {
+func (p *RosOSPF) ParseAndMerge(drawing *Drawing) (err error) {
 	defer func() {
 		if err != nil {
 			return
@@ -67,6 +68,17 @@ func (p *ROS6OSPF) ParseAndMerge(drawing *Drawing) (err error) {
 		p.graph.getArea(sentence.Map["area"]).addRouter(sentence.Map["id"])
 
 		ptp := ros6BodyPtpReg.FindAllStringSubmatch(sentence.Map["body"], -1)
+		for _, field := range ptp {
+			if len(field) != 3 {
+				continue
+			}
+			cost, err := strconv.Atoi(field[2])
+			if err != nil {
+				continue
+			}
+			p.graph.addLink(sentence.Map["area"], sentence.Map["id"], field[1], cost)
+		}
+		ptp = ros7BodyPtpReg.FindAllStringSubmatch(sentence.Map["body"], -1)
 		for _, field := range ptp {
 			if len(field) != 3 {
 				continue

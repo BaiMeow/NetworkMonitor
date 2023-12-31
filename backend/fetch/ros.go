@@ -8,12 +8,12 @@ import (
 	"github.com/go-routeros/routeros/proto"
 )
 
-var _ Fetcher = (*ROS6)(nil)
+var _ Fetcher = (*ROS)(nil)
 
 func init() {
 	gob.Register(&proto.Sentence{})
 
-	Register("ros6", func(config map[string]any) (Fetcher, error) {
+	Register("ros", func(config map[string]any) (Fetcher, error) {
 		addr, ok := config["address"].(string)
 		if !ok {
 			return nil, fmt.Errorf("host is not string")
@@ -26,7 +26,7 @@ func init() {
 		if !ok {
 			return nil, fmt.Errorf("type is not string")
 		}
-		return &ROS6{
+		return &ROS{
 			Address:  addr,
 			Username: username,
 			Password: passwd,
@@ -34,13 +34,13 @@ func init() {
 	})
 }
 
-type ROS6 struct {
+type ROS struct {
 	Address  string //<IP or domain name>:port
 	Username string
 	Password string
 }
 
-func (R *ROS6) GetData() ([]byte, error) {
+func (R *ROS) GetData() ([]byte, error) {
 	client, err := routeros.Dial(R.Address, R.Username, R.Password)
 	if err != nil {
 		return nil, err
