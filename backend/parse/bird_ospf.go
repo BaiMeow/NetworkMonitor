@@ -20,6 +20,8 @@ func init() {
 	})
 }
 
+var _ Parser = (*BirdOSPF)(nil)
+
 type BirdOSPF struct {
 	s     *bufio.Scanner
 	graph OSPF

@@ -16,6 +16,8 @@ func init() {
 	})
 }
 
+var _ Parser = (*MrtAddPath)(nil)
+
 type MrtAddPath struct {
 	reader io.Reader
 }

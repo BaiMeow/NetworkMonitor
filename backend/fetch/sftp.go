@@ -68,6 +68,8 @@ func init() {
 	})
 }
 
+var _ Fetcher = (*SftpWithPassword)(nil)
+
 type SftpWithPassword struct {
 	Host      string
 	Port      int
