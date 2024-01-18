@@ -1,15 +1,13 @@
 <script lang="ts" setup>
 import "echarts";
-import { reactive, watchEffect } from "vue";
+import {inject, reactive, ref, watchEffect} from "vue";
 
 import VChart from "vue-echarts";
-import { getOSPF } from "../api/ospf";
+import {getOSPF} from "../api/ospf";
+import {ASDataKey} from "../inject/key";
+import {ASData} from "../api/meta";
 
-import { inject, ref } from "vue";
-import { ASDataKey } from "../inject/key";
-import { ASData } from "../api/meta";
-
-import { ECElementEvent } from "echarts";
+import {ECElementEvent} from "echarts";
 
 const props = defineProps<{
   asn: number;
@@ -145,38 +143,43 @@ watchEffect(async () => {
     }, [] as Node[]);
 
     const all_links = areas.flatMap(
-      area => area.links
+        area => area.links
     );
 
     const all_routers = areas.reduce(
-      (routers, cur) => {
-        if (cur.router === undefined || cur.router.length === 0) {
-          return routers;
-        }
-        cur.router.forEach((r) => {
-          if (routers.findIndex((router) => router.router_id === r.router_id) === -1) {
-            routers.push(r);
+        (routers, cur) => {
+          if (cur.router === undefined || cur.router.length === 0) {
+            return routers;
           }
-        })
-        return routers
-      },
-      [] as (typeof areas)[number]['router']
+          cur.router.forEach((r) => {
+            if (routers.findIndex((router) => router.router_id === r.router_id) === -1) {
+              routers.push(r);
+            }
+          })
+          return routers
+        },
+        [] as (typeof areas)[number]['router']
     );
 
     // calculate node peers and size
-    let { min, max } = all_links.reduce(
-      ({ min, max }, cur) => {
-        return {
-          min: Math.min(min, cur.cost),
-          max: Math.max(max, cur.cost),
-        };
-      },
-      { min: all_links[0].cost, max: all_links[0].cost }
+    let {min, max} = all_links.reduce(
+        ({min, max}, cur) => {
+          return {
+            min: Math.min(min, cur.cost),
+            max: Math.max(max, cur.cost),
+          };
+        },
+        {min: all_links[0].cost, max: all_links[0].cost}
     );
 
     nodes.forEach((node) => {
+      let markedPeer = new Set<string>();
       node.peer_num = all_links.filter((lk) => {
-        return lk.src === node.name;
+        if (lk.src === node.name && !markedPeer.has(lk.dst)) {
+          markedPeer.add(lk.dst);
+          return true;
+        }
+        return false;
       }).length;
       node.symbolSize = Math.pow(node.peer_num, 1 / 2) * 7;
     });
@@ -196,7 +199,7 @@ watchEffect(async () => {
         while (links.length !== 0) {
           let cur = links.pop() as NonNullable<(typeof links)[number]>;
           let pair_idx = links.findIndex((lk) =>
-            lk.src === cur.dst && lk.dst === cur.src && lk.cost === cur.cost
+              lk.src === cur.dst && lk.dst === cur.src && lk.cost === cur.cost
           );
           if (pair_idx !== -1) {
             links.splice(pair_idx, 1)[0];
@@ -262,7 +265,13 @@ watchEffect(async () => {
     option.series[0].data = nodes;
     option.series[0].links = edges;
     option.title.text = `${asdata.metadata[props.asn].display} Network`;
-    option.title.subtext = `Nodes: ${nodes.length} Peers: ${Math.floor(all_links.length / 2)}`;
+    let markedPeer = new Set<string>();
+    for (const link of all_links) {
+      if (!markedPeer.has(link.src+link.dst)) {
+        markedPeer.add(link.src+link.dst);markedPeer.add(link.dst+link.src);
+      }
+    }
+    option.title.subtext = `Nodes: ${nodes.length}  Peers: ${markedPeer.size / 2}`;
     loading.value = false;
   })
 })
@@ -289,7 +298,7 @@ const handle_mouse_up = (_: ECElementEvent) => {
   <div v-if="loading" class="graph loading">
     Loading...
   </div>
-  <v-chart :option="option" class="graph" autoresize @mousedown="handle_mouse_down" @mouseup="handle_mouse_up" />
+  <v-chart :option="option" class="graph" autoresize @mousedown="handle_mouse_down" @mouseup="handle_mouse_up"/>
 </template>
 <style scoped>
 .graph {
