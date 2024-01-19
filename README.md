@@ -18,8 +18,8 @@ monitor your network status with graph
 - [x] SSH
 - [x] Command
 - [x] SFTP (模板式语法)
-- [ ] RouterOS API
-- [ ] HTTP
+- [x] RouterOS API
+- [x] HTTP
 - [ ] Telnet
 - [ ] OSPF Broadcast
 
@@ -27,7 +27,7 @@ monitor your network status with graph
 
 - [x] Bird
 - [x] MRT
-- [ ] RouterOS
+- [x] RouterOS
 - [ ] Quagga
 - [ ] OSPF Broadcast
 
@@ -53,15 +53,21 @@ NetworkMonitor has a flexible probe configuration scheme, a probe consists of Fe
 ## 构建 build
 
 1. 前端打包（如果需要） pack frontend (if needed)
+
     cd 到 fronted目录下，执行 `pnpm build`，构建好的文件会出现在 `backend/static` 目录下
+   
     cd to fronted directory, run `pnpm build`，the built files will appear in `backend/static` directory
 
-2. 构建后端 build backend
-    cd 到 backend 目录下，执行 `go build`    
+3. 构建后端 build backend
+
+    cd 到 backend 目录下，执行 `go build`
+
     cd to backend directory, run `go build`
 
 ## 运行 run
 
-将`config.yaml` 和构建好的二进制文件放在同一目录下，执行程序即可。
+将`config.yaml` 和构建好的二进制文件放在同一目录下，执行程序即可
+
+put `config.yaml` and the built binary in the same dir and run it
 
 
