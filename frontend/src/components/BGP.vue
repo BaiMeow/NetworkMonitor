@@ -228,7 +228,7 @@ getBGP().then(async (resp) => {
         edges.push({
             source: cur.src.toString(),
             target: cur.dst.toString(),
-            value: 1 / Math.pow(Math.min(src.peer_num, dst.peer_num), 1 / 2) * 100,
+            value: 100 / Math.min(src.peer_num, dst.peer_num)+10,
         });
         return edges;
     }, [] as Edge[]);
@@ -236,6 +236,7 @@ getBGP().then(async (resp) => {
     option.series[0].data = [] as Node[];
     option.series[0].data.push(...nodes);
     option.series[0].links = edges;
+    option.series[0].force.edgeLength[1] = nodes.length * 3.5;
     option.title.subtext = `Nodes: ${nodes.length} Peers: ${edges.length}`;
     loading.value = false;
 });

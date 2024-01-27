@@ -14,7 +14,9 @@ monitor your network status with graph
 - [x] 配置文件热更新 Hot config update
 - [x] 可配置的数据刷新间隔
 - [ ] 可用性监测
+
 ### 获取数据 Fetch
+
 - [x] SSH
 - [x] Command
 - [x] SFTP (模板式语法)
