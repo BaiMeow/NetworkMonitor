@@ -39,11 +39,7 @@ func NewProbe(p conf.Probe) (*Probe, error) {
 
 func (p *Probe) DrawAndMerge(drawing *parse.Drawing) (err error) {
 	defer func() {
-		if err != nil {
-			p.Up = false
-		} else {
-			p.Up = true
-		}
+		p.Up = err == nil
 	}()
 	var data []byte
 	data, err = p.Fetch.GetData()

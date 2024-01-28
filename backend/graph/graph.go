@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/BaiMeow/NetworkMonitor/conf"
 	"github.com/BaiMeow/NetworkMonitor/parse"
+	"github.com/BaiMeow/NetworkMonitor/utils"
 	"log"
 	"sync"
 	"time"
@@ -63,7 +64,14 @@ func draw() {
 		go func() {
 			defer wg.Done()
 			t := time.Now()
-			err := p.DrawAndMerge(&drawing)
+			var err error
+			timeout := utils.WithTimeout(func() {
+				err = p.DrawAndMerge(&drawing)
+			})
+			if timeout {
+				log.Printf("probe %s timeout but the goroutine is still running, a timeout should be added to the probe.\n", p.Name)
+				return
+			}
 			dur := time.Since(t)
 			if dur > time.Second*5 {
 				log.Printf("probe %s slow draw: %v\n", p.Name, dur)
