@@ -22,13 +22,17 @@ func (r *staticRouter) Open(name string) (http.File, error) {
 }
 
 func main() {
+	log.Println("init config")
 	if err := conf.Init(); err != nil {
 		log.Fatalf("init config fail:%v", err)
 	}
+
+	log.Println("init graph")
 	if err := graph.Init(); err != nil {
 		log.Fatalf("init graph fail:%v", err)
 	}
 
+	log.Println("run web")
 	r := gin.Default()
 	r.Use(middleware.Cors())
 	r.StaticFS("/assets/", &staticRouter{"/static/assets"})
@@ -37,5 +41,8 @@ func main() {
 	r.GET("/api/list", controller.List)
 	r.StaticFileFS("/", "/", &staticRouter{"/static"})
 	r.StaticFileFS("/avatar.png", "/static/avatar.png", http.FS(FS))
-	r.Run(":" + strconv.Itoa(conf.Port))
+	err := r.Run(":" + strconv.Itoa(conf.Port))
+	if err != nil {
+		log.Fatalln(err)
+	}
 }
