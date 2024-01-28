@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"github.com/go-routeros/routeros"
 	"github.com/go-routeros/routeros/proto"
+	"net"
+	"time"
 )
 
 var _ Fetcher = (*ROS)(nil)
@@ -41,11 +43,16 @@ type ROS struct {
 }
 
 func (R *ROS) GetData() ([]byte, error) {
-	client, err := routeros.Dial(R.Address, R.Username, R.Password)
+	conn, err := net.DialTimeout("tcp", R.Address, time.Second*10)
 	if err != nil {
 		return nil, err
 	}
+	client, _ := routeros.NewClient(conn)
 	defer client.Close()
+	err = client.Login(R.Username, R.Password)
+	if err != nil {
+		return nil, err
+	}
 	reply, err := client.Run("/routing/ospf/lsa/print", "detail", "?type=router")
 	if err != nil {
 		return nil, err
