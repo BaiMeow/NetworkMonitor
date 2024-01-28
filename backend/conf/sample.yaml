@@ -1,4 +1,5 @@
 interval: 60
+probeTimeout: 40
 port: 7878
 probe:
   R4:

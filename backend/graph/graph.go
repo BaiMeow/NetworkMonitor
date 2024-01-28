@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/BaiMeow/NetworkMonitor/conf"
 	"github.com/BaiMeow/NetworkMonitor/parse"
-	"github.com/BaiMeow/NetworkMonitor/utils"
 	"log"
 	"sync"
 	"time"
@@ -25,7 +24,7 @@ func Init() error {
 		probes = append(probes, p)
 	}
 	draw()
-	ticker := time.NewTicker(time.Second * time.Duration(conf.Interval))
+	ticker := time.NewTicker(conf.Interval)
 	go func() {
 		for {
 			select {
@@ -37,7 +36,7 @@ func Init() error {
 	conf.UpdateCallBack = func() {
 		probesLock.Lock()
 		defer probesLock.Unlock()
-		ticker.Reset(time.Duration(conf.Interval) * time.Second)
+		ticker.Reset(conf.Interval)
 		var tmp []*Probe
 		for _, probe := range conf.Probes {
 			p, err := NewProbe(probe)
@@ -63,15 +62,12 @@ func draw() {
 		p := p
 		go func() {
 			defer wg.Done()
-			t := time.Now()
-			var err error
-			timeout := utils.WithTimeout(func() {
-				err = p.DrawAndMerge(&drawing)
-			})
-			if timeout {
+			alert := time.AfterFunc(conf.ProbeTimeout, func() {
 				log.Printf("probe %s timeout but the goroutine is still running, a timeout should be added to the probe.\n", p.Name)
-				return
-			}
+			})
+			t := time.Now()
+			err := p.DrawAndMerge(&drawing)
+			alert.Stop()
 			dur := time.Since(t)
 			if dur > time.Second*5 {
 				log.Printf("probe %s slow draw: %v\n", p.Name, dur)
@@ -82,7 +78,17 @@ func draw() {
 		}()
 	}
 
-	wg.Wait()
+	select {
+	case <-time.After(conf.ProbeTimeout):
+	case <-func() <-chan struct{} {
+		done := make(chan struct{})
+		go func() {
+			wg.Wait()
+			close(done)
+		}()
+		return done
+	}():
+	}
 
 	OSPF = drawing.OSPF
 	BGP = drawing.BGP

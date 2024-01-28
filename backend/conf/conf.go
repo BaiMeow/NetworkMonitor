@@ -5,6 +5,7 @@ import (
 	"github.com/fsnotify/fsnotify"
 	"github.com/spf13/viper"
 	"log"
+	"time"
 )
 
 type Metadata struct {
@@ -13,7 +14,9 @@ type Metadata struct {
 
 var (
 	Probes         []Probe
-	Interval, Port int
+	Port           int
+	Interval       time.Duration
+	ProbeTimeout   time.Duration
 	UpdateCallBack func()
 )
 
@@ -62,7 +65,8 @@ func update() error {
 	}
 	Probes = tmp
 
-	Interval = viper.GetInt("interval")
+	Interval = time.Duration(viper.GetInt("interval")) * time.Second
+	ProbeTimeout = time.Duration(viper.GetInt("probeTimeout")) * time.Second
 
 	if UpdateCallBack != nil {
 		UpdateCallBack()
