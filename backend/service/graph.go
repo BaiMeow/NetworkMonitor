@@ -10,7 +10,7 @@ func GetOSPF(asn uint32) *parse.OSPF {
 }
 
 func GetBGP() *parse.BGP {
-	return &graph.BGP
+	return graph.BGP
 }
 
 func ListAvailable() []map[string]any {

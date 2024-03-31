@@ -10,7 +10,7 @@ import (
 )
 
 var OSPF map[uint32]*parse.OSPF
-var BGP parse.BGP
+var BGP *parse.BGP
 
 var probes []*Probe
 var probesLock sync.Mutex
@@ -91,5 +91,5 @@ func draw() {
 	}
 
 	OSPF = drawing.OSPF
-	BGP = drawing.BGP
+	BGP = &drawing.BGP
 }
