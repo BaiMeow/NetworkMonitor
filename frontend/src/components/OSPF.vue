@@ -7,7 +7,10 @@ import {getOSPF} from "../api/ospf";
 import {ASDataKey} from "../inject/key";
 import {ASData} from "../api/meta";
 
-import {ECElementEvent} from "echarts";
+import {ECElementEvent, ECharts} from "echarts";
+import { networkInterfaces } from "os";
+
+const echarts = ref<ECharts|null>();
 
 const props = defineProps<{
   asn: number;
@@ -40,6 +43,8 @@ interface Params<T> {
 const loading = ref(true);
 
 const asdata = inject(ASDataKey)?.value as ASData;
+
+const selectList = ref([] as Array<any>)
 
 const option: any = reactive({
   title: {
@@ -273,6 +278,17 @@ watchEffect(async () => {
     }
     option.title.subtext = `Nodes: ${nodes.length}  Peers: ${markedPeer.size / 2}`;
     loading.value = false;
+    selectList.value = nodes.map(n=>{return {
+      label:n.name,
+      value:n.value,
+      selectcb:()=>{
+        echarts.value?.dispatchAction({
+          type: 'highlight',
+          seriesIndex:0,
+          name: n.name
+        })
+      }
+    }})
   })
 })
 
@@ -298,9 +314,17 @@ const handle_mouse_up = (_: ECElementEvent) => {
   <div v-if="loading" class="graph loading">
     Loading...
   </div>
-  <v-chart :option="option" class="graph" autoresize @mousedown="handle_mouse_down" @mouseup="handle_mouse_up"/>
+  <v-chart ref="echarts" :option="option" class="graph" autoresize @mousedown="handle_mouse_down" @mouseup="handle_mouse_up"/>
+  <searchbar class="search-bar" :data="selectList"></searchbar>
 </template>
 <style scoped>
+.search-bar {
+    position: absolute;
+    top: 2vh;
+    right: 2vw;
+    width: 12rem;
+}
+
 .graph {
   width: 100vw;
   height: 100%;

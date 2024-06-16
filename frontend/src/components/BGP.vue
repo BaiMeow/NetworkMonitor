@@ -19,11 +19,15 @@ import { ASData } from "../api/meta";
 
 import { ASDataKey } from "../inject/key"
 
-const chart = ref<ECharts | null>(null)
+import { selectItem } from "./searchbar.vue"
+
+const echarts = ref<ECharts | null>();
 
 const loading = ref(true);
 
 const asdata = inject(ASDataKey)?.value;
+
+const selectList = ref([] as Array<selectItem>)
 
 interface Edge {
     source: string;
@@ -228,7 +232,7 @@ getBGP().then(async (resp) => {
         edges.push({
             source: cur.src.toString(),
             target: cur.dst.toString(),
-            value: 100 / Math.min(src.peer_num, dst.peer_num)+10,
+            value: 100 / Math.min(src.peer_num, dst.peer_num) + 10,
         });
         return edges;
     }, [] as Edge[]);
@@ -239,6 +243,24 @@ getBGP().then(async (resp) => {
     option.series[0].force.edgeLength[1] = nodes.length * 3.5;
     option.title.subtext = `Nodes: ${nodes.length} Peers: ${edges.length}`;
     loading.value = false;
+
+    selectList.value = nodes.map(n => {
+        return {
+            label: n.meta.display || n.name,
+            asn: n.value,
+            name: n.name,
+            display: n.meta.display,
+            network: n.network,
+            value: n.name,
+            selectcb: () => {
+                echarts.value?.dispatchAction({
+                    type: 'highlight',
+                    seriesIndex: 0,
+                    name: n.name
+                })
+            }
+        }
+    })
 });
 
 let timer: NodeJS.Timeout | null = null
@@ -263,11 +285,19 @@ const handle_mouse_up = (_: ECElementEvent) => {
     <div v-if="loading" class="graph loading">
         Loading...
     </div>
-    <v-chart ref="chart" :option="option" class="graph" autoresize @mousedown="handle_mouse_down"
+    <v-chart ref="echarts" :option="option" class="graph" autoresize @mousedown="handle_mouse_down"
         @mouseup="handle_mouse_up" />
+    <searchbar class="search-bar" :data="selectList"></searchbar>
 </template>
 
 <style scoped>
+.search-bar {
+    position: absolute;
+    top: 2vh;
+    right: 2vw;
+    width: 12rem;
+}
+
 .graph {
     height: 100dvh;
     width: 100vw;
