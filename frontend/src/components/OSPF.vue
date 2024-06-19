@@ -8,7 +8,6 @@ import {ASDataKey} from "../inject/key";
 import {ASData} from "../api/meta";
 
 import {ECElementEvent, ECharts} from "echarts";
-import { networkInterfaces } from "os";
 
 const echarts = ref<ECharts|null>();
 
