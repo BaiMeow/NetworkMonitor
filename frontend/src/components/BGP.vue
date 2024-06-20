@@ -252,9 +252,14 @@ getBGP().then(async (resp) => {
             display: n.meta.display,
             network: n.network,
             value: n.name,
-            selectcb: () => {
+            onselected: () => {
                 echarts.value?.dispatchAction({
                     type: 'highlight',
+                    seriesIndex: 0,
+                    name: n.name
+                })
+                echarts.value?.dispatchAction({
+                    type: 'showTip',
                     seriesIndex: 0,
                     name: n.name
                 })

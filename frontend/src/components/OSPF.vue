@@ -280,7 +280,7 @@ watchEffect(async () => {
     selectList.value = nodes.map(n=>{return {
       label:n.name,
       value:n.value,
-      selectcb:()=>{
+      onselected:()=>{
         echarts.value?.dispatchAction({
           type: 'highlight',
           seriesIndex:0,
