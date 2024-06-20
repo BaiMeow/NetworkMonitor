@@ -38,7 +38,15 @@ function search(val: string) {
   options.value = props.data.filter((v) => {
     return v.label.toLowerCase().includes(val.toLowerCase()) || v.value.toLowerCase().includes(val.toLowerCase()) || v.network?.some((n) => n.includes(val)) || (() => {
       try {
+        const nums = val.split('.')
+        if (nums.length !== 4) {
+          for (let i = nums.length; i < 4; i++) {
+            nums.push('0')
+          }
+          val = nums.join('.')
+        }
         const sr = new Netmask(val)
+        console.log(sr)
         return v.network?.some((n) => new Netmask(n).contains(sr.base))
       } catch {
         return false
