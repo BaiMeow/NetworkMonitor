@@ -250,7 +250,8 @@ getBGP().then(async (resp) => {
             asn: n.value,
             name: n.name,
             display: n.meta.display,
-            network: n.network,
+            network: [...n.network,
+                 ...(asdata?.announcements.assigned.filter((a) => a.asn === n.name).map((a) => a.prefix) || [])],
             value: n.name,
             onselected: () => {
                 echarts.value?.dispatchAction({

@@ -32,7 +32,6 @@ const onchange = (value: string) => {
 function search(val: string) {
   if (!val) {
     options.value = props.data
-    console.log(options.value)
     return
   }
   options.value = props.data.filter((v) => {
@@ -43,10 +42,8 @@ function search(val: string) {
           for (let i = nums.length; i < 4; i++) {
             nums.push('0')
           }
-          val = nums.join('.')
         }
-        const sr = new Netmask(val)
-        console.log(sr)
+        const sr = new Netmask(nums.join('.'))
         return v.network?.some((n) => new Netmask(n).contains(sr.base))
       } catch {
         return false
