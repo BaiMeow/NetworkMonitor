@@ -5,6 +5,7 @@ import { getList } from "./api/list";
 import { ASData, loadASData } from "./api/meta";
 import { provide, ref, reactive } from "vue"
 import { ASDataKey } from "./inject/key"
+import { type } from "os";
 
 const asn = ref(0);
 const graph_type = ref('');
@@ -65,34 +66,41 @@ const handle_select = (idx: string) => {
   graph_list[+idx].enable()
 }
 
-loadASData().then((data) => {
-  if (!data) {
+(async()=>{
+  const data = await loadASData();
+  if (!data){
     alert("no metadata");
     return;
   }
-  asdata.value = data;
-}).then(() => {
-  getList().then((list) => {
-    list.forEach(async (graph) => {
-      switch (graph.type) {
-        case "bgp":
-          graph_list.push(new bgp())
-          break
-        case "ospf":
-          const gr = new ospf(graph.asn);
-          gr.init()
-          graph_list.push(gr)
-          break
-      }
-    })
-    if (graph_list.length !== 0) {
-      graph_list[0]?.enable()
-    } else {
-      alert("no data");
+  asdata.value = data
+  const list = await getList();
+  
+  list.forEach(async (graph) => {
+    switch (graph.type) {
+      case "bgp":
+        graph_list.push(new bgp())
+        break
+      case "ospf":
+        const gr = new ospf(graph.asn);
+        gr.init()
+        graph_list.push(gr)
+        break
     }
-    dataReady.value = true;
   })
-})
+
+  graph_list.sort((a, b) => {
+    if (a instanceof ospf && b instanceof bgp) return 1;
+    if (b instanceof bgp && a instanceof ospf) return -1;
+    return a.display().localeCompare(b.display());
+  })
+
+  if (graph_list.length !== 0) {
+    graph_list[0]?.enable()
+  } else {
+    alert("no data");
+  }
+  dataReady.value = true;
+})();
 </script>
 <template>
   <div class="aside">
