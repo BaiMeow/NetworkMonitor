@@ -5,7 +5,6 @@ import { getList } from "./api/list";
 import { ASData, loadASData } from "./api/meta";
 import { provide, ref, reactive } from "vue"
 import { ASDataKey } from "./inject/key"
-import { type } from "os";
 
 const asn = ref(0);
 const graph_type = ref('');
