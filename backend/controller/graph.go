@@ -1,7 +1,7 @@
 package controller
 
 import (
-	"github.com/BaiMeow/NetworkMonitor/service"
+	"github.com/BaiMeow/NetworkMonitor/service/graph"
 	"github.com/gin-gonic/gin"
 	"strconv"
 )
@@ -16,7 +16,7 @@ func OSPF(c *gin.Context) {
 		})
 		return
 	}
-	gh := service.GetOSPF(uint32(parseUint))
+	gh := graph.GetOSPF(uint32(parseUint))
 	c.JSON(200, Resp{
 		Code: 0,
 		Msg:  "ok",
@@ -25,7 +25,7 @@ func OSPF(c *gin.Context) {
 }
 
 func BGP(c *gin.Context) {
-	gh := service.GetBGP()
+	gh := graph.GetBGP()
 	c.JSON(200, Resp{
 		Code: 0,
 		Msg:  "ok",
@@ -34,7 +34,7 @@ func BGP(c *gin.Context) {
 }
 
 func List(c *gin.Context) {
-	ls := service.ListAvailable()
+	ls := graph.ListAvailable()
 	c.JSON(200, Resp{
 		Code: 0,
 		Msg:  "ok",

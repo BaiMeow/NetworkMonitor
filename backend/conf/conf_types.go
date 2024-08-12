@@ -1,5 +1,7 @@
 package conf
 
+import "time"
+
 type Probe struct {
 	Name  string
 	Parse Parser
@@ -16,4 +18,9 @@ type Fetcher map[string]any
 
 func (f Fetcher) Type() string {
 	return f["type"].(string)
+}
+
+type UptimeCfg struct {
+	StoreDuration time.Duration
+	Interval      time.Duration
 }

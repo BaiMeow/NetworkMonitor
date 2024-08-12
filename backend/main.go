@@ -1,6 +1,8 @@
 package main
 
 import (
+	"github.com/BaiMeow/NetworkMonitor/db"
+	"github.com/BaiMeow/NetworkMonitor/service/uptime"
 	"log"
 	"net/http"
 	"path"
@@ -27,19 +29,28 @@ func main() {
 		log.Fatalf("init config fail:%v", err)
 	}
 
+	log.Println("init db")
+	if err := db.Init(); err != nil {
+		log.Fatalf("init db fail:%v", err)
+	}
+
 	log.Println("init graph")
 	if err := graph.Init(); err != nil {
 		log.Fatalf("init graph fail:%v", err)
 	}
 
+	log.Println("init uptime")
+	uptime.Init()
+
 	log.Println("run web")
 	r := gin.Default()
 	r.Use(middleware.Cors())
-	r.StaticFS("/assets/", &staticRouter{"/static/assets"})
 	r.GET("/api/ospf/:asn", controller.OSPF)
+	r.GET("/api/ospf/uptime/:routerId/recent", controller.OSPFRecentUptime)
 	r.GET("/api/bgp", controller.BGP)
+	r.GET("/api/bgp/uptime/:asn/recent", controller.BGPRecentUptime)
 	r.GET("/api/list", controller.List)
-	r.StaticFileFS("/", "/", &staticRouter{"/static"})
+	r.StaticFS("/assets/", &staticRouter{"/static/assets"})
 	r.StaticFileFS("/avatar.png", "/static/avatar.png", http.FS(FS))
 	err := r.Run(":" + strconv.Itoa(conf.Port))
 	if err != nil {
