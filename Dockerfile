@@ -8,7 +8,7 @@ RUN npm install -g pnpm
 
 RUN pnpm install --force && pnpm run build
 
-FROM golang:1.20 as builder
+FROM golang:1.22 as builder
 
 COPY backend /app
 
