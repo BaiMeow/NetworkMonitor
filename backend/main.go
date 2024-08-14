@@ -1,12 +1,13 @@
 package main
 
 import (
-	"github.com/BaiMeow/NetworkMonitor/db"
-	"github.com/BaiMeow/NetworkMonitor/service/uptime"
 	"log"
 	"net/http"
 	"path"
 	"strconv"
+
+	"github.com/BaiMeow/NetworkMonitor/db"
+	"github.com/BaiMeow/NetworkMonitor/service/uptime"
 
 	"github.com/BaiMeow/NetworkMonitor/conf"
 	"github.com/BaiMeow/NetworkMonitor/controller"
@@ -52,6 +53,7 @@ func main() {
 	r.GET("/api/list", controller.List)
 	r.StaticFS("/assets/", &staticRouter{"/static/assets"})
 	r.StaticFileFS("/avatar.png", "/static/avatar.png", http.FS(FS))
+	r.StaticFileFS("/", "/", &staticRouter{"/static"})
 	err := r.Run(":" + strconv.Itoa(conf.Port))
 	if err != nil {
 		log.Fatalln(err)
