@@ -5,8 +5,8 @@ import (
 )
 
 type AS struct {
-	ASN     uint32         `json:"asn,omitempty"`
-	Network []netip.Prefix `json:"network,omitempty"`
+	ASN     uint32         `json:"asn"`
+	Network []netip.Prefix `json:"network"`
 }
 
 func newAS(asn uint32) *AS {
