@@ -5,6 +5,7 @@ import (
 	"github.com/BaiMeow/NetworkMonitor/parse"
 	"github.com/BaiMeow/NetworkMonitor/service/uptime"
 	"log"
+	"net/netip"
 	"slices"
 )
 
@@ -41,7 +42,7 @@ func GetBGP() *parse.BGP {
 				return 0
 			}
 		}); !found {
-			addon = append(addon, &parse.AS{ASN: as})
+			addon = append(addon, &parse.AS{ASN: as, Network: []netip.Prefix{}})
 		}
 	}
 
