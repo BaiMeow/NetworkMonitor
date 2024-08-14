@@ -56,10 +56,11 @@ function search(val: string) {
 
 <template>
   <div style="display:flex;align-items: center">
-    <el-icon color="#409EFF" style="margin-right:.5rem">
+    <el-icon color="--el-color-primary" style="margin-right:.5rem">
       <i-ep-search />
     </el-icon>
-    <el-select v-model="input" @blur="input=''" filterable placeholder="Search" @change="onchange" :filter-method="search">
+    <el-select v-model="input" @blur="input=''" filterable placeholder="Search" @change="onchange"
+      :filter-method="search">
       <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value">
         <span style="float: left;width:40%;margin-right:1rem">{{ item.label }}</span>
         <span v-if="item.label !== item.value" style="

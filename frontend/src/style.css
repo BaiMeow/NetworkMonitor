@@ -30,3 +30,12 @@ html body {
 .unassigned-net{
     color: #138385;
 }
+
+.app{
+    background-color: #eceff1;
+    height: 100vh;
+}
+
+:root {
+  --el-color-primary: green;
+}

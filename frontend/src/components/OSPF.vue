@@ -96,6 +96,9 @@ const option: any = reactive({
       label: {
         show: true,
         position: "right",
+        color: 'inherit',
+        fontWeight: 1000,
+        fontFamily: 'Microsoft YaHei',
         formatter: (params: any) => {
           if (params.data.meta && params.data.meta.name) {
             return params.data.meta.name;

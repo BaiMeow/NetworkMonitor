@@ -135,6 +135,12 @@ const option: any = reactive({
         type: "graph",
         symbolSize: 50,
         layout: "force",
+        lineStyle: {
+            color: 'source',
+            opacity : .4,
+            width: .5,
+            curveness: .1
+        },
         force: {
             repulsion: 500,
             gravity: 0.3,
@@ -146,6 +152,9 @@ const option: any = reactive({
         label: {
             show: true,
             position: "right",
+            color: 'inherit',
+            fontWeight: 1000,
+            fontFamily: 'Microsoft YaHei',
             formatter: (params: any) => {
                 if (params.data.meta && params.data.meta.display) {
                     return params.data.meta.display;
@@ -153,10 +162,8 @@ const option: any = reactive({
                 return params.data.name;
             },
         },
-        itemStyle: {
-            borderColor: "#000000",
-            borderWidth: 0.4,
-            shadowColor: "#2242a3",
+        labelLayout: {
+            hideOverlap: true
         },
         draggable: true,
         data: [],
@@ -213,9 +220,6 @@ getBGP().then(async (resp) => {
         }).length;
         node.value = '' + node.peer_num;
         node.symbolSize = Math.pow(node.peer_num + 3, 1 / 2) * 7;
-        node.itemStyle = {
-            shadowBlur: Math.pow(node.peer_num + 3, 1 / 2) * 2,
-        }
         if (asdata && asdata.metadata && node.name in asdata?.metadata) {
             const customNode = asdata.metadata[node.name].monitor?.customNode
             if (customNode) {
@@ -242,6 +246,9 @@ getBGP().then(async (resp) => {
         return edges;
     }, [] as Edge[]);
 
+    option.legend = {
+        data: nodes.map((node) => node.name),
+    };
     option.series[0].data = [] as Node[];
     option.series[0].data.push(...nodes);
     option.series[0].links = edges;
