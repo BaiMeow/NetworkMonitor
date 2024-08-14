@@ -10,6 +10,7 @@ import {
 import { reactive, inject, ref } from "vue";
 
 import VChart from "vue-echarts";
+
 import { ECElementEvent, ECharts } from "echarts";
 import { Netmask } from "netmask";
 
@@ -44,6 +45,7 @@ interface Node {
     meta?: any;
     peer_num: number;
     symbolSize?: number;
+    symbol?: string;
     network: string[];
     itemStyle?: any;
 }
@@ -135,7 +137,7 @@ const option: any = reactive({
         layout: "force",
         force: {
             repulsion: 500,
-            gravity: 0.02,
+            gravity: 0.3,
             friction: 1,
             edgeLength: [10, 140],
             layoutAnimation: false
@@ -210,9 +212,9 @@ getBGP().then(async (resp) => {
             return lk.src === parseInt(node.name) || lk.dst === parseInt(node.name);
         }).length;
         node.value = '' + node.peer_num;
-        node.symbolSize = Math.pow(node.peer_num, 1 / 2) * 7;
+        node.symbolSize = Math.pow(node.peer_num + 3, 1 / 2) * 7;
         node.itemStyle = {
-            shadowBlur: Math.pow(node.peer_num, 1 / 2) * 2,
+            shadowBlur: Math.pow(node.peer_num + 3, 1 / 2) * 2,
         }
         if (asdata && asdata.metadata && node.name in asdata?.metadata) {
             const customNode = asdata.metadata[node.name].monitor?.customNode
@@ -220,6 +222,9 @@ getBGP().then(async (resp) => {
                 mergeObjects(node, asdata.metadata[node.name].monitor?.customNode)
             }
             node.meta = asdata.metadata[node.name];
+        }
+        if (node.peer_num === 0) {
+            node.symbol = "path://M255.633,0C145.341,0.198,55.994,89.667,55.994,200.006v278.66c0,14.849,17.953,22.285,28.453,11.786l38.216-39.328 l54.883,55.994c6.51,6.509,17.063,6.509,23.572,0L256,451.124l54.883,55.994c6.509,6.509,17.062,6.509,23.571,0l54.884-55.994 l38.216,39.327c10.499,10.499,28.453,3.063,28.453-11.786V201.719C456.006,91.512,365.84-0.197,255.633,0z M172.664,266.674 c-27.572,0-50.001-22.429-50.001-50.001s22.43-50.001,50.001-50.001s50.001,22.43,50.001,50.001S200.236,266.674,172.664,266.674z M339.336,266.674c-27.572,0-50.001-22.429-50.001-50.001s22.43-50.001,50.001-50.001s50.001,22.43,50.001,50.001 S366.908,266.674,339.336,266.674z"
         }
     })
 
@@ -251,7 +256,7 @@ getBGP().then(async (resp) => {
             name: n.name,
             display: n.meta.display,
             network: [...n.network,
-                 ...(asdata?.announcements.assigned.filter((a) => a.asn === n.name).map((a) => a.prefix) || [])],
+            ...(asdata?.announcements.assigned.filter((a) => a.asn === n.name).map((a) => a.prefix) || [])],
             value: n.name,
             onselected: () => {
                 echarts.value?.dispatchAction({
