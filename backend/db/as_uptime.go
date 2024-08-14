@@ -22,7 +22,7 @@ func BatchRecordASUp(ASNs []uint32, t time.Time) error {
 
 func AllASRecordAfter(after time.Time) ([]uint32, error) {
 	var asns []uint32
-	if tx := db.Model(&ASUp{}).Select("asn").Distinct("asn").Where("create_at > ?", after).Find(&asns); tx.Error != nil {
+	if tx := db.Model(&ASUp{}).Select("asn").Distinct("asn").Where("created_at > ?", after).Find(&asns); tx.Error != nil {
 		log.Printf("get all recorded as fail:%v\n", tx.Error)
 		return nil, ErrDatabase
 	}
