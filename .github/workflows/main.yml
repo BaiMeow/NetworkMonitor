@@ -12,7 +12,7 @@ env:
   IMAGE_BASE: 'registry.cn-shanghai.aliyuncs.com'
 
 jobs:
-  front-build:
+  build:
     if: github.repository == 'BaiMeow/NetworkMonitor'
     runs-on: ubuntu-latest
     steps:
@@ -37,29 +37,9 @@ jobs:
           pnpm install
           pnpm run build
 
-      - name: Archive production artifacts
-        uses: actions/upload-artifact@v2
-        with:
-          name: frontend
-          path: backend/static
-
-  build:
-    needs: front-build
-    runs-on: ubuntu-latest
-     
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
       - name: Gen tag
         id: gen-tag
         run: echo "tag=$(date +%s)" >> $GITHUB_OUTPUT
-      
-      - name: Fetch frontend artifacts
-        uses: actions/download-artifact@v2
-        with:
-          name: frontend
-          path: backend/static
 
       - name: Setup Golang
         uses: actions/setup-go@v5
@@ -82,7 +62,7 @@ jobs:
           docker push ${{ env.IMAGE_BASE }}/${{ env.IMAGE_REPO }}:${{ steps.gen-tag.outputs.tag }}
         
       - name: Checkout ArgoCD
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4
         with:
           repository: BaiMeow/argocd
           token: ${{ secrets.GH_PAT }} # `GH_PAT` is a secret that contains your PAT
