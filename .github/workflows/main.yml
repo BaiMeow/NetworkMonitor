@@ -19,9 +19,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Switch to front directory
-        run: cd frontend
-
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
@@ -33,18 +30,17 @@ jobs:
           node-version: '18'
           cache: 'pnpm'
 
-      - name: Install dependencies
+      - name: Install dependencies and build
         run: |
+          cd frontend
           pnpm install
-
-      - name: Build
-        run: pnpm run build
+          pnpm run build
 
       - name: Archive production artifacts
         uses: actions/upload-artifact@v2
         with:
           name: frontend
-          path: ../backend/static
+          path: backend/static
 
   build:
     needs: front-build
@@ -57,26 +53,22 @@ jobs:
       - name: Gen tag
         id: gen-tag
         run: echo "tag=$(date +%s)" >> $GITHUB_OUTPUT
-
-      - name: Switch to backend directory
-        run: cd backend
       
       - name: Fetch frontend artifacts
         uses: actions/download-artifact@v2
         with:
           name: frontend
-          path: static
+          path: backend/static
 
       - name: Setup Golang
         uses: actions/setup-go@v5
         with:
-          go-version-file: 'go.mod'
+          go-version-file: 'backend/go.mod'
 
       - name: Build
-        run: go build -o main
-
-      - name: Switch to root directory
-        run: cd ..
+        run: |
+          cd backend
+          go build . -o main
 
       - name: Build the Docker image
         run: |
