@@ -12,21 +12,70 @@ env:
   IMAGE_BASE: 'registry.cn-shanghai.aliyuncs.com'
 
 jobs:
-  build:
+  front-build:
     if: github.repository == 'BaiMeow/NetworkMonitor'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Switch to front directory
+        run: cd front
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: |
+          pnpm install
+
+      - name: Build
+        run: pnpm run build
+
+      - name: Archive production artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: frontend
+          path: ../backend/static
+
+  build:
+    needs: front-build
     runs-on: ubuntu-latest
      
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Gen tag
         id: gen-tag
         run: echo "tag=$(date +%s)" >> $GITHUB_OUTPUT
+
+      - name: Switch to backend directory
+        run: cd backend
       
+      - name: Fetch frontend artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: frontend
+          path: static
+
+      - name: Setup Golang
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: 'go.mod'
+
+      - name: Build
+        run: go build -o main
+
+      - name: Switch to root directory
+        run: cd ..
+
       - name: Build the Docker image
         run: |
-          docker build . --tag ${{ env.IMAGE_BASE }}/${{ env.IMAGE_REPO }}:${{ steps.gen-tag.outputs.tag }}
+          docker build . -f Dockerfile.actions --tag ${{ env.IMAGE_BASE }}/${{ env.IMAGE_REPO }}:${{ steps.gen-tag.outputs.tag }}
 
       - name: Push the Docker image
         timeout-minutes: 3
@@ -35,7 +84,7 @@ jobs:
           docker push ${{ env.IMAGE_BASE }}/${{ env.IMAGE_REPO }}:${{ steps.gen-tag.outputs.tag }}
         
       - name: Checkout ArgoCD
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: BaiMeow/argocd
           token: ${{ secrets.GH_PAT }} # `GH_PAT` is a secret that contains your PAT
