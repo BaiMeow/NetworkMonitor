@@ -50,7 +50,7 @@ jobs:
       - name: Build
         run: |
           cd backend
-          go build . -o main
+          go build -o main
 
       - name: Build the Docker image
         run: |
