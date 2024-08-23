@@ -25,9 +25,10 @@ func Last10TickerRecord(asn uint32) ([]bool, error) {
 	}
 	up := make([]bool, 10)
 	for _, record := range records {
-		offset := record.Sub(last) / conf.Uptime.Interval
+		offset := last.Sub(record) / conf.Uptime.Interval
 		if offset >= 10 || offset < 0 {
 			log.Printf("record time wrong:%v, last:%v, offset:%v asn:%v", record, last, offset, asn)
+			continue
 		}
 		up[offset] = true
 	}

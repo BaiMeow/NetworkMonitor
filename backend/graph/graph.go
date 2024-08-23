@@ -54,6 +54,7 @@ func draw() {
 	var wg sync.WaitGroup
 	var drawing parse.Drawing
 	drawing.OSPF = make(map[uint32]*parse.OSPF)
+	drawing.BGP = &parse.BGP{}
 
 	probesLock.Lock()
 	defer probesLock.Unlock()
@@ -91,5 +92,5 @@ func draw() {
 	}
 
 	OSPF = drawing.OSPF
-	BGP = &drawing.BGP
+	BGP = drawing.BGP
 }

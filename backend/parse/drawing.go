@@ -4,6 +4,6 @@ import "sync"
 
 type Drawing struct {
 	OSPF map[uint32]*OSPF
-	BGP  BGP
+	BGP  *BGP
 	sync.Mutex
 }

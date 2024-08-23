@@ -6,9 +6,9 @@ import (
 )
 
 func LastUptimeTick() time.Time {
-	t := time.Now().Add(-conf.Uptime.StoreDuration)
-	t.Add(-time.Duration(t.Second()) * time.Second)
-	t.Add(-time.Duration(t.Nanosecond()))
+	t := time.Now().Add(-conf.Uptime.Interval)
+	t = t.Add(-time.Duration(t.Second()) * time.Second)
+	t = t.Add(-time.Duration(t.Nanosecond()))
 	return t
 }
 

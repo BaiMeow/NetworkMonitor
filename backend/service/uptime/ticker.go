@@ -13,7 +13,6 @@ import (
 
 func Init() {
 	go tickerInsertDB()
-	go tickerCleanDB()
 }
 
 func tickerInsertDB() {
@@ -35,17 +34,6 @@ func tickerInsertDB() {
 		log.Println("record as up")
 		if err != nil {
 			log.Println(fmt.Errorf("record as up fail:%v", err))
-		}
-	}
-}
-
-func tickerCleanDB() {
-	tk := time.NewTicker(time.Hour)
-	for {
-		<-tk.C
-		err := db.CleanASUptimeBefore(time.Now().Add(-conf.Uptime.StoreDuration))
-		if err != nil {
-			fmt.Println(fmt.Errorf("clean by time fail:%v", err))
 		}
 	}
 }

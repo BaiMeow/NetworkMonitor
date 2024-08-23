@@ -18,7 +18,11 @@ var (
 		// Interval for uptime is statically set to
 		Interval: time.Minute,
 	}
-	DSN            string
+	Influxdb struct {
+		Addr  string
+		Token string
+		Org   string
+	}
 	Probes         []Probe
 	Port           int
 	Interval       time.Duration
@@ -48,7 +52,9 @@ func Init() error {
 		return err
 	}
 	Port = viper.GetInt("port")
-	DSN = viper.GetString("dsn")
+	Influxdb.Addr = viper.GetString("influxdb.addr")
+	Influxdb.Token = viper.GetString("influxdb.token")
+	Influxdb.Org = viper.GetString("influxdb.org")
 
 	return update()
 }
