@@ -329,7 +329,7 @@ const refreshData = async () => {
 refreshData();
 setInterval(() => {
     refreshData();
-}, 1000);
+}, 60*1000);
 
 let timer: NodeJS.Timeout | null = null
 
