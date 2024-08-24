@@ -266,12 +266,20 @@ const refreshData = async () => {
             i--;
         }
     }
-    // remove not existed nodes
+    // refresh nodes
     for (let i = 0; i < option.series[0].data.length; i++) {
-        if (nodes.findIndex((node) => node.name === option.series[0].data[i].name) === -1) {
+        const idx = nodes.findIndex((node) => node.name === option.series[0].data[i].name)
+        if (idx === -1) {
             setLoadingOnce()
             option.series[0].data.splice(i, 1);
             i--;
+            continue;
+        }
+        if (option.series[0].data[i].peer_num !== nodes[idx].peer_num 
+            || option.series[0].data[i].network.join('|') !== nodes[idx].network.join('|')
+        ) {
+            setLoadingOnce()
+            option.series[0].data[i] = nodes[idx];
         }
     }
     // add new nodes
@@ -321,7 +329,7 @@ const refreshData = async () => {
 refreshData();
 setInterval(() => {
     refreshData();
-}, 60*1000);
+}, 1000);
 
 let timer: NodeJS.Timeout | null = null
 
