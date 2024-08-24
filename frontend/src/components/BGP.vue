@@ -247,14 +247,14 @@ const refreshData = async () => {
         return edges;
     }, [] as Edge[]);
 
-    const setLoadingOnce = (()=>{
+    const setLoadingOnce = (() => {
         let once = false;
-        return ()=>{
+        return () => {
             if (once) return;
             once = true
             loading.value = true;
             option.series[0].force.friction = 1;
-            return 
+            return
         }
     })()
 
@@ -275,7 +275,7 @@ const refreshData = async () => {
             i--;
             continue;
         }
-        if (option.series[0].data[i].peer_num !== nodes[idx].peer_num 
+        if (option.series[0].data[i].peer_num !== nodes[idx].peer_num
             || option.series[0].data[i].network.join('|') !== nodes[idx].network.join('|')
         ) {
             setLoadingOnce()
@@ -284,21 +284,21 @@ const refreshData = async () => {
     }
     // add new nodes
     for (let i = 0; i < nodes.length; i++) {
-        if (option.series[0].data.findIndex((node:Node) => node.name === nodes[i].name) === -1) {
+        if (option.series[0].data.findIndex((node: Node) => node.name === nodes[i].name) === -1) {
             setLoadingOnce()
             option.series[0].data.push(nodes[i]);
         }
     }
     // add new edges
     for (let i = 0; i < edges.length; i++) {
-        if (option.series[0].links.findIndex((edge:Edge) => edge.source === edges[i].source && edge.target === edges[i].target) === -1) {
+        if (option.series[0].links.findIndex((edge: Edge) => edge.source === edges[i].source && edge.target === edges[i].target) === -1) {
             setLoadingOnce()
             option.series[0].links.push(edges[i]);
         }
     }
 
     option.series[0].force.edgeLength[1] = nodes.length * 3.5;
-    option.title.subtext = `Nodes: ${nodes.length} Peers: ${edges.length}`;
+    option.title.subtext = `Nodes: ${nodes.reduce((p, c) => p + (c.peer_num === 0 ? 0 : 1), 0)} Peers: ${edges.length}`;
     option.series[0].force.friction = 0.15;
     loading.value = false;
     selectList.value = nodes.map(n => {
@@ -329,7 +329,7 @@ const refreshData = async () => {
 refreshData();
 setInterval(() => {
     refreshData();
-}, 60*1000);
+}, 60 * 1000);
 
 let timer: NodeJS.Timeout | null = null
 
