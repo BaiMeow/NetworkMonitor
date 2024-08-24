@@ -1,5 +1,4 @@
 <script lang="ts" setup>
-import "echarts";
 import {inject, reactive, ref, watchEffect} from "vue";
 
 import VChart from "vue-echarts";

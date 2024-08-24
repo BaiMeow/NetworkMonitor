@@ -1,9 +1,8 @@
 import { createApp } from "vue";
 import "./style.css";
 import App from "./App.vue";
-import ElementPlus from "element-plus";
 
-createApp(App).use(ElementPlus).mount("#app");
+createApp(App).mount("#app");
 
 // document.documentElement 是全局变量时
 const el = document.documentElement;
