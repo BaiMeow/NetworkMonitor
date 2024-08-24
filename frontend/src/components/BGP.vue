@@ -137,7 +137,7 @@ const option: any = reactive({
         layout: "force",
         lineStyle: {
             color: 'source',
-            opacity : .4,
+            opacity: .4,
             width: .5,
             curveness: .1
         },
@@ -177,7 +177,8 @@ const option: any = reactive({
     }],
 });
 
-getBGP().then(async (resp) => {
+const refreshData = async () => {
+    const resp = await getBGP();
     if (!resp.as) {
         alert("no data")
         return
@@ -246,22 +247,58 @@ getBGP().then(async (resp) => {
         return edges;
     }, [] as Edge[]);
 
-    option.legend = {
-        data: nodes.map((node) => node.name),
-    };
-    option.series[0].data = [] as Node[];
-    option.series[0].data.push(...nodes);
-    option.series[0].links = edges;
+    const setLoadingOnce = (()=>{
+        let once = false;
+        return ()=>{
+            if (once) return;
+            once = true
+            loading.value = true;
+            option.series[0].force.friction = 1;
+            return 
+        }
+    })()
+
+    // remove not existed edges
+    for (let i = 0; i < option.series[0].links.length; i++) {
+        if (edges.findIndex((edge) => edge.source === option.series[0].links[i].source && edge.target === option.series[0].links[i].target) === -1) {
+            setLoadingOnce()
+            option.series[0].links.splice(i, 1);
+            i--;
+        }
+    }
+    // remove not existed nodes
+    for (let i = 0; i < option.series[0].data.length; i++) {
+        if (nodes.findIndex((node) => node.name === option.series[0].data[i].name) === -1) {
+            setLoadingOnce()
+            option.series[0].data.splice(i, 1);
+            i--;
+        }
+    }
+    // add new nodes
+    for (let i = 0; i < nodes.length; i++) {
+        if (option.series[0].data.findIndex((node:Node) => node.name === nodes[i].name) === -1) {
+            setLoadingOnce()
+            option.series[0].data.push(nodes[i]);
+        }
+    }
+    // add new edges
+    for (let i = 0; i < edges.length; i++) {
+        if (option.series[0].links.findIndex((edge:Edge) => edge.source === edges[i].source && edge.target === edges[i].target) === -1) {
+            setLoadingOnce()
+            option.series[0].links.push(edges[i]);
+        }
+    }
+
     option.series[0].force.edgeLength[1] = nodes.length * 3.5;
     option.title.subtext = `Nodes: ${nodes.length} Peers: ${edges.length}`;
+    option.series[0].force.friction = 0.15;
     loading.value = false;
-
     selectList.value = nodes.map(n => {
         return {
-            label: n.meta.display || n.name,
+            label: n.meta?.display || n.name,
             asn: n.value,
             name: n.name,
-            display: n.meta.display,
+            display: n.meta?.display || n.name,
             network: [...n.network,
             ...(asdata?.announcements.assigned.filter((a) => a.asn === n.name).map((a) => a.prefix) || [])],
             value: n.name,
@@ -279,7 +316,12 @@ getBGP().then(async (resp) => {
             }
         }
     })
-});
+}
+
+refreshData();
+setInterval(() => {
+    refreshData();
+}, 60*1000);
 
 let timer: NodeJS.Timeout | null = null
 
