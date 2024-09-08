@@ -14,6 +14,7 @@ import { ECElementEvent, ECharts } from "echarts";
 import { getOSPF } from "../api/ospf";
 import { ASDataKey } from "../inject/key";
 import { ASData } from "../api/meta";
+import { link } from "fs";
 
 use([
   CanvasRenderer,
@@ -162,9 +163,10 @@ watchEffect(async () => {
       return nodes;
     }, [] as Node[]);
 
+    console.log(areas)
     const all_links = areas.flatMap(
       area => area.links
-    );
+    ).filter(link => link !== undefined)
 
     const all_routers = areas.reduce(
       (routers, cur) => {
@@ -189,7 +191,7 @@ watchEffect(async () => {
           max: Math.max(max, cur.cost),
         };
       },
-      { min: all_links[0].cost, max: all_links[0].cost }
+      { min: all_links[0]?.cost, max: all_links[0]?.cost }
     );
 
     nodes.forEach((node) => {
@@ -201,7 +203,7 @@ watchEffect(async () => {
         }
         return false;
       }).length;
-      node.symbolSize = Math.pow(node.peer_num, 1 / 2) * 7;
+      node.symbolSize = Math.pow(node.peer_num + 3, 1 / 2) * 7;
     });
 
     let edges: Edge[] = [];
