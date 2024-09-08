@@ -1,23 +1,83 @@
 interval: 60
-probeTimeout: 40
-port: 7878
+probeTimeout: 60
+port: 8787
+# begin uptime
+# if you don't want to use influxdb to record uptime, just left addr empty
+influxdb:
+  addr: 'http://influxdb:8086'
+  org: 'network-monitor'
+  token: 'token'
+uptime:
+  store-duration: '168h'
+# end uptime
+
+# redirect metadata to another url
+metadataRedirect: ""
+
 probe:
-  R4:
+  # bgp mtr sftp
+  bgp-all:
+    fetch:
+      type: sftp
+      host: "1.1.1.1"
+      port: 22
+      user: "username"
+      password: "password"
+      # go template supported
+      filepath: "/var/log/bird/{{- (Now.Add (Second -60)).Format \"01-02-2006-15-04\"}}.mrt"
+      # for peer checking, not your privateKey, optional
+      public-key: "public-key"
+    parse:
+      type: mrt-addpath
+  # OSPF bird ssh
+  AS1:
     fetch:
       type: "ssh"
-      host: "10.17.4.1"
+      host: "1.1.1.1"
       port: 22
       user: "root"
-      password: "root"
+      password: "password"
       command: "birdc show ospf state all"
     parse:
-      type: "bird"
-  local:
+      type: bird-ospf
+      # if you don't have BGP ASN, use random number 
+      asn: 4222222222
+  # OSPF bird bird-lg-go
+  AS2:
     fetch:
-      type: "command"
-      cmd: "birdc show ospf state all"
+      type: "bird-lg-go"
+      api: "https://url/api/"
+      server: she
+      req-type: bird
+      args: "show ospf state all op_ospf_0"
     parse:
-      type: "bird"
-tag:
-  10.17.4.1:
-    name: "R4"
+      type: bird-ospf
+      asn: 4222222223
+  # OSPF bird http
+  AS3:
+    fetch:
+      type: "http"
+      url:  "http://endpoint"
+      method: "GET"
+    parse:
+      type: bird-ospf
+      asn: 4222222224
+  # OSPF ros ros
+  AS4:
+    fetch:
+      type: ros
+      Address: "ip:port"
+      Username: "Username"
+      Password: "Password"
+    parse:
+      type: ros-ospf
+      asn: 4222222225
+  # OSPF bird cmd
+  # not recommended
+  AS5:
+    fetch:
+      type: cmd
+      command: "birdc show ospf state all"
+    parse:
+      type: bird-ospf
+      asn: 4222222226

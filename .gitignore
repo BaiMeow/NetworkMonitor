@@ -26,3 +26,4 @@ go.work
 backend/config.yaml
 docker-compose.yml
 backend/static
+backend/monitor-metadata.json
