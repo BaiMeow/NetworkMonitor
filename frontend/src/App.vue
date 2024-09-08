@@ -23,7 +23,7 @@ const click_fold = () => {
   }
 }
 
-const asdata = ref({} as ASData);
+const asdata = ref({} as ASData | null);
 provide(ASDataKey, asdata);
 
 class bgp {
@@ -42,7 +42,7 @@ class ospf {
     this.asn = asn;
   }
   async init() {
-    this.name = asdata.value.metadata[this.asn].display;
+    this.name = asdata.value?.metadata?.[this.asn + ""]?.display || ""
   }
   enable() {
     graph_type.value = "ospf"
@@ -65,16 +65,14 @@ const handle_select = (idx: string) => {
   graph_list[+idx].enable()
 }
 
-(async()=>{
+(async () => {
   const data = await loadASData();
-  if (!data){
-    alert("no metadata");
-    return;
+  if (data) {
+    asdata.value = data
   }
-  asdata.value = data
   const list = await getList();
   
-  list.forEach(async (graph) => {
+  list.forEach((graph) => {
     switch (graph.type) {
       case "bgp":
         graph_list.push(new bgp())
@@ -103,21 +101,21 @@ const handle_select = (idx: string) => {
 </script>
 <template>
   <div class="aside">
-    <div class="menu" >
+    <div class="menu">
       <el-button type="primary" circle class="menu-button transition-06s" :class="menu_rotate" @click="click_fold">
         <i-ep-arrow-right-bold />
       </el-button>
       <el-menu :collapse-transition=false class="menu-list transition-06s" :class="menu_scale" default-active="0"
         @select="handle_select">
-        <el-menu-item class="menu-item" v-for="(graph, index) in graph_list" :index="index.toString()" >
+        <el-menu-item class="menu-item" v-for="(graph, index) in graph_list" :index="index.toString()">
           <span>{{ graph.display() }}</span>
         </el-menu-item>
       </el-menu>
     </div>
   </div>
   <template v-if="dataReady">
-      <OSPF v-if="graph_type === 'ospf' && asn != null && dataReady" :asn="asn" :loaded="loaded" />
-      <BGP v-else-if="graph_type === 'bgp' && dataReady" :loaded="loaded" />
+    <OSPF v-if="graph_type === 'ospf' && asn != null && dataReady" :asn="asn" :loaded="loaded" />
+    <BGP v-else-if="graph_type === 'bgp' && dataReady" :loaded="loaded" />
   </template>
 
 </template>
@@ -167,7 +165,7 @@ const handle_select = (idx: string) => {
   animation: rotation-close 0.5s forwards;
 }
 
-.rotate-closed-margin{
+.rotate-closed-margin {
   margin: 0px !important
 }
 
@@ -192,11 +190,11 @@ const handle_select = (idx: string) => {
 }
 
 .transition-06s {
-  transition: all,0.6s;
+  transition: all, 0.6s;
   transition-timing-function: ease-in-out;
 }
 
-.menu-list::-webkit-scrollbar{
+.menu-list::-webkit-scrollbar {
   display: none;
 }
 
@@ -208,5 +206,4 @@ const handle_select = (idx: string) => {
   max-height: 70vh;
   max-width: 12em;
 }
-
 </style>

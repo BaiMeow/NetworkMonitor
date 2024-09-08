@@ -12,6 +12,9 @@ import (
 )
 
 func BatchRecordASUp(ASNs []uint32, t time.Time) error {
+	if !Enabled {
+		return ErrDatabaseDisabled
+	}
 	if err := bgpWrite.WritePoint(context.Background(),
 		utils.Map(ASNs, func(asn uint32) *write.Point {
 			return influxdb2.NewPointWithMeasurement("bgp").
@@ -25,6 +28,9 @@ func BatchRecordASUp(ASNs []uint32, t time.Time) error {
 }
 
 func AllASRecordAfter(after time.Time) ([]uint32, error) {
+	if !Enabled {
+		return nil, ErrDatabaseDisabled
+	}
 	var asns []uint32
 	res, err := bgpQuery.Query(context.Background(),
 		fmt.Sprintf(`from(bucket: "bgp-uptime")
@@ -54,6 +60,9 @@ func AllASRecordAfter(after time.Time) ([]uint32, error) {
 }
 
 func BGPASNLast10Tickers(asn uint32, last time.Time) ([]time.Time, error) {
+	if !Enabled {
+		return nil, ErrDatabaseDisabled
+	}
 	var t []time.Time
 	res, err := bgpQuery.Query(context.Background(),
 		fmt.Sprintf(`from(bucket: "bgp-uptime")

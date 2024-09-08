@@ -1,5 +1,5 @@
-const ApiHost = 'https://monitor.dn11.baimeow.cn'
-const MetadataHost = 'https://metadata.dn11.baimeow.cn'
+const ApiHost = ''
+const MetadataHost = ''
 
 export { ApiHost, MetadataHost }
 

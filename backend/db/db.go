@@ -15,11 +15,17 @@ import (
 var (
 	bgpWrite api.WriteAPIBlocking
 	bgpQuery api.QueryAPI
+	Enabled  = false
 )
+
+var ErrDatabaseDisabled = fmt.Errorf("database not enabled")
 
 const bucketBGPUptime = "bgp-uptime"
 
 func Init() error {
+	if conf.Influxdb.Addr == "" {
+		return ErrDatabaseDisabled
+	}
 	c := influxdb2.NewClient(conf.Influxdb.Addr, conf.Influxdb.Token)
 	// normally less than 20 buckets, no check page
 	buckets, err := c.BucketsAPI().FindBucketsByOrgName(context.Background(), conf.Influxdb.Org)
@@ -44,6 +50,8 @@ func Init() error {
 
 	bgpWrite = c.WriteAPIBlocking(conf.Influxdb.Org, bucketBGPUptime)
 	bgpQuery = c.QueryAPI(conf.Influxdb.Org)
+
+	Enabled = true
 
 	return nil
 }

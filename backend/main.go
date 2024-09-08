@@ -1,16 +1,16 @@
 package main
 
 import (
+	"github.com/BaiMeow/NetworkMonitor/service/uptime"
+	"github.com/pkg/errors"
 	"log"
 	"net/http"
 	"path"
 	"strconv"
 
-	"github.com/BaiMeow/NetworkMonitor/db"
-	"github.com/BaiMeow/NetworkMonitor/service/uptime"
-
 	"github.com/BaiMeow/NetworkMonitor/conf"
 	"github.com/BaiMeow/NetworkMonitor/controller"
+	"github.com/BaiMeow/NetworkMonitor/db"
 	"github.com/BaiMeow/NetworkMonitor/graph"
 	"github.com/BaiMeow/NetworkMonitor/middleware"
 	"github.com/gin-gonic/gin"
@@ -31,8 +31,13 @@ func main() {
 	}
 
 	log.Println("init db")
+	skipUptime := false
 	if err := db.Init(); err != nil {
-		log.Fatalf("init db fail:%v", err)
+		if errors.Is(err, db.ErrDatabaseDisabled) {
+			skipUptime = true
+		} else {
+			log.Fatalf("init db fail:%v", err)
+		}
 	}
 
 	log.Println("init graph")
@@ -40,8 +45,10 @@ func main() {
 		log.Fatalf("init graph fail:%v", err)
 	}
 
-	log.Println("init uptime")
-	uptime.Init()
+	if !skipUptime {
+		log.Println("init uptime")
+		uptime.Init()
+	}
 
 	log.Println("run web")
 	r := gin.Default()
@@ -54,6 +61,13 @@ func main() {
 	r.StaticFS("/assets/", &staticRouter{"/static/assets"})
 	r.StaticFileFS("/avatar.png", "/static/avatar.png", http.FS(FS))
 	r.StaticFileFS("/", "/", &staticRouter{"/static"})
+	if conf.MetadataRedirect != "" {
+		r.GET("/monitor-metadata.json", func(c *gin.Context) {
+			c.Redirect(http.StatusTemporaryRedirect, conf.MetadataRedirect)
+		})
+	} else {
+		r.Static("/monitor-metadata.json", "./monitor-metadata.json")
+	}
 	err := r.Run(":" + strconv.Itoa(conf.Port))
 	if err != nil {
 		log.Fatalln(err)

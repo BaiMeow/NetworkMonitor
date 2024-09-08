@@ -9,10 +9,6 @@ import (
 	"github.com/spf13/viper"
 )
 
-type Metadata struct {
-	Name string
-}
-
 var (
 	Uptime = UptimeCfg{
 		// Interval for uptime is statically set to
@@ -23,11 +19,12 @@ var (
 		Token string
 		Org   string
 	}
-	Probes         []Probe
-	Port           int
-	Interval       time.Duration
-	ProbeTimeout   time.Duration
-	UpdateCallBack func()
+	Probes           []Probe
+	Port             int
+	Interval         time.Duration
+	ProbeTimeout     time.Duration
+	UpdateCallBack   func()
+	MetadataRedirect string
 )
 
 func Init() error {
@@ -86,6 +83,7 @@ func update() error {
 
 	Interval = time.Duration(viper.GetInt("interval")) * time.Second
 	ProbeTimeout = time.Duration(viper.GetInt("probeTimeout")) * time.Second
+	MetadataRedirect = viper.GetString("metadataRedirect")
 
 	dur, err := time.ParseDuration(viper.GetString("uptime.store-duration"))
 	if err != nil {

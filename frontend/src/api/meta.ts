@@ -39,7 +39,14 @@ export interface ASData {
   };
 }
 
-export async function loadASData() {
-  const { data } = await axios.get<ASData>(`${MetadataHost}/monitor-metadata.json`);
-  return data;
+export async function loadASData(): Promise<ASData | null> {
+  try {
+    const { data } = await axios.get<ASData>(
+      `${MetadataHost}/monitor-metadata.json`
+    );
+    return data;
+  } catch (e) {
+    console.error(e);
+    return null;
+  }
 }

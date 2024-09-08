@@ -32,6 +32,8 @@ func GetBGP() *parse.BGP {
 			return 0
 		}
 	})
+
+	// append ghost AS
 	for _, as := range recordASNs {
 		if _, found := slices.BinarySearchFunc(currentASs, as, func(as *parse.AS, as2 uint32) int {
 			if as.ASN < as2 {

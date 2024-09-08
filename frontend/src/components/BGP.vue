@@ -6,20 +6,17 @@ import {
     TooltipComponent,
     TitleComponent,
 } from "echarts/components";
+import VChart from "vue-echarts";
+import { ECElementEvent, ECharts } from "echarts";
 
 import { reactive, inject, ref } from "vue";
 
-import VChart from "vue-echarts";
-
-import { ECElementEvent, ECharts } from "echarts";
 import { Netmask } from "netmask";
 
 import { getBGP } from "../api/bgp";
 import { prettierNet } from "../utils/colornet";
 import { ASData } from "../api/meta";
-
 import { ASDataKey } from "../inject/key"
-
 import { selectItem } from "./searchbar.vue"
 
 const echarts = ref<ECharts | null>();
@@ -221,7 +218,7 @@ const refreshData = async () => {
         }).length;
         node.value = '' + node.peer_num;
         node.symbolSize = Math.pow(node.peer_num + 3, 1 / 2) * 7;
-        if (asdata && asdata.metadata && node.name in asdata?.metadata) {
+        if (asdata?.metadata && node.name in asdata?.metadata) {
             const customNode = asdata.metadata[node.name].monitor?.customNode
             if (customNode) {
                 mergeObjects(node, asdata.metadata[node.name].monitor?.customNode)

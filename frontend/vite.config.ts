@@ -15,16 +15,16 @@ export default defineConfig({
       resolvers: [
         ElementPlusResolver(),
         IconsResolver({
-          prefix: 'Icon',
+          prefix: "Icon",
         }),
       ],
     }),
     Components({
       resolvers: [
         IconsResolver({
-          enabledCollections: ['ep'],
+          enabledCollections: ["ep"],
         }),
-        ElementPlusResolver()
+        ElementPlusResolver(),
       ],
     }),
     Icons({
@@ -32,15 +32,19 @@ export default defineConfig({
     }),
   ],
   build: {
-    outDir: '../backend/static',
+    outDir: "../backend/static",
     emptyOutDir: true,
   },
-  server:{
+  server: {
     proxy: {
-        '/api': {
-          target: 'http://monitor.dn11.baimeow.cn',
-          changeOrigin: true
-        }
-    }
-  }
-})
+      "/api": {
+        target: "http://127.0.0.1:8787",
+        changeOrigin: true,
+      },
+      "/monitor-metadata.json": {
+        target: "http://127.0.0.1:8787",
+        changeOrigin: true,
+      },
+    },
+  },
+});

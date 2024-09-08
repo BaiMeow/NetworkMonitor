@@ -10,6 +10,9 @@ import (
 )
 
 func AllASNRecord() ([]uint32, error) {
+	if !db.Enabled{
+		return nil, nil
+	}
 	ASNs, err := db.AllASRecordAfter(time.Now().Add(-conf.Uptime.StoreDuration))
 	if err != nil {
 		return nil, fmt.Errorf("get all recorded as fail:%v", err)
@@ -18,6 +21,9 @@ func AllASNRecord() ([]uint32, error) {
 }
 
 func Last10TickerRecord(asn uint32) ([]bool, error) {
+	if !db.Enabled{
+		return nil, nil
+	}
 	last := utils.LastUptimeTick()
 	records, err := db.BGPASNLast10Tickers(asn, last)
 	if err != nil {

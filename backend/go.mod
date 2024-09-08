@@ -1,6 +1,6 @@
 module github.com/BaiMeow/NetworkMonitor
 
-go 1.23.0
+go 1.23.1
 
 require (
 	github.com/BaiMeow/go-mrt v0.0.0-20240727160601-2103d679651a

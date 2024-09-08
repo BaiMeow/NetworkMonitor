@@ -1,14 +1,28 @@
 <script lang="ts" setup>
-import {inject, reactive, ref, watchEffect} from "vue";
+import { inject, reactive, ref, watchEffect } from "vue";
 
+import { use } from "echarts/core";
+import { CanvasRenderer } from "echarts/renderers";
+import { GraphChart } from "echarts/charts";
+import {
+  TooltipComponent,
+  TitleComponent,
+} from "echarts/components";
 import VChart from "vue-echarts";
-import {getOSPF} from "../api/ospf";
-import {ASDataKey} from "../inject/key";
-import {ASData} from "../api/meta";
+import { ECElementEvent, ECharts } from "echarts";
 
-import {ECElementEvent, ECharts} from "echarts";
+import { getOSPF } from "../api/ospf";
+import { ASDataKey } from "../inject/key";
+import { ASData } from "../api/meta";
 
-const echarts = ref<ECharts|null>();
+use([
+  CanvasRenderer,
+  GraphChart,
+  TooltipComponent,
+  TitleComponent
+]);
+
+const echarts = ref<ECharts | null>();
 
 const props = defineProps<{
   asn: number;
@@ -149,33 +163,33 @@ watchEffect(async () => {
     }, [] as Node[]);
 
     const all_links = areas.flatMap(
-        area => area.links
+      area => area.links
     );
 
     const all_routers = areas.reduce(
-        (routers, cur) => {
-          if (cur.router === undefined || cur.router.length === 0) {
-            return routers;
+      (routers, cur) => {
+        if (cur.router === undefined || cur.router.length === 0) {
+          return routers;
+        }
+        cur.router.forEach((r) => {
+          if (routers.findIndex((router) => router.router_id === r.router_id) === -1) {
+            routers.push(r);
           }
-          cur.router.forEach((r) => {
-            if (routers.findIndex((router) => router.router_id === r.router_id) === -1) {
-              routers.push(r);
-            }
-          })
-          return routers
-        },
-        [] as (typeof areas)[number]['router']
+        })
+        return routers
+      },
+      [] as (typeof areas)[number]['router']
     );
 
     // calculate node peers and size
-    let {min, max} = all_links.reduce(
-        ({min, max}, cur) => {
-          return {
-            min: Math.min(min, cur.cost),
-            max: Math.max(max, cur.cost),
-          };
-        },
-        {min: all_links[0].cost, max: all_links[0].cost}
+    let { min, max } = all_links.reduce(
+      ({ min, max }, cur) => {
+        return {
+          min: Math.min(min, cur.cost),
+          max: Math.max(max, cur.cost),
+        };
+      },
+      { min: all_links[0].cost, max: all_links[0].cost }
     );
 
     nodes.forEach((node) => {
@@ -205,7 +219,7 @@ watchEffect(async () => {
         while (links.length !== 0) {
           let cur = links.pop() as NonNullable<(typeof links)[number]>;
           let pair_idx = links.findIndex((lk) =>
-              lk.src === cur.dst && lk.dst === cur.src && lk.cost === cur.cost
+            lk.src === cur.dst && lk.dst === cur.src && lk.cost === cur.cost
           );
           if (pair_idx !== -1) {
             links.splice(pair_idx, 1)[0];
@@ -270,26 +284,28 @@ watchEffect(async () => {
     option.series[0].force.repulsion = [(100 * max) / min, 100];
     option.series[0].data = nodes;
     option.series[0].links = edges;
-    option.title.text = `${asdata.metadata[props.asn].display} Network`;
+    option.title.text = asdata?.metadata?.[props.asn + '']?.display ? `${asdata.metadata[props.asn + ''].display} Network` : `AS ${props.asn}`;
     let markedPeer = new Set<string>();
     for (const link of all_links) {
-      if (!markedPeer.has(link.src+link.dst)) {
-        markedPeer.add(link.src+link.dst);markedPeer.add(link.dst+link.src);
+      if (!markedPeer.has(link.src + link.dst)) {
+        markedPeer.add(link.src + link.dst); markedPeer.add(link.dst + link.src);
       }
     }
     option.title.subtext = `Nodes: ${nodes.length}  Peers: ${markedPeer.size / 2}`;
     loading.value = false;
-    selectList.value = nodes.map(n=>{return {
-      label:n.name,
-      value:n.value,
-      onselected:()=>{
-        echarts.value?.dispatchAction({
-          type: 'highlight',
-          seriesIndex:0,
-          name: n.name
-        })
+    selectList.value = nodes.map(n => {
+      return {
+        label: n.name,
+        value: n.value,
+        onselected: () => {
+          echarts.value?.dispatchAction({
+            type: 'highlight',
+            seriesIndex: 0,
+            name: n.name
+          })
+        }
       }
-    }})
+    })
   })
 })
 
@@ -315,15 +331,16 @@ const handle_mouse_up = (_: ECElementEvent) => {
   <div v-if="loading" class="graph loading">
     Loading...
   </div>
-  <v-chart ref="echarts" :option="option" class="graph" autoresize @mousedown="handle_mouse_down" @mouseup="handle_mouse_up"/>
+  <v-chart ref="echarts" :option="option" class="graph" autoresize @mousedown="handle_mouse_down"
+    @mouseup="handle_mouse_up" />
   <searchbar class="search-bar" :data="selectList"></searchbar>
 </template>
 <style scoped>
 .search-bar {
-    position: absolute;
-    top: 2vh;
-    right: 2vw;
-    width: 12rem;
+  position: absolute;
+  top: 2vh;
+  right: 2vw;
+  width: 12rem;
 }
 
 .graph {
