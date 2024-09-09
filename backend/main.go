@@ -66,7 +66,7 @@ func main() {
 			c.Redirect(http.StatusTemporaryRedirect, conf.MetadataRedirect)
 		})
 	} else {
-		r.Static("/monitor-metadata.json", "./monitor-metadata.json")
+		r.StaticFile("/monitor-metadata.json", "./monitor-metadata.json")
 	}
 	err := r.Run(":" + strconv.Itoa(conf.Port))
 	if err != nil {

@@ -14,7 +14,6 @@ import { ECElementEvent, ECharts } from "echarts";
 import { getOSPF } from "../api/ospf";
 import { ASDataKey } from "../inject/key";
 import { ASData } from "../api/meta";
-import { link } from "fs";
 
 use([
   CanvasRenderer,
