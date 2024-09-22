@@ -81,3 +81,11 @@ probe:
     parse:
       type: bird-ospf
       asn: 4222222226
+  # OSPF bird tcp
+  AS6:
+    fetch:
+      type: tcp
+      addr: '123.123.123.123:12345'
+    parse:
+      type: bird-ospf
+      asn: 4222222227
