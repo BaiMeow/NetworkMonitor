@@ -91,6 +91,8 @@ func draw() {
 	}():
 	}
 
+	drawing.Lock()
+	defer drawing.Unlock()
 	OSPF = drawing.OSPF
 	BGP = drawing.BGP
 }
