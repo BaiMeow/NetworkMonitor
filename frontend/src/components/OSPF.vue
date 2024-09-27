@@ -4,10 +4,7 @@ import { inject, reactive, ref, watchEffect } from "vue";
 import { use } from "echarts/core";
 import { CanvasRenderer } from "echarts/renderers";
 import { GraphChart } from "echarts/charts";
-import {
-  TooltipComponent,
-  TitleComponent,
-} from "echarts/components";
+import { TooltipComponent, TitleComponent } from "echarts/components";
 import VChart from "vue-echarts";
 import { ECElementEvent, ECharts } from "echarts";
 
@@ -15,12 +12,7 @@ import { getOSPF } from "../api/ospf";
 import { ASDataKey } from "../inject/key";
 import { ASData } from "../api/meta";
 
-use([
-  CanvasRenderer,
-  GraphChart,
-  TooltipComponent,
-  TitleComponent
-]);
+use([CanvasRenderer, GraphChart, TooltipComponent, TitleComponent]);
 
 const echarts = ref<ECharts | null>();
 
@@ -56,16 +48,23 @@ const loading = ref(true);
 
 const asdata = inject(ASDataKey)?.value as ASData;
 
-const selectList = ref([] as Array<any>)
+const selectList = ref([] as Array<any>);
+const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches
+  ? true
+  : false;
 
 const option: any = reactive({
   title: {
-    text: '',
-    subtext: '',
+    text: "",
+    subtext: "",
   },
   tooltip: {
     trigger: "item",
     triggerOn: "mousemove",
+    backgroundColor: isDark ? "#333" : "white",
+    textStyle: {
+      color: isDark ? "white" : "black",
+    },
     confine: true,
     enterable: true,
     formatter: (params: Params<any>) => {
@@ -103,15 +102,15 @@ const option: any = reactive({
         gravity: 0.02,
         edgeLength: [40, 300],
         friction: 1,
-        layoutAnimation: false
+        layoutAnimation: false,
       },
       roam: true,
       label: {
         show: true,
         position: "right",
-        color: 'inherit',
+        color: "inherit",
         fontWeight: 1000,
-        fontFamily: 'Microsoft YaHei',
+        fontFamily: "Microsoft YaHei",
         formatter: (params: any) => {
           if (params.data.meta && params.data.meta.name) {
             return params.data.meta.name;
@@ -122,16 +121,16 @@ const option: any = reactive({
       draggable: true,
       edgeLabel: {
         show: true,
-        formatter: (params: any) => params.data.cost
+        formatter: (params: any) => params.data.cost,
       },
       data: [],
       links: [],
       emphasis: {
-        focus: 'adjacency',
+        focus: "adjacency",
         lineStyle: {
-          width: 10
-        }
-      }
+          width: 10,
+        },
+      },
     },
   ],
   lineStyle: {
@@ -141,10 +140,10 @@ const option: any = reactive({
 });
 
 watchEffect(async () => {
-  loading.value = true
-  getOSPF(props.asn).then(async areas => {
+  loading.value = true;
+  getOSPF(props.asn).then(async (areas) => {
     const nodes = areas.reduce((nodes, cur) => {
-      if ((cur.router) && cur.router.length !== 0) {
+      if (cur.router && cur.router.length !== 0) {
         cur.router.forEach((router) => {
           let index = nodes.findIndex((r) => r.name == router.router_id);
           if (index !== -1) {
@@ -162,25 +161,24 @@ watchEffect(async () => {
       return nodes;
     }, [] as Node[]);
 
-    console.log(areas)
-    const all_links = areas.flatMap(
-      area => area.links
-    ).filter(link => link !== undefined)
+    console.log(areas);
+    const all_links = areas
+      .flatMap((area) => area.links)
+      .filter((link) => link !== undefined);
 
-    const all_routers = areas.reduce(
-      (routers, cur) => {
-        if (cur.router === undefined || cur.router.length === 0) {
-          return routers;
+    const all_routers = areas.reduce((routers, cur) => {
+      if (cur.router === undefined || cur.router.length === 0) {
+        return routers;
+      }
+      cur.router.forEach((r) => {
+        if (
+          routers.findIndex((router) => router.router_id === r.router_id) === -1
+        ) {
+          routers.push(r);
         }
-        cur.router.forEach((r) => {
-          if (routers.findIndex((router) => router.router_id === r.router_id) === -1) {
-            routers.push(r);
-          }
-        })
-        return routers
-      },
-      [] as (typeof areas)[number]['router']
-    );
+      });
+      return routers;
+    }, [] as (typeof areas)[number]["router"]);
 
     // calculate node peers and size
     let { min, max } = all_links.reduce(
@@ -212,15 +210,19 @@ watchEffect(async () => {
         if (a.router_id >= b.router_id) return;
 
         let links = all_links.filter((lk) => {
-          return (lk.src === a.router_id && lk.dst === b.router_id) || (lk.src === b.router_id && lk.dst === a.router_id);
+          return (
+            (lk.src === a.router_id && lk.dst === b.router_id) ||
+            (lk.src === b.router_id && lk.dst === a.router_id)
+          );
         });
 
         let lines: typeof all_links = [];
         let arrows: typeof all_links = [];
         while (links.length !== 0) {
           let cur = links.pop() as NonNullable<(typeof links)[number]>;
-          let pair_idx = links.findIndex((lk) =>
-            lk.src === cur.dst && lk.dst === cur.src && lk.cost === cur.cost
+          let pair_idx = links.findIndex(
+            (lk) =>
+              lk.src === cur.dst && lk.dst === cur.src && lk.cost === cur.cost
           );
           if (pair_idx !== -1) {
             links.splice(pair_idx, 1)[0];
@@ -237,10 +239,10 @@ watchEffect(async () => {
             source: line.src,
             target: line.dst,
             value: 100 / line.cost,
-            cost: line.cost
-          })
+            cost: line.cost,
+          });
         }
-        let next_curveness = false
+        let next_curveness = false;
         while (lines.length !== 0) {
           const l1 = lines.pop() as NonNullable<(typeof lines)[number]>;
           edges.push({
@@ -249,14 +251,13 @@ watchEffect(async () => {
             value: 100 / l1.cost,
             cost: l1.cost,
             lineStyle: {
-              curveness: next_curveness ? -curveness : curveness
-            }
+              curveness: next_curveness ? -curveness : curveness,
+            },
           });
           if (next_curveness) {
             curveness += 0.07;
             next_curveness = false;
-          } else
-            next_curveness = true;
+          } else next_curveness = true;
         }
 
         let pre_source = arrows[arrows.length - 1]?.src;
@@ -268,15 +269,17 @@ watchEffect(async () => {
             value: 100 / arrow.cost,
             cost: arrow.cost,
             lineStyle: {
-              curveness: pre_source === arrow.src && next_curveness ? -curveness : curveness
+              curveness:
+                pre_source === arrow.src && next_curveness
+                  ? -curveness
+                  : curveness,
             },
-            symbol: ['', 'arrow']
-          })
+            symbol: ["", "arrow"],
+          });
           if (next_curveness) {
             curveness += 0.07;
             next_curveness = false;
-          } else
-            next_curveness = true;
+          } else next_curveness = true;
         }
       });
     });
@@ -285,55 +288,63 @@ watchEffect(async () => {
     option.series[0].force.repulsion = [(100 * max) / min, 100];
     option.series[0].data = nodes;
     option.series[0].links = edges;
-    option.title.text = asdata?.metadata?.[props.asn + '']?.display ? `${asdata.metadata[props.asn + ''].display} Network` : `AS ${props.asn}`;
+    option.title.text = asdata?.metadata?.[props.asn + ""]?.display
+      ? `${asdata.metadata[props.asn + ""].display} Network`
+      : `AS ${props.asn}`;
     let markedPeer = new Set<string>();
     for (const link of all_links) {
       if (!markedPeer.has(link.src + link.dst)) {
-        markedPeer.add(link.src + link.dst); markedPeer.add(link.dst + link.src);
+        markedPeer.add(link.src + link.dst);
+        markedPeer.add(link.dst + link.src);
       }
     }
-    option.title.subtext = `Nodes: ${nodes.length}  Peers: ${markedPeer.size / 2}`;
+    option.title.subtext = `Nodes: ${nodes.length}  Peers: ${
+      markedPeer.size / 2
+    }`;
     loading.value = false;
-    selectList.value = nodes.map(n => {
+    selectList.value = nodes.map((n) => {
       return {
         label: n.name,
         value: n.value,
         onselected: () => {
           echarts.value?.dispatchAction({
-            type: 'highlight',
+            type: "highlight",
             seriesIndex: 0,
-            name: n.name
-          })
-        }
-      }
-    })
-  })
-})
+            name: n.name,
+          });
+        },
+      };
+    });
+  });
+});
 
-let timer: NodeJS.Timeout | null = null
+let timer: NodeJS.Timeout | null = null;
 
 const handle_mouse_down = (_: ECElementEvent) => {
   if (timer) {
-    clearTimeout(timer)
+    clearTimeout(timer);
   }
-  option.series[0].force.friction = 0.15
-  option.series[0].force.layoutAnimation = true
-}
+  option.series[0].force.friction = 0.15;
+  option.series[0].force.layoutAnimation = true;
+};
 
 const handle_mouse_up = (_: ECElementEvent) => {
   timer = setTimeout(() => {
-    option.series[0].force.layoutAnimation = false
+    option.series[0].force.layoutAnimation = false;
   }, 6000);
-}
-
+};
 </script>
 
 <template>
-  <div v-if="loading" class="graph loading">
-    Loading...
-  </div>
-  <v-chart ref="echarts" :option="option" class="graph" autoresize @mousedown="handle_mouse_down"
-    @mouseup="handle_mouse_up" />
+  <div v-if="loading" class="graph loading">Loading...</div>
+  <v-chart
+    ref="echarts"
+    :option="option"
+    class="graph"
+    autoresize
+    @mousedown="handle_mouse_down"
+    @mouseup="handle_mouse_up"
+  />
   <searchbar class="search-bar" :data="selectList"></searchbar>
 </template>
 <style scoped>
