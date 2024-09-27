@@ -19,23 +19,65 @@ html body {
     text-align: center;
 }
 
-.overannounced-net{
+.overannounced-net {
     color: #de3a0b;
 }
-    
-.unannounced-net{
+
+.unannounced-net {
     color: #b0b0b0;
 }
-    
-.unassigned-net{
+
+.unassigned-net {
     color: #138385;
 }
 
-.app{
+.app {
     background-color: #eceff1;
     height: 100vh;
 }
 
 :root {
-  --el-color-primary: green;
+    --el-color-primary: green;
+}
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+    html body {
+        background-color: #121212;
+        color: #ffffff;
+    }
+
+    .cost {
+        color: #80cbc4;
+    }
+
+    .peer_count {
+        color: #ff8a65;
+    }
+
+    .overannounced-net {
+        color: #ff8a65;
+    }
+
+    .unannounced-net {
+        color: #b0bec5;
+    }
+
+    .unassigned-net {
+        color: #80cbc4;
+    }
+
+    .app {
+        background-color: #1e1e1e;
+    }
+
+    :root {
+        --el-color-primary: lightgreen;
+    }
+
+    .el-button {
+        background-color: #333;
+        color: #fff;
+    }
+
 }
