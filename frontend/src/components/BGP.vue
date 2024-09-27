@@ -427,9 +427,5 @@ const handle_mouse_up = (_: ECElementEvent) => {
   .loading {
     color: gray;
   }
-
-  .dark-mode {
-    background-color: #333;
-  }
 }
 </style>

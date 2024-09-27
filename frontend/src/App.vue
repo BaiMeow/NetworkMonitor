@@ -233,7 +233,7 @@ const handle_select = (idx: string) => {
     color: white;
   }
   .menu-item {
-    color: wheat;
+    color: white;
   }
   .menu-item:hover {
     background-color: rgba(255, 255, 255, 0.1);

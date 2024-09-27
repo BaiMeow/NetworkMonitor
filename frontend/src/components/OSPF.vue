@@ -371,4 +371,9 @@ const handle_mouse_up = (_: ECElementEvent) => {
   font-weight: bold;
   color: #2242a3;
 }
+@media (prefers-color-scheme: dark) {
+  .loading {
+    color: gray;
+  }
+}
 </style>
