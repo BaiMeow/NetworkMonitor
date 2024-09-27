@@ -1,5 +1,6 @@
 # NetworkMonitor
-监测你的Network状态并绘制图表
+
+监测你的 Network 状态并绘制图表
 
 monitor your network status with graph
 
@@ -37,16 +38,16 @@ monitor your network status with graph
 
 - [x] RouterID
 - [x] AreaID
-- [X] Cost
+- [x] Cost
 - [x] 自定义额外标识 Custom appended data (metadata)
 - [x] 子网 Subnet
 - [x] ASN
 
 ## 配置 config
 
-`/backend/config/sample.yaml` 为配置文件模板，将其复制为 `config.yaml` 并修改其中的配置即可。
+`/backend/conf/sample.yaml` 为配置文件模板，将其复制为 `config.yaml` 并修改其中的配置即可。
 
-NetworkMonitor 具有灵活的探针配置方案，一个探针由 Fetch 和 Parse 两个部分组成，Fetch 负责获取数据，Parse 负责解析数据，两者可以自由组合，也可以fork之后自定义。
+NetworkMonitor 具有灵活的探针配置方案，一个探针由 Fetch 和 Parse 两个部分组成，Fetch 负责获取数据，Parse 负责解析数据，两者可以自由组合，也可以 fork 之后自定义。
 
 `monitor-metadata.json` 需要放在运行目录下，可以为图表提供一些别名和样式，以及 BGP 宣告信息，这个信息大部分都用于 BGP 绘图，可以参照 [演示站 metadata](https://metadata.dn11.baimeow.cn/monitor-metadata.json) 编写。
 
@@ -72,7 +73,7 @@ NetworkMonitor has a flexible probe configuration scheme, a probe consists of Fe
 
 if you only have single OSPF network, no BGP and its ASN, please choose a rand uint16 as ASN, keepping ASN in config and metadata file same.
 
-OSPF graph don't support custom node style, so only display field  applied in metadata file, you can write metadata file as following.
+OSPF graph don't support custom node style, so only display field applied in metadata file, you can write metadata file as following.
 
 ```json
 {
@@ -88,15 +89,15 @@ OSPF graph don't support custom node style, so only display field  applied in me
 
 1. 前端打包（如果需要） pack frontend (if needed)
 
-    cd 到 fronted目录下，执行 `pnpm build`，构建好的文件会出现在 `backend/static` 目录下
-   
-    cd to fronted directory, run `pnpm build`，the built files will appear in `backend/static` directory
+   cd 到 fronted 目录下，执行 `pnpm build`，构建好的文件会出现在 `backend/static` 目录下
 
-3. 构建后端 build backend
+   cd to fronted directory, run `pnpm build`，the built files will appear in `backend/static` directory
 
-    cd 到 backend 目录下，执行 `go build`
+2. 构建后端 build backend
 
-    cd to backend directory, run `go build`
+   cd 到 backend 目录下，执行 `go build`
+
+   cd to backend directory, run `go build`
 
 ## 运行 run
 
