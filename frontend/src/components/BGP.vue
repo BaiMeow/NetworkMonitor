@@ -12,21 +12,21 @@
 </template>
 
 <script lang="ts" setup>
-import { use } from "echarts/core";
-import { CanvasRenderer } from "echarts/renderers";
-import { GraphChart } from "echarts/charts";
-import { TooltipComponent, TitleComponent } from "echarts/components";
-import VChart from "vue-echarts";
-import { ECElementEvent, ECharts } from "echarts";
-import { reactive, inject, ref } from "vue";
+import { use } from 'echarts/core';
+import { CanvasRenderer } from 'echarts/renderers';
+import { GraphChart } from 'echarts/charts';
+import { TooltipComponent, TitleComponent } from 'echarts/components';
+import VChart from 'vue-echarts';
+import { ECElementEvent, ECharts } from 'echarts';
+import { reactive, inject, ref } from 'vue';
 
-import { Netmask } from "netmask";
+import { Netmask } from 'netmask';
 
-import { getBGP } from "../api/bgp";
-import { prettierNet } from "../utils/colornet";
-import { ASData } from "../api/meta";
-import { ASDataKey } from "../inject/key";
-import { selectItem } from "./searchbar.vue";
+import { getBGP } from '../api/bgp';
+import { prettierNet } from '../utils/colornet';
+import { ASData } from '../api/meta';
+import { ASDataKey } from '../inject/key';
+import { selectItem } from './searchbar.vue';
 
 const echarts = ref<ECharts | null>();
 
@@ -70,9 +70,9 @@ function mergeObjects(obj1: any, obj2: any): any {
       (obj1.hasOwnProperty(key) || !(key in obj1))
     ) {
       if (
-        typeof obj2[key] === "object" &&
+        typeof obj2[key] === 'object' &&
         obj2[key] !== null &&
-        typeof obj1[key] === "object" &&
+        typeof obj1[key] === 'object' &&
         obj1[key] !== null
       ) {
         mergeObjects(obj1[key], obj2[key]);
@@ -82,26 +82,26 @@ function mergeObjects(obj1: any, obj2: any): any {
     }
   }
 }
-const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches
+const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches
   ? true
   : false;
 
 const option: any = reactive({
   title: {
-    text: "DN11 & Vidar Network",
-    subtext: "",
+    text: 'DN11 & Vidar Network',
+    subtext: '',
   },
   tooltip: {
-    trigger: "item",
-    triggerOn: "mousemove",
-    backgroundColor: isDark ? "#333" : "white",
+    trigger: 'item',
+    triggerOn: 'mousemove',
+    backgroundColor: isDark ? '#333' : 'white',
     textStyle: {
-      color: isDark ? "white" : "black",
+      color: isDark ? 'white' : 'black',
     },
     confine: true,
     enterable: true,
     formatter: (params: Params<any>) => {
-      if (params.dataType === "edge") {
+      if (params.dataType === 'edge') {
         params = params as Params<Edge>;
         return `${params.data.source} ↔ ${params.data.target}`;
       }
@@ -111,7 +111,7 @@ const option: any = reactive({
       let output = `ASN: ${params.data.name}`;
 
       if (params.data.meta) {
-        const metadata: ASData["metadata"][""] = params.data.meta;
+        const metadata: ASData['metadata'][''] = params.data.meta;
         if (metadata.display) {
           output += `<br/>name: ${metadata.display}`;
         }
@@ -121,7 +121,7 @@ const option: any = reactive({
           } = metadata;
           for (let key in appendix) {
             const value = appendix[key] as string | string[];
-            if (typeof value === "string") {
+            if (typeof value === 'string') {
               output += `<br/>${key}: ${value}`;
             } else if (Array.isArray(value)) {
               output += `<br/>${key}:`;
@@ -140,7 +140,7 @@ const option: any = reactive({
           asdata.announcements
         );
       } else {
-        output += params.data.network.join("<br/>");
+        output += params.data.network.join('<br/>');
         output += `<br/>`;
       }
       output += `Peer Count: <div class="peer_count"> ${params.data.peer_num} </div>`;
@@ -152,11 +152,11 @@ const option: any = reactive({
   },
   series: [
     {
-      type: "graph",
+      type: 'graph',
       symbolSize: 50,
-      layout: "force",
+      layout: 'force',
       lineStyle: {
-        color: "source",
+        color: 'source',
         opacity: 0.4,
         width: 0.5,
         curveness: 0.1,
@@ -171,10 +171,10 @@ const option: any = reactive({
       roam: true,
       label: {
         show: true,
-        position: "right",
-        color: "inherit",
+        position: 'right',
+        color: 'inherit',
         fontWeight: 1000,
-        fontFamily: "Microsoft YaHei",
+        fontFamily: 'Microsoft YaHei',
         formatter: (params: any) => {
           if (params.data.meta && params.data.meta.display) {
             return params.data.meta.display;
@@ -189,7 +189,7 @@ const option: any = reactive({
       data: [],
       links: [],
       emphasis: {
-        focus: "adjacency",
+        focus: 'adjacency',
         lineStyle: {
           width: 10,
         },
@@ -201,7 +201,7 @@ const option: any = reactive({
 const refreshData = async () => {
   const resp = await getBGP();
   if (!resp.as) {
-    alert("no data");
+    alert('no data');
     return;
   }
 
@@ -211,7 +211,7 @@ const refreshData = async () => {
       value: cur.asn.toString(),
       peer_num: 0,
       network: cur.network
-        .sort((a, b) => parseInt(a.split("/")[1]) - parseInt(b.split("/")[1]))
+        .sort((a, b) => parseInt(a.split('/')[1]) - parseInt(b.split('/')[1]))
         .reduce(
           (network, cur) =>
             network.findIndex((net) => {
@@ -243,7 +243,7 @@ const refreshData = async () => {
     node.peer_num = resp.link.filter((lk) => {
       return lk.src === parseInt(node.name) || lk.dst === parseInt(node.name);
     }).length;
-    node.value = "" + node.peer_num;
+    node.value = '' + node.peer_num;
     node.symbolSize = Math.pow(node.peer_num + 3, 1 / 2) * 7;
     if (asdata?.metadata && node.name in asdata?.metadata) {
       const customNode = asdata.metadata[node.name].monitor?.customNode;
@@ -254,7 +254,7 @@ const refreshData = async () => {
     }
     if (node.peer_num === 0) {
       node.symbol =
-        "path://M255.633,0C145.341,0.198,55.994,89.667,55.994,200.006v278.66c0,14.849,17.953,22.285,28.453,11.786l38.216-39.328 l54.883,55.994c6.51,6.509,17.063,6.509,23.572,0L256,451.124l54.883,55.994c6.509,6.509,17.062,6.509,23.571,0l54.884-55.994 l38.216,39.327c10.499,10.499,28.453,3.063,28.453-11.786V201.719C456.006,91.512,365.84-0.197,255.633,0z M172.664,266.674 c-27.572,0-50.001-22.429-50.001-50.001s22.43-50.001,50.001-50.001s50.001,22.43,50.001,50.001S200.236,266.674,172.664,266.674z M339.336,266.674c-27.572,0-50.001-22.429-50.001-50.001s22.43-50.001,50.001-50.001s50.001,22.43,50.001,50.001 S366.908,266.674,339.336,266.674z";
+        'path://M255.633,0C145.341,0.198,55.994,89.667,55.994,200.006v278.66c0,14.849,17.953,22.285,28.453,11.786l38.216-39.328 l54.883,55.994c6.51,6.509,17.063,6.509,23.572,0L256,451.124l54.883,55.994c6.509,6.509,17.062,6.509,23.571,0l54.884-55.994 l38.216,39.327c10.499,10.499,28.453,3.063,28.453-11.786V201.719C456.006,91.512,365.84-0.197,255.633,0z M172.664,266.674 c-27.572,0-50.001-22.429-50.001-50.001s22.43-50.001,50.001-50.001s50.001,22.43,50.001,50.001S200.236,266.674,172.664,266.674z M339.336,266.674c-27.572,0-50.001-22.429-50.001-50.001s22.43-50.001,50.001-50.001s50.001,22.43,50.001,50.001 S366.908,266.674,339.336,266.674z';
     }
   });
 
@@ -310,8 +310,8 @@ const refreshData = async () => {
     }
     if (
       option.series[0].data[i].peer_num !== nodes[idx].peer_num ||
-      option.series[0].data[i].network.join("|") !==
-        nodes[idx].network.join("|")
+      option.series[0].data[i].network.join('|') !==
+        nodes[idx].network.join('|')
     ) {
       setLoadingOnce();
       option.series[0].data[i] = nodes[idx];
@@ -363,12 +363,12 @@ const refreshData = async () => {
       value: n.name,
       onselected: () => {
         echarts.value?.dispatchAction({
-          type: "highlight",
+          type: 'highlight',
           seriesIndex: 0,
           name: n.name,
         });
         echarts.value?.dispatchAction({
-          type: "showTip",
+          type: 'showTip',
           seriesIndex: 0,
           name: n.name,
         });

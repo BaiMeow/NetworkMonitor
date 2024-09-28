@@ -1,27 +1,27 @@
 <script setup lang="ts">
-import BGP from "./components/BGP.vue";
-import OSPF from "./components/OSPF.vue";
-import { getList } from "./api/list";
-import { ASData, loadASData } from "./api/meta";
-import { provide, ref, reactive } from "vue";
-import { ASDataKey } from "./inject/key";
+import BGP from './components/BGP.vue';
+import OSPF from './components/OSPF.vue';
+import { getList } from './api/list';
+import { ASData, loadASData } from './api/meta';
+import { provide, ref, reactive } from 'vue';
+import { ASDataKey } from './inject/key';
 
 const asn = ref(0);
-const graph_type = ref("");
-const menu_rotate = ref("rotate-closed-margin");
+const graph_type = ref('');
+const menu_rotate = ref('rotate-closed-margin');
 const loading = ref(true);
 const dataReady = ref(false);
 const loaded = () => {
   loading.value = false;
 };
-const menu_scale = ref("");
+const menu_scale = ref('');
 const click_fold = () => {
-  if (menu_rotate.value == "rotate-open") {
-    menu_rotate.value = "rotate-close rotate-closed-margin";
-    menu_scale.value = "menu-fold";
+  if (menu_rotate.value == 'rotate-open') {
+    menu_rotate.value = 'rotate-close rotate-closed-margin';
+    menu_scale.value = 'menu-fold';
   } else {
-    menu_rotate.value = "rotate-open";
-    menu_scale.value = "menu-expend";
+    menu_rotate.value = 'rotate-open';
+    menu_scale.value = 'menu-expend';
   }
 };
 
@@ -30,10 +30,10 @@ provide(ASDataKey, asdata);
 
 class bgp {
   enable() {
-    graph_type.value = "bgp";
+    graph_type.value = 'bgp';
   }
   display() {
-    return "BGP FULL GRAPH";
+    return 'BGP FULL GRAPH';
   }
 }
 
@@ -44,10 +44,10 @@ class ospf {
     this.asn = asn;
   }
   async init() {
-    this.name = asdata.value?.metadata?.[this.asn + ""]?.display || "";
+    this.name = asdata.value?.metadata?.[this.asn + '']?.display || '';
   }
   enable() {
-    graph_type.value = "ospf";
+    graph_type.value = 'ospf';
     asn.value = this.asn;
   }
   display() {
@@ -76,10 +76,10 @@ const handle_select = (idx: string) => {
 
   list.forEach((graph) => {
     switch (graph.type) {
-      case "bgp":
+      case 'bgp':
         graph_list.push(new bgp());
         break;
-      case "ospf":
+      case 'ospf':
         const gr = new ospf(graph.asn);
         gr.init();
         graph_list.push(gr);
@@ -96,7 +96,7 @@ const handle_select = (idx: string) => {
   if (graph_list.length !== 0) {
     graph_list[0]?.enable();
   } else {
-    alert("no data");
+    alert('no data');
   }
   dataReady.value = true;
 })();

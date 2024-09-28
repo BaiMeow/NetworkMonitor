@@ -1,16 +1,16 @@
 <script lang="ts" setup>
-import { inject, reactive, ref, watchEffect } from "vue";
+import { inject, reactive, ref, watchEffect } from 'vue';
 
-import { use } from "echarts/core";
-import { CanvasRenderer } from "echarts/renderers";
-import { GraphChart } from "echarts/charts";
-import { TooltipComponent, TitleComponent } from "echarts/components";
-import VChart from "vue-echarts";
-import { ECElementEvent, ECharts } from "echarts";
+import { use } from 'echarts/core';
+import { CanvasRenderer } from 'echarts/renderers';
+import { GraphChart } from 'echarts/charts';
+import { TooltipComponent, TitleComponent } from 'echarts/components';
+import VChart from 'vue-echarts';
+import { ECElementEvent, ECharts } from 'echarts';
 
-import { getOSPF } from "../api/ospf";
-import { ASDataKey } from "../inject/key";
-import { ASData } from "../api/meta";
+import { getOSPF } from '../api/ospf';
+import { ASDataKey } from '../inject/key';
+import { ASData } from '../api/meta';
 
 use([CanvasRenderer, GraphChart, TooltipComponent, TitleComponent]);
 
@@ -49,37 +49,37 @@ const loading = ref(true);
 const asdata = inject(ASDataKey)?.value as ASData;
 
 const selectList = ref([] as Array<any>);
-const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches
+const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches
   ? true
   : false;
 
 const option: any = reactive({
   title: {
-    text: "",
-    subtext: "",
+    text: '',
+    subtext: '',
   },
   tooltip: {
-    trigger: "item",
-    triggerOn: "mousemove",
-    backgroundColor: isDark ? "#333" : "white",
+    trigger: 'item',
+    triggerOn: 'mousemove',
+    backgroundColor: isDark ? '#333' : 'white',
     textStyle: {
-      color: isDark ? "white" : "black",
+      color: isDark ? 'white' : 'black',
     },
     confine: true,
     enterable: true,
     formatter: (params: Params<any>) => {
-      if (params.dataType === "edge") {
+      if (params.dataType === 'edge') {
         params = params as Params<Edge>;
         return `Link: ${params.data.source} ↔ ${params.data.target} <br/> Cost: <div class="cost">${params.data.cost}</div>`;
       } else {
         params = params as Params<Node>;
         let output = `Router ID: ${params.data.value}`;
-        if ("meta" in params.data) {
-          output += "<br/>";
+        if ('meta' in params.data) {
+          output += '<br/>';
           for (let key in params.data.meta) {
             output += `${key}: ${params.data.meta[key]} <br/>`;
           }
-          output += `Area: ${params.data.area.join(", ")}`;
+          output += `Area: ${params.data.area.join(', ')}`;
           output += ` <br/> Peer Count: <div class="peer_count"> ${params.data.peer_num} </div>`;
         }
         return output;
@@ -88,16 +88,16 @@ const option: any = reactive({
   },
   symbolSize: 50,
   animationDurationUpdate: 1500,
-  animationEasingUpdate: "quinticInOut" as any,
+  animationEasingUpdate: 'quinticInOut' as any,
   series: [
     {
-      type: "graph",
-      layout: "force",
+      type: 'graph',
+      layout: 'force',
       circular: {
         rotateLabel: true,
       },
       force: {
-        initLayout: "circular",
+        initLayout: 'circular',
         repulsion: 120,
         gravity: 0.02,
         edgeLength: [40, 300],
@@ -107,10 +107,10 @@ const option: any = reactive({
       roam: true,
       label: {
         show: true,
-        position: "right",
-        color: "inherit",
+        position: 'right',
+        color: 'inherit',
         fontWeight: 1000,
-        fontFamily: "Microsoft YaHei",
+        fontFamily: 'Microsoft YaHei',
         formatter: (params: any) => {
           if (params.data.meta && params.data.meta.name) {
             return params.data.meta.name;
@@ -126,7 +126,7 @@ const option: any = reactive({
       data: [],
       links: [],
       emphasis: {
-        focus: "adjacency",
+        focus: 'adjacency',
         lineStyle: {
           width: 10,
         },
@@ -178,7 +178,7 @@ watchEffect(async () => {
         }
       });
       return routers;
-    }, [] as (typeof areas)[number]["router"]);
+    }, [] as (typeof areas)[number]['router']);
 
     // calculate node peers and size
     let { min, max } = all_links.reduce(
@@ -274,7 +274,7 @@ watchEffect(async () => {
                   ? -curveness
                   : curveness,
             },
-            symbol: ["", "arrow"],
+            symbol: ['', 'arrow'],
           });
           if (next_curveness) {
             curveness += 0.07;
@@ -288,8 +288,8 @@ watchEffect(async () => {
     option.series[0].force.repulsion = [(100 * max) / min, 100];
     option.series[0].data = nodes;
     option.series[0].links = edges;
-    option.title.text = asdata?.metadata?.[props.asn + ""]?.display
-      ? `${asdata.metadata[props.asn + ""].display} Network`
+    option.title.text = asdata?.metadata?.[props.asn + '']?.display
+      ? `${asdata.metadata[props.asn + ''].display} Network`
       : `AS ${props.asn}`;
     let markedPeer = new Set<string>();
     for (const link of all_links) {
@@ -308,7 +308,7 @@ watchEffect(async () => {
         value: n.value,
         onselected: () => {
           echarts.value?.dispatchAction({
-            type: "highlight",
+            type: 'highlight',
             seriesIndex: 0,
             name: n.name,
           });
