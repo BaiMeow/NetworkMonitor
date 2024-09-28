@@ -1,6 +1,6 @@
 <script lang="ts" setup>
-import { Netmask } from "netmask";
-import { ref, Ref, watch } from "vue";
+import { Netmask } from 'netmask';
+import { ref, Ref, watch } from 'vue';
 export interface selectItem {
   asn?: string;
   name?: string;
@@ -16,7 +16,7 @@ const props = defineProps<{
 
 const options: Ref<Array<selectItem>> = ref([]);
 
-const input: Ref<string> = ref("");
+const input: Ref<string> = ref('');
 
 watch(
   () => props.data,
@@ -43,13 +43,13 @@ function search(val: string) {
       v.network?.some((n) => n.includes(val)) ||
       (() => {
         try {
-          const nums = val.split(".");
+          const nums = val.split('.');
           if (nums.length !== 4) {
             for (let i = nums.length; i < 4; i++) {
-              nums.push("0");
+              nums.push('0');
             }
           }
-          const sr = new Netmask(nums.join("."));
+          const sr = new Netmask(nums.join('.'));
           return v.network?.some((n) => new Netmask(n).contains(sr.base));
         } catch {
           return false;
