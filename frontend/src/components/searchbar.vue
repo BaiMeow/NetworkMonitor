@@ -1,40 +1,40 @@
 <script lang="ts" setup>
-import { Netmask } from 'netmask';
-import { ref, Ref, watch } from 'vue';
+import { Netmask } from 'netmask'
+import { ref, Ref, watch } from 'vue'
 export interface selectItem {
-  asn?: string;
-  name?: string;
-  network?: Array<string>;
-  value: string;
-  label: string;
-  onselected: () => void;
+  asn?: string
+  name?: string
+  network?: Array<string>
+  value: string
+  label: string
+  onselected: () => void
 }
 
 const props = defineProps<{
-  data: Array<selectItem>;
-}>();
+  data: Array<selectItem>
+}>()
 
-const options: Ref<Array<selectItem>> = ref([]);
+const options: Ref<Array<selectItem>> = ref([])
 
-const input: Ref<string> = ref('');
+const input: Ref<string> = ref('')
 
 watch(
   () => props.data,
-  () => search(input.value)
-);
+  () => search(input.value),
+)
 
 const onchange = (value: string) => {
   props.data
     .find((v) => {
-      return v.value === value;
+      return v.value === value
     })
-    ?.onselected();
-};
+    ?.onselected()
+}
 
 function search(val: string) {
   if (!val) {
-    options.value = props.data;
-    return;
+    options.value = props.data
+    return
   }
   options.value = props.data.filter((v) => {
     return (
@@ -43,20 +43,20 @@ function search(val: string) {
       v.network?.some((n) => n.includes(val)) ||
       (() => {
         try {
-          const nums = val.split('.');
+          const nums = val.split('.')
           if (nums.length !== 4) {
             for (let i = nums.length; i < 4; i++) {
-              nums.push('0');
+              nums.push('0')
             }
           }
-          const sr = new Netmask(nums.join('.'));
-          return v.network?.some((n) => new Netmask(n).contains(sr.base));
+          const sr = new Netmask(nums.join('.'))
+          return v.network?.some((n) => new Netmask(n).contains(sr.base))
         } catch {
-          return false;
+          return false
         }
       })()
-    );
-  });
+    )
+  })
 }
 </script>
 

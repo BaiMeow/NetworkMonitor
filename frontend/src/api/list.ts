@@ -1,23 +1,23 @@
-import axios from "axios";
-import { Resp, ApiHost } from "./consts";
+import axios from 'axios'
+import { Resp, ApiHost } from './consts'
 
-type Graph = OSPFGraph | BGPGraph;
+type Graph = OSPFGraph | BGPGraph
 
 type OSPFGraph = {
-  type: "ospf";
-  asn: number;
-};
+  type: 'ospf'
+  asn: number
+}
 
 type BGPGraph = {
-  type: "bgp";
-};
+  type: 'bgp'
+}
 
 export async function getList() {
   const {
     data: { code, msg, data },
-  } = await axios.get<Resp<Array<Graph>>>(`${ApiHost}/api/list`);
+  } = await axios.get<Resp<Array<Graph>>>(`${ApiHost}/api/list`)
   if (code !== 0) {
-    throw new Error(msg);
+    throw new Error(msg)
   }
-  return data;
+  return data
 }

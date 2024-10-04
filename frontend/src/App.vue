@@ -1,105 +1,105 @@
 <script setup lang="ts">
-import BGP from './components/BGP.vue';
-import OSPF from './components/OSPF.vue';
-import { getList } from './api/list';
-import { ASData, loadASData } from './api/meta';
-import { provide, ref, reactive } from 'vue';
-import { ASDataKey } from './inject/key';
+import BGP from './components/BGP.vue'
+import OSPF from './components/OSPF.vue'
+import { getList } from './api/list'
+import { ASData, loadASData } from './api/meta'
+import { provide, ref, reactive } from 'vue'
+import { ASDataKey } from './inject/key'
 
-const asn = ref(0);
-const graph_type = ref('');
-const menu_rotate = ref('rotate-closed-margin');
-const loading = ref(true);
-const dataReady = ref(false);
+const asn = ref(0)
+const graph_type = ref('')
+const menu_rotate = ref('rotate-closed-margin')
+const loading = ref(true)
+const dataReady = ref(false)
 const loaded = () => {
-  loading.value = false;
-};
-const menu_scale = ref('');
+  loading.value = false
+}
+const menu_scale = ref('')
 const click_fold = () => {
   if (menu_rotate.value == 'rotate-open') {
-    menu_rotate.value = 'rotate-close rotate-closed-margin';
-    menu_scale.value = 'menu-fold';
+    menu_rotate.value = 'rotate-close rotate-closed-margin'
+    menu_scale.value = 'menu-fold'
   } else {
-    menu_rotate.value = 'rotate-open';
-    menu_scale.value = 'menu-expend';
+    menu_rotate.value = 'rotate-open'
+    menu_scale.value = 'menu-expend'
   }
-};
+}
 
-const asdata = ref({} as ASData | null);
-provide(ASDataKey, asdata);
+const asdata = ref({} as ASData | null)
+provide(ASDataKey, asdata)
 
 class bgp {
   enable() {
-    graph_type.value = 'bgp';
+    graph_type.value = 'bgp'
   }
   display() {
-    return 'BGP FULL GRAPH';
+    return 'BGP FULL GRAPH'
   }
 }
 
 class ospf {
-  asn: number;
-  name!: string;
+  asn: number
+  name!: string
   constructor(asn: number) {
-    this.asn = asn;
+    this.asn = asn
   }
   async init() {
-    this.name = asdata.value?.metadata?.[this.asn + '']?.display || '';
+    this.name = asdata.value?.metadata?.[this.asn + '']?.display || ''
   }
   enable() {
-    graph_type.value = 'ospf';
-    asn.value = this.asn;
+    graph_type.value = 'ospf'
+    asn.value = this.asn
   }
   display() {
-    return this.name ? `${this.name} Network` : `AS ${this.asn}`;
+    return this.name ? `${this.name} Network` : `AS ${this.asn}`
   }
 }
 
 interface graph {
-  enable(): void;
-  display(): string;
+  enable(): void
+  display(): string
 }
 
-const graph_list = reactive([] as Array<graph>);
+const graph_list = reactive([] as Array<graph>)
 
 const handle_select = (idx: string) => {
-  loading.value = true;
-  graph_list[+idx].enable();
-};
+  loading.value = true
+  graph_list[+idx].enable()
+}
 
-(async () => {
-  const data = await loadASData();
+;(async () => {
+  const data = await loadASData()
   if (data) {
-    asdata.value = data;
+    asdata.value = data
   }
-  const list = await getList();
+  const list = await getList()
 
   list.forEach((graph) => {
     switch (graph.type) {
       case 'bgp':
-        graph_list.push(new bgp());
-        break;
+        graph_list.push(new bgp())
+        break
       case 'ospf':
-        const gr = new ospf(graph.asn);
-        gr.init();
-        graph_list.push(gr);
-        break;
+        const gr = new ospf(graph.asn)
+        gr.init()
+        graph_list.push(gr)
+        break
     }
-  });
+  })
 
   graph_list.sort((a, b) => {
-    if (a instanceof ospf && b instanceof bgp) return 1;
-    if (b instanceof bgp && a instanceof ospf) return -1;
-    return a.display().localeCompare(b.display());
-  });
+    if (a instanceof ospf && b instanceof bgp) return 1
+    if (b instanceof bgp && a instanceof ospf) return -1
+    return a.display().localeCompare(b.display())
+  })
 
   if (graph_list.length !== 0) {
-    graph_list[0]?.enable();
+    graph_list[0]?.enable()
   } else {
-    alert('no data');
+    alert('no data')
   }
-  dataReady.value = true;
-})();
+  dataReady.value = true
+})()
 </script>
 <template>
   <div class="aside">
