@@ -9,6 +9,7 @@ import { ASDataKey } from './inject/key'
 const asn = ref(0)
 const graph_type = ref('')
 const menu_rotate = ref('rotate-closed-margin')
+const menu_clp = ref('menu-clp')
 const loading = ref(true)
 const dataReady = ref(false)
 const loaded = () => {
@@ -19,9 +20,11 @@ const click_fold = () => {
   if (menu_rotate.value == 'rotate-open') {
     menu_rotate.value = 'rotate-close rotate-closed-margin'
     menu_scale.value = 'menu-fold'
+    menu_clp.value = 'menu-clp'
   } else {
     menu_rotate.value = 'rotate-open'
     menu_scale.value = 'menu-expend'
+    menu_clp.value = ''
   }
 }
 
@@ -103,10 +106,9 @@ const handle_select = (idx: string) => {
 </script>
 <template>
   <div class="aside">
-    <div class="menu">
+    <div class="menu" :class="menu_clp">
       <el-button
         type="primary"
-        circle
         class="menu-button transition-06s"
         :class="menu_rotate"
         @click="click_fold"
@@ -155,6 +157,13 @@ const handle_select = (idx: string) => {
   z-index: 10;
   max-height: 80vh;
   flex-direction: column;
+  border-style: solid;
+  border-width: 1px;
+  transition: border-width 0.6s;
+}
+
+.menu-clp {
+  border-width: 0px;
 }
 
 @keyframes rotation-open {
@@ -194,9 +203,7 @@ const handle_select = (idx: string) => {
 }
 
 .menu {
-  background-color: rgba(255, 255, 255, 0.5);
   backdrop-filter: blur(3px);
-  box-shadow: 1.5px 1.5px 1.5px 1.5px rgba(53, 62, 51, 0.3);
   border-radius: 20px;
 }
 
@@ -220,34 +227,15 @@ const handle_select = (idx: string) => {
 
 .menu-button {
   margin-top: 1vh;
+  margin-bottom: 1vh;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border-width: 0;
 }
 
 .menu-expend {
   max-height: 70vh;
   max-width: 12em;
-}
-
-@media (prefers-color-scheme: dark) {
-  .menu {
-    background-color: rgba(0, 0, 0, 0.5);
-    box-shadow: 1.5px 1.5px 1.5px 1.5px rgba(0, 0, 0, 0.3);
-    color: white;
-  }
-
-  .menu-item {
-    color: white;
-  }
-
-  .menu-item:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-  }
-
-  .el-button--primary {
-    border-color: rgba(255, 255, 255, 0.5);
-  }
-
-  .menu-button {
-    background-color: rgba(0, 0, 0, 0.5);
-  }
 }
 </style>

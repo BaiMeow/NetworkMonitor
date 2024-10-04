@@ -98,41 +98,4 @@ function search(val: string) {
 </template>
 
 <style>
-@media (prefers-color-scheme: dark) {
-  .el-select-dropdown__item {
-    background-color: #333;
-    color: #fff;
-  }
-
-  .el-select-dropdown__item:hover {
-    background-color: #444;
-  }
-  .el-select-dropdown__item.is-hovering {
-    background-color: #444;
-  }
-  .el-select__wrapper {
-    background-color: black;
-    color: #e0e0e0;
-    box-shadow: 0 0 0 2px #333;
-  }
-
-  .el-select__wrapper:hover {
-    box-shadow: 0 0 0 2px gray;
-  }
-
-  .el-select__wrapper:focus {
-    box-shadow: 0 0 0 2px #cfe909;
-  }
-  .el-select__popper.el-popper,
-  .el-select__popper.el-popper .el-popper__arrow:before {
-    border: 1px solid #333;
-  }
-  .el-select__popper.el-popper .el-scrollbar__wrap {
-    background-color: #333;
-  }
-  .el-popper.is-light,
-  .el-popper.is-light > .el-popper__arrow:before {
-    background: #333;
-  }
-}
 </style>

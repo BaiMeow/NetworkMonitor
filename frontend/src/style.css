@@ -5,7 +5,7 @@ html body {
 
 .cost {
   font-size: 16px;
-  color: #138385;
+  color: #80cbc4;
   margin: 0;
   padding: 0;
   text-align: center;
@@ -13,70 +13,45 @@ html body {
 
 .peer_count {
   font-size: 20px;
-  color: #de3a0b;
+  color: #ff8a65;
   margin: 0;
   padding: 1rem;
   text-align: center;
 }
 
 .overannounced-net {
-  color: #de3a0b;
+  color: #ff8a65;
 }
 
 .unannounced-net {
-  color: #b0b0b0;
+  color: #b0bec5;
 }
 
 .unassigned-net {
-  color: #138385;
+  color: #80cbc4;
 }
 
 .app {
-  background-color: #eceff1;
   height: 100vh;
 }
 
-:root {
-  --el-color-primary: green;
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
 }
 
-/* Dark mode */
-@media (prefers-color-scheme: dark) {
-  html body {
-    background-color: #121212;
-    color: #ffffff;
-  }
+::view-transition-old(root) {
+  z-index: 1;
+}
 
-  .cost {
-    color: #80cbc4;
-  }
+::view-transition-new(root) {
+  z-index: 2147483646;
+}
 
-  .peer_count {
-    color: #ff8a65;
-  }
-
-  .overannounced-net {
-    color: #ff8a65;
-  }
-
-  .unannounced-net {
-    color: #b0bec5;
-  }
-
-  .unassigned-net {
-    color: #80cbc4;
-  }
-
-  .app {
-    background-color: #1e1e1e;
-  }
-
-  :root {
-    --el-color-primary: lightgreen;
-  }
-
-  .el-button {
-    background-color: #333;
-    color: #fff;
-  }
+[class="dark"]::view-transition-old(root) {
+  z-index: 2147483646;
+}
+[class="dark"]::view-transition-new(root) {
+  z-index: 1;
 }

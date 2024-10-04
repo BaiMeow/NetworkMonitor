@@ -5,7 +5,7 @@ import { GraphChart } from 'echarts/charts'
 import { TooltipComponent, TitleComponent } from 'echarts/components'
 import VChart from 'vue-echarts'
 import { ECElementEvent, ECharts } from 'echarts'
-import { reactive, inject, ref } from 'vue'
+import { reactive, inject, ref, computed } from 'vue'
 
 import { Netmask } from 'netmask'
 
@@ -14,13 +14,12 @@ import { prettierNet } from '../utils/colornet'
 import { ASData } from '../api/meta'
 import { ASDataKey } from '../inject/key'
 import { selectItem } from './searchbar.vue'
+import { useDark } from '@vueuse/core'
 
+const isDark = useDark()
 const echarts = ref<ECharts | null>()
-
 const loading = ref(true)
-
 const asdata = inject(ASDataKey)?.value
-
 const selectList = ref([] as Array<selectItem>)
 
 interface Edge {
@@ -69,21 +68,21 @@ function mergeObjects(obj1: any, obj2: any): any {
     }
   }
 }
-const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-  ? true
-  : false
 
 const option: any = reactive({
   title: {
     text: 'DN11 & Vidar Network',
+    textStyle: {
+      color: computed(() => (isDark.value ? '#E5EAF3' : 'black')),
+    },
     subtext: '',
   },
   tooltip: {
     trigger: 'item',
     triggerOn: 'mousemove',
-    backgroundColor: isDark ? '#333' : 'white',
+    backgroundColor: computed(() => (isDark.value ? '#333' : 'white')),
     textStyle: {
-      color: isDark ? 'white' : 'black',
+      color: computed(() => (isDark.value ? 'white' : 'black')),
     },
     confine: true,
     enterable: true,
@@ -387,7 +386,7 @@ const handle_mouse_up = (_: ECElementEvent) => {
 </script>
 
 <template>
-  <div v-if="loading" class="graph dark-mode loading">Loading...</div>
+  <div v-if="loading" class="graph loading">Loading...</div>
   <v-chart
     ref="echarts"
     :option="option"
@@ -396,15 +395,25 @@ const handle_mouse_up = (_: ECElementEvent) => {
     @mousedown="handle_mouse_down"
     @mouseup="handle_mouse_up"
   />
-  <searchbar class="search-bar" :data="selectList"></searchbar>
+  <div class="top-bar">
+    <dark />
+    <searchbar class="search-bar" :data="selectList"></searchbar>
+  </div>
 </template>
 
 <style scoped>
-.search-bar {
+.top-bar {
   position: absolute;
+  display: flex;
   top: 2vh;
   right: 2vw;
-  width: 12rem;
+  width: 14rem;
+  align-items: center;
+  gap: 1rem;
+}
+
+.search-bar {
+  flex-grow: 1;
 }
 
 .graph {
@@ -422,11 +431,5 @@ const handle_mouse_up = (_: ECElementEvent) => {
   font-size: 2rem;
   font-weight: bold;
   color: #2242a3;
-}
-
-@media (prefers-color-scheme: dark) {
-  .loading {
-    color: gray;
-  }
 }
 </style>

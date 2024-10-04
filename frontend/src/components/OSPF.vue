@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { inject, reactive, ref, watchEffect } from 'vue'
+import { inject, reactive, ref, watchEffect, computed } from 'vue'
 
 import { use } from 'echarts/core'
 import { CanvasRenderer } from 'echarts/renderers'
@@ -11,8 +11,10 @@ import { ECElementEvent, ECharts } from 'echarts'
 import { getOSPF } from '../api/ospf'
 import { ASDataKey } from '../inject/key'
 import { ASData } from '../api/meta'
+import { useDark } from '@vueuse/core'
 
 use([CanvasRenderer, GraphChart, TooltipComponent, TitleComponent])
+const isDark = useDark()
 
 const echarts = ref<ECharts | null>()
 
@@ -49,21 +51,21 @@ const loading = ref(true)
 const asdata = inject(ASDataKey)?.value as ASData
 
 const selectList = ref([] as Array<any>)
-const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-  ? true
-  : false
 
 const option: any = reactive({
   title: {
     text: '',
+    textStyle: {
+      color: computed(() => (isDark.value ? '#E5EAF3' : 'black')),
+    },
     subtext: '',
   },
   tooltip: {
     trigger: 'item',
     triggerOn: 'mousemove',
-    backgroundColor: isDark ? '#333' : 'white',
+    backgroundColor: computed(() => (isDark.value ? '#333' : 'white')),
     textStyle: {
-      color: isDark ? 'white' : 'black',
+      color: computed(() => (isDark.value ? 'white' : 'black')),
     },
     confine: true,
     enterable: true,
@@ -122,6 +124,8 @@ const option: any = reactive({
       edgeLabel: {
         show: true,
         formatter: (params: any) => params.data.cost,
+        padding: 0,
+        color: computed(() => (isDark.value ? '#E5EAF3' : 'black')),
       },
       data: [],
       links: [],
@@ -161,7 +165,6 @@ watchEffect(async () => {
       return nodes
     }, [] as Node[])
 
-    console.log(areas)
     const all_links = areas
       .flatMap((area) => area.links)
       .filter((link) => link !== undefined)
@@ -349,14 +352,24 @@ const handle_mouse_up = (_: ECElementEvent) => {
     @mousedown="handle_mouse_down"
     @mouseup="handle_mouse_up"
   />
-  <searchbar class="search-bar" :data="selectList"></searchbar>
+  <div class="top-bar">
+    <dark />
+    <searchbar class="search-bar" :data="selectList"></searchbar>
+  </div>
 </template>
 <style scoped>
-.search-bar {
+.top-bar {
   position: absolute;
+  display: flex;
   top: 2vh;
   right: 2vw;
-  width: 12rem;
+  width: 14rem;
+  align-items: center;
+  gap: 1rem;
+}
+
+.search-bar {
+  flex-grow: 1;
 }
 
 .graph {
@@ -374,10 +387,5 @@ const handle_mouse_up = (_: ECElementEvent) => {
   font-size: 2rem;
   font-weight: bold;
   color: #2242a3;
-}
-@media (prefers-color-scheme: dark) {
-  .loading {
-    color: gray;
-  }
 }
 </style>
