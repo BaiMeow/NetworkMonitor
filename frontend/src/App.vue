@@ -226,21 +226,26 @@ const handle_select = (idx: string) => {
   max-height: 70vh;
   max-width: 12em;
 }
+
 @media (prefers-color-scheme: dark) {
   .menu {
     background-color: rgba(0, 0, 0, 0.5);
     box-shadow: 1.5px 1.5px 1.5px 1.5px rgba(0, 0, 0, 0.3);
     color: white;
   }
+
   .menu-item {
     color: white;
   }
+
   .menu-item:hover {
     background-color: rgba(255, 255, 255, 0.1);
   }
+
   .el-button--primary {
     border-color: rgba(255, 255, 255, 0.5);
   }
+
   .menu-button {
     background-color: rgba(0, 0, 0, 0.5);
   }
