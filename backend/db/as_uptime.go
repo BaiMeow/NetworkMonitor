@@ -19,7 +19,8 @@ func BatchRecordASUp(ASNs []uint32, t time.Time) error {
 		utils.Map(ASNs, func(asn uint32) *write.Point {
 			return influxdb2.NewPointWithMeasurement("bgp").
 				AddField("up", 1).
-				AddTag("asn", strconv.FormatUint(uint64(asn), 10))
+				AddTag("asn", strconv.FormatUint(uint64(asn), 10)).
+				SetTime(t)
 		})...); err != nil {
 		log.Printf("write record fail:%v", err)
 		return ErrDatabase
