@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, defineProps, inject, onUnmounted } from 'vue'
+import { ref, inject, onUnmounted } from 'vue'
 import { ASDataKey } from '@/inject/key'
 import { getUptimeRecent } from '@/api/uptime'
 
