@@ -7,7 +7,7 @@ const downColor = '#455a64'
 const props = defineProps<{
   data: Array<number>
 }>()
-const current = computed(() => props.data[props.data.length - 1])
+const current = computed(() => props.data[0])
 </script>
 
 <template>
