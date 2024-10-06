@@ -15,7 +15,7 @@ import { ASData } from '../api/meta'
 
 import { ASDataKey } from '../inject/key'
 
-import Searchbar, { selectItem } from './SearchBar.vue'
+import { selectItem } from './SearchBar.vue'
 
 import BGPUptime from './uptime/BGPUptime.vue'
 import { useDark } from '@vueuse/core'
