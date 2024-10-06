@@ -422,7 +422,7 @@ const handle_click_zr = (e: ElementEvent) => {
   />
   <div class="top-bar">
     <Dark />
-    <Searchbar class="search-bar" :data="selectList"></searchbar>
+    <SearchBar class="search-bar" :data="selectList" />
   </div>
   <Transition name="fade" appear>
     <BGPUptime class="uptime" v-if="uptime_asn != 0" :asn="uptime_asn" />

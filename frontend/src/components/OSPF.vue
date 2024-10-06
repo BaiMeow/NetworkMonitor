@@ -353,8 +353,8 @@ const handle_mouse_up = (_: ECElementEvent) => {
     @mouseup="handle_mouse_up"
   />
   <div class="top-bar">
-    <dark />
-    <searchbar class="search-bar" :data="selectList"></searchbar>
+    <Dark />
+    <Searchbar class="search-bar" :data="selectList" />
   </div>
 </template>
 <style scoped>
