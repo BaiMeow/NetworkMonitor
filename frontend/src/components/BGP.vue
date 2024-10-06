@@ -15,7 +15,7 @@ import { ASData } from '../api/meta'
 
 import { ASDataKey } from '../inject/key'
 
-import { selectItem } from './searchbar.vue'
+import Searchbar, { selectItem } from './SearchBar.vue'
 
 import BGPUptime from './uptime/BGPUptime.vue'
 import { useDark } from '@vueuse/core'
@@ -421,8 +421,8 @@ const handle_click_zr = (e: ElementEvent) => {
     @mouseup="handle_mouse_up"
   />
   <div class="top-bar">
-    <dark />
-    <searchbar class="search-bar" :data="selectList"></searchbar>
+    <Dark />
+    <Searchbar class="search-bar" :data="selectList"></searchbar>
   </div>
   <Transition name="fade" appear>
     <BGPUptime class="uptime" v-if="uptime_asn != 0" :asn="uptime_asn" />
@@ -481,7 +481,7 @@ const handle_click_zr = (e: ElementEvent) => {
   right: 100vw;
   width: 0;
   opacity: 0;
-} 
+}
 
 .fade-enter,
 .fade-leave-to {
