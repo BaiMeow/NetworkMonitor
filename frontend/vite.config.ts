@@ -5,9 +5,15 @@ import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
 import vue from '@vitejs/plugin-vue'
 import IconsResolver from 'unplugin-icons/resolver'
 import Icons from 'unplugin-icons/vite'
+import path from 'path'
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+    },
+  },
   plugins: [
     vue(),
     AutoImport({

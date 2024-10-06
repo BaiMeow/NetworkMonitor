@@ -4,7 +4,7 @@ import { CanvasRenderer } from 'echarts/renderers'
 import { GraphChart } from 'echarts/charts'
 import { TooltipComponent, TitleComponent } from 'echarts/components'
 import VChart from 'vue-echarts'
-import { ECElementEvent, ECharts } from 'echarts'
+import { ECElementEvent, ECharts, ElementEvent } from 'echarts'
 import { reactive, inject, ref, computed } from 'vue'
 
 import { Netmask } from 'netmask'
@@ -12,14 +12,22 @@ import { Netmask } from 'netmask'
 import { getBGP } from '../api/bgp'
 import { prettierNet } from '../utils/colornet'
 import { ASData } from '../api/meta'
+
 import { ASDataKey } from '../inject/key'
+
 import { selectItem } from './searchbar.vue'
+
+import BGPUptime from './uptime/BGPUptime.vue'
 import { useDark } from '@vueuse/core'
 
 const isDark = useDark()
+
 const echarts = ref<ECharts | null>()
+
 const loading = ref(true)
+
 const asdata = inject(ASDataKey)?.value
+
 const selectList = ref([] as Array<selectItem>)
 
 interface Edge {
@@ -383,6 +391,21 @@ const handle_mouse_up = (_: ECElementEvent) => {
     option.series[0].force.layoutAnimation = false
   }, 6000)
 }
+
+const uptime_asn = ref(0)
+
+const handle_click = (e: ECElementEvent) => {
+  if (e.dataType === 'node') {
+    const data = e.data as Node
+    uptime_asn.value = parseInt(data.name)
+  }
+}
+
+const handle_click_zr = (e: ElementEvent) => {
+  if (e.target === undefined) {
+    uptime_asn.value = 0
+  }
+}
 </script>
 
 <template>
@@ -392,6 +415,8 @@ const handle_mouse_up = (_: ECElementEvent) => {
     :option="option"
     class="graph"
     autoresize
+    @zr:click="handle_click_zr"
+    @click="handle_click"
     @mousedown="handle_mouse_down"
     @mouseup="handle_mouse_up"
   />
@@ -399,9 +424,23 @@ const handle_mouse_up = (_: ECElementEvent) => {
     <dark />
     <searchbar class="search-bar" :data="selectList"></searchbar>
   </div>
+  <Transition name="fade" appear>
+    <BGPUptime class="uptime" v-if="uptime_asn != 0" :asn="uptime_asn" />
+  </Transition>
 </template>
 
 <style scoped>
+.uptime {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 80vw;
+  height: 80vh;
+  margin: auto;
+}
+
 .top-bar {
   position: absolute;
   display: flex;
@@ -431,5 +470,23 @@ const handle_mouse_up = (_: ECElementEvent) => {
   font-size: 2rem;
   font-weight: bold;
   color: #2242a3;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: all 0.4s ease-in-out;
+}
+
+.fade-enter-from {
+  right: 100vw;
+  width: 0;
+  opacity: 0;
+} 
+
+.fade-enter,
+.fade-leave-to {
+  left: 100vw;
+  opacity: 0;
+  width: 0;
 }
 </style>
