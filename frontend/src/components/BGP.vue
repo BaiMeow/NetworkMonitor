@@ -472,9 +472,11 @@ const handle_click_zr = (e: ElementEvent) => {
   color: #2242a3;
 }
 
-.fade-enter-active,
+.fade-enter-active {
+  transition: all 0.4s ease-out;
+}
 .fade-leave-active {
-  transition: all 0.4s ease-in-out;
+  transition: all 0.4s ease-in;
 }
 
 .fade-enter-from {
