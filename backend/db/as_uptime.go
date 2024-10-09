@@ -69,7 +69,7 @@ func BGPASNLast10Tickers(asn uint32, last time.Time) ([]time.Time, error) {
 		fmt.Sprintf(`from(bucket: "bgp-uptime")
   |> range(start: %d, stop: %d)
   |> filter(fn: (r) => r["_measurement"] == "bgp")
-  |> filter(fn: (r) => r["asn"] == "%d")`, utils.TickOffset(last, -10).Unix(), last.Unix(), asn))
+  |> filter(fn: (r) => r["asn"] == "%d")`, utils.TickOffset(last, -10).Add(time.Second*30).Unix(), last.Add(time.Second*30).Unix(), asn))
 	if err != nil {
 		log.Printf("query fail:%v", err)
 		return t, ErrDatabase

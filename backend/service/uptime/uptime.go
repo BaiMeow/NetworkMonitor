@@ -10,7 +10,7 @@ import (
 )
 
 func AllASNRecord() ([]uint32, error) {
-	if !db.Enabled{
+	if !db.Enabled {
 		return nil, nil
 	}
 	ASNs, err := db.AllASRecordAfter(time.Now().Add(-conf.Uptime.StoreDuration))
@@ -21,7 +21,7 @@ func AllASNRecord() ([]uint32, error) {
 }
 
 func Last10TickerRecord(asn uint32) ([]bool, error) {
-	if !db.Enabled{
+	if !db.Enabled {
 		return nil, nil
 	}
 	last := utils.LastUptimeTick()
@@ -31,7 +31,7 @@ func Last10TickerRecord(asn uint32) ([]bool, error) {
 	}
 	up := make([]bool, 10)
 	for _, record := range records {
-		offset := last.Sub(record) / conf.Uptime.Interval
+		offset := int(last.Sub(record) / conf.Uptime.Interval)
 		if offset >= 10 || offset < 0 {
 			log.Printf("record time wrong:%v, last:%v, offset:%v asn:%v", record, last, offset, asn)
 			continue
