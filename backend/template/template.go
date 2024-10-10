@@ -11,7 +11,7 @@ type Template struct {
 	*template.Template
 }
 
-var Funcs template.FuncMap = make(template.FuncMap)
+var Funcs = make(template.FuncMap)
 
 func init() {
 	//register utils func to template

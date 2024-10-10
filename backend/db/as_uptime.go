@@ -11,17 +11,19 @@ import (
 	"time"
 )
 
-func BatchRecordASUp(ASNs []uint32, t time.Time) error {
+func BatchRecordASUp(ASNs map[uint32]int, t time.Time) error {
 	if !Enabled {
 		return ErrDatabaseDisabled
 	}
-	if err := bgpWrite.WritePoint(context.Background(),
-		utils.Map(ASNs, func(asn uint32) *write.Point {
-			return influxdb2.NewPointWithMeasurement("bgp").
-				AddField("up", 1).
-				AddTag("asn", strconv.FormatUint(uint64(asn), 10)).
-				SetTime(t)
-		})...); err != nil {
+	var points []*write.Point
+	for asn, links := range ASNs {
+		points = append(points, influxdb2.NewPointWithMeasurement("bgp").
+			AddField("up", 1).
+			AddField("links", links).
+			AddTag("asn", strconv.FormatUint(uint64(asn), 10)).
+			SetTime(t))
+	}
+	if err := bgpWrite.WritePoint(context.Background(), points...); err != nil {
 		log.Printf("write record fail:%v", err)
 		return ErrDatabase
 	}
