@@ -3,6 +3,7 @@ package uptime
 import (
 	"fmt"
 	"github.com/BaiMeow/NetworkMonitor/conf"
+	"github.com/BaiMeow/NetworkMonitor/consts"
 	"github.com/BaiMeow/NetworkMonitor/db"
 	"github.com/BaiMeow/NetworkMonitor/utils"
 	"log"
@@ -39,4 +40,23 @@ func Last10TickerRecord(asn uint32) ([]bool, error) {
 		up[offset] = true
 	}
 	return up, nil
+}
+
+func Links(asn uint32, window, t time.Duration) ([]consts.LinkTime, error) {
+	if !db.Enabled {
+		return nil, nil
+	}
+	if t > time.Hour*24 && window != time.Hour {
+		return nil, fmt.Errorf("invalid window size %s for time range %s", window, t)
+	}
+	if t <= time.Hour*24 && window != time.Minute {
+		return nil, fmt.Errorf("invalid window size %s for time range %s", window, t)
+	}
+	stopTime := utils.LastUptimeTick()
+	startTime := stopTime.Add(-t)
+	links, err := db.BGPLinks(asn, startTime, stopTime, window)
+	if err != nil {
+		return links, fmt.Errorf("get links fail:%v", err)
+	}
+	return links, nil
 }

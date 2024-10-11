@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"fmt"
+	"github.com/BaiMeow/NetworkMonitor/consts"
 	"github.com/BaiMeow/NetworkMonitor/utils"
 	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
 	"github.com/influxdata/influxdb-client-go/v2/api/write"
@@ -81,4 +82,50 @@ func BGPASNLast10Tickers(asn uint32, last time.Time) ([]time.Time, error) {
 		t = append(t, res.Record().Time())
 	}
 	return t, nil
+}
+
+// BGPLinks query the number of links for given ASN, startTime and window.
+// param window should be either time.Minute or time.Hour
+func BGPLinks(asn uint32, startTime, stopTime time.Time, window time.Duration) ([]consts.LinkTime, error) {
+	if !Enabled {
+		return nil, ErrDatabaseDisabled
+	}
+
+	var every string
+	if window == time.Minute {
+		every = "1m"
+	} else if window == time.Hour {
+		every = "1h"
+	} else {
+		log.Printf("invalid window:%v", window)
+		return nil, ErrInvalidInput
+	}
+
+	var points []consts.LinkTime
+	res, err := bgpQuery.Query(context.Background(), fmt.Sprintf(`from(bucket: "bgp-uptime")
+  |> range(start: %d,stop: %d)
+  |> filter(fn: (r) => r["_measurement"] == "bgp" and r["_field"] == "links" and r["asn"] == "%d")
+  |> aggregateWindow(every: %s, fn: max, createEmpty: true)
+  |> yield(name: "max")`, startTime.Unix(), stopTime.Unix(), asn, every))
+	if err != nil {
+		log.Printf("query fail:%v", err)
+		return nil, ErrDatabase
+	}
+	for res.Next() {
+		rc := res.Record()
+		var v int64
+		switch value := rc.Value().(type) {
+		case int64:
+			v = value
+		case nil:
+			v = 0
+		default:
+			log.Printf("convert influxdb value fail:%v", rc)
+		}
+		points = append(points, consts.LinkTime{
+			Time:  rc.Time(),
+			Links: int(v),
+		})
+	}
+	return points, nil
 }

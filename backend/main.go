@@ -5,6 +5,7 @@ import (
 	"github.com/pkg/errors"
 	"log"
 	"net/http"
+	"os"
 	"path"
 	"strconv"
 
@@ -40,6 +41,10 @@ func main() {
 		}
 	}
 
+	if os.Getenv("SKIP_UPTIME") == "true" {
+		skipUptime = true
+	}
+
 	log.Println("init graph")
 	if err := graph.Init(); err != nil {
 		log.Fatalf("init graph fail:%v", err)
@@ -57,6 +62,7 @@ func main() {
 	r.GET("/api/ospf/uptime/:routerId/recent", controller.OSPFRecentUptime)
 	r.GET("/api/bgp", controller.BGP)
 	r.GET("/api/bgp/uptime/:asn/recent", controller.BGPRecentUptime)
+	r.GET("/api/bgp/uptime/:asn/links", controller.BGPLinks)
 	r.GET("/api/list", controller.List)
 	r.StaticFS("/assets/", &staticRouter{"/static/assets"})
 	r.StaticFileFS("/avatar.png", "/static/avatar.png", http.FS(FS))

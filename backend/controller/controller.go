@@ -10,3 +10,13 @@ var RespErrASNInvalid = Resp{
 	Code: -1,
 	Msg:  "invalid ASN",
 }
+
+var RespErrParamInvalid = Resp{
+	Code: -2,
+	Msg:  "invalid param",
+}
+
+var RespInternalError = Resp{
+	Code: -3,
+	Msg:  "internal error",
+}

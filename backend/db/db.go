@@ -19,6 +19,7 @@ var (
 )
 
 var ErrDatabaseDisabled = fmt.Errorf("database not enabled")
+var ErrInvalidInput = fmt.Errorf("input parameter invalid")
 
 const bucketBGPUptime = "bgp-uptime"
 
