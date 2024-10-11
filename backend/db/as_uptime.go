@@ -37,8 +37,9 @@ func AllASRecordAfter(after time.Time) ([]uint32, error) {
 	var asns []uint32
 	res, err := bgpQuery.Query(context.Background(),
 		fmt.Sprintf(`from(bucket: "bgp-uptime")
-  				|> range(start: %d)    
-				|> unique(column: "asn")`, after.Unix()))
+	|> range(start: %d)    
+	|> filter(fn: (r) => r["_measurement"] == "bgp" and r["_field"] == "up")
+	|> unique(column: "asn")`, after.Unix()))
 	if err != nil {
 		log.Printf("query fail:%v", err)
 		return asns, ErrDatabase
@@ -70,8 +71,8 @@ func BGPASNLast10Tickers(asn uint32, last time.Time) ([]time.Time, error) {
 	res, err := bgpQuery.Query(context.Background(),
 		fmt.Sprintf(`from(bucket: "bgp-uptime")
   |> range(start: %d, stop: %d)
-  |> filter(fn: (r) => r["_measurement"] == "bgp")
-  |> filter(fn: (r) => r["asn"] == "%d")`, utils.TickOffset(last, -10).Add(time.Second*30).Unix(), last.Add(time.Second*30).Unix(), asn))
+  |> filter(fn: (r) => r["_measurement"] == "bgp" and r["_field"] == "up" and r["asn"] == "%d" )`,
+			utils.TickOffset(last, -10).Add(time.Second*30).Unix(), last.Add(time.Second*30).Unix(), asn))
 	if err != nil {
 		log.Printf("query fail:%v", err)
 		return t, ErrDatabase
