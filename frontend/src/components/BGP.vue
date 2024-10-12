@@ -473,22 +473,18 @@ const handle_click_zr = (e: ElementEvent) => {
 }
 
 .fade-enter-active {
-  transition: all 0.4s ease-out;
+  transition: all 0.2s ease-in;
 }
 .fade-leave-active {
-  transition: all 0.4s ease-in;
+  transition: all 0.2s ease-out;
 }
 
 .fade-enter-from {
-  right: 100vw;
-  width: 0;
   opacity: 0;
 }
 
 .fade-enter,
 .fade-leave-to {
-  left: 100vw;
   opacity: 0;
-  width: 0;
 }
 </style>

@@ -8,6 +8,7 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     BGP: typeof import('./src/components/BGP.vue')['default']
+    BGPLatestStatus: typeof import('./src/components/uptime/BGPLatestStatus.vue')['default']
     BGPUptime: typeof import('./src/components/uptime/BGPUptime.vue')['default']
     Dark: typeof import('./src/components/Dark.vue')['default']
     ElButton: typeof import('element-plus/es')['ElButton']
@@ -21,6 +22,7 @@ declare module 'vue' {
     IEpSearch: typeof import('~icons/ep/search')['default']
     IEpSunny: typeof import('~icons/ep/sunny')['default']
     LatestStatus: typeof import('./src/components/uptime/LatestStatus.vue')['default']
+    LinksHistory: typeof import('./src/components/uptime/LinksHistory.vue')['default']
     OSPF: typeof import('./src/components/OSPF.vue')['default']
     SearchBar: typeof import('./src/components/SearchBar.vue')['default']
   }

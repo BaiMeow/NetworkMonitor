@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { ref, inject, onUnmounted } from 'vue'
+import { ref, inject } from 'vue'
 import { ASDataKey } from '@/inject/key'
-import { getUptimeRecent } from '@/api/uptime'
 
 const { asn } = defineProps<{
   asn: number
@@ -9,39 +8,29 @@ const { asn } = defineProps<{
 
 const asdata = inject(ASDataKey)?.value
 
-const uptime10 = ref([
-  true,
-  true,
-  true,
-  true,
-  true,
-  true,
-  true,
-  true,
-  true,
-  true,
-])
-
-const update = async () => {
-  const uptimes = await getUptimeRecent(asn)
-  uptime10.value = uptimes.slice(0, 10)
-}
-update()
-const ticker = setInterval(update, 1000 * 60)
-onUnmounted(() => clearInterval(ticker))
+const graph_mode = ref('24h')
 </script>
 
 <template>
   <div class="uptime-panel">
     <div class="uptime-head">
-      {{
-        asdata?.metadata?.[asn + '']?.display
-          ? `${asdata.metadata[asn + ''].display} Network`
-          : `AS ${asn}`
-      }}
+      <div class="title">
+        {{
+          asdata?.metadata?.[asn + '']?.display
+            ? `${asdata.metadata[asn + ''].display} Network`
+            : `AS ${asn}`
+        }}
+      </div>
+      <BGPLatestStatus class="status-bar" :asn="asn" />
     </div>
     <div class="uptime-body">
-      <LatestStatus :data="uptime10" />
+      <div class="wrap-graph">
+        <el-select class="graph-selecter" v-model="graph_mode" placeholder="">
+          <el-option value="24h" label="1 day" />
+          <el-option value="168h" label="7 days" />
+        </el-select>
+        <LinksHistory class="links-graph" :asn="asn" :time="graph_mode" />
+      </div>
     </div>
   </div>
 </template>
@@ -61,14 +50,15 @@ onUnmounted(() => clearInterval(ticker))
 }
 
 .uptime-head {
+  display: flex;
+  align-items: center;
   border-top-left-radius: 20px;
   border-top-right-radius: 20px;
   background-color: rgba(176, 190, 197, 0.5);
-  padding: 10px;
-  padding-left: 20px;
+  padding: 20px;
   height: 3rem;
   font-weight: bold;
-  color: #37474f;
+  color: black;
   font-size: 20px;
   line-height: 2.5;
   font-family: 'Microsoft YaHei';
@@ -77,15 +67,35 @@ onUnmounted(() => clearInterval(ticker))
 .uptime-body {
   background-color: rgba(176, 190, 197, 0.5);
   padding: 2rem;
-  height: calc(100% - 7rem - 22px);
+  height: calc(100% - 7rem - 40px);
   border-bottom-left-radius: 20px;
   border-bottom-right-radius: 20px;
   font-family: 'Microsoft YaHei';
-  color: #37474f;
   font-size: 16px;
   line-height: 1.5;
   text-align: justify;
   margin-top: 2px;
+}
+
+.graph-selecter {
+  position: absolute;
+  width: 6rem;
+  margin-right: auto;
+  z-index: 10;
+  right: 2rem;
+}
+
+.status-bar {
+  margin-left: auto;
+  margin-right: 1rem;
+  float: right;
+}
+
+.wrap-graph {
+  display: relative;
+  height: 100%;
+  width: 100%;
+  float: right;
 }
 
 html.dark .uptime-panel {
@@ -94,11 +104,10 @@ html.dark .uptime-panel {
 
 html.dark .uptime-head {
   background-color: rgba(48, 48, 48, 0.5);
-  color: #cfd8dc;
+  color: #e5eaf3;
 }
 
 html.dark .uptime-body {
   background-color: rgba(48, 48, 48, 0.5);
-  color: #cfd8dc;
 }
 </style>

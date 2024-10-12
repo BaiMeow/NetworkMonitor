@@ -55,3 +55,7 @@ html body {
 [class="dark"]::view-transition-new(root) {
   z-index: 1;
 }
+
+.graph-selecter .el-select__wrapper {
+  background-color: transparent;
+}
