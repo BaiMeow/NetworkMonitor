@@ -38,7 +38,7 @@ func tickerInsertDB() {
 			mp[lk.Dst]++
 		}
 		err := db.BatchRecordASUp(mp, now)
-		log.Println("record as up")
+		log.Printf("record as %d links %d at %v", len(mp), len(mp), now)
 		if err != nil {
 			log.Println(fmt.Errorf("record as up fail:%v", err))
 		}
