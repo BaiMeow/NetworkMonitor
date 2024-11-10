@@ -1,20 +1,14 @@
 <script setup lang="ts">
-import BGP from './components/BGP.vue'
-import OSPF from './components/OSPF.vue'
 import { getList } from './api/list'
 import { ASData, loadASData } from './api/meta'
 import { provide, ref, reactive } from 'vue'
 import { ASDataKey } from './inject/key'
+import { useRouter } from 'vue-router'
 
-const asn = ref(0)
-const graph_type = ref('')
+const router = useRouter()
 const menu_rotate = ref('rotate-closed-margin')
 const menu_clp = ref('menu-clp')
-const loading = ref(true)
 const dataReady = ref(false)
-const loaded = () => {
-  loading.value = false
-}
 const menu_scale = ref('')
 const click_fold = () => {
   if (menu_rotate.value == 'rotate-open') {
@@ -32,11 +26,11 @@ const asdata = ref({} as ASData | null)
 provide(ASDataKey, asdata)
 
 class bgp {
-  enable() {
-    graph_type.value = 'bgp'
-  }
   display() {
     return 'BGP FULL GRAPH'
+  }
+  path() {
+    return '/bgp'
   }
 }
 
@@ -49,26 +43,20 @@ class ospf {
   async init() {
     this.name = asdata.value?.metadata?.[this.asn + '']?.display || ''
   }
-  enable() {
-    graph_type.value = 'ospf'
-    asn.value = this.asn
-  }
   display() {
     return this.name ? `${this.name} Network` : `AS ${this.asn}`
+  }
+  path() {
+    return `/ospf/${this.asn}`
   }
 }
 
 interface graph {
-  enable(): void
   display(): string
+  path(): string
 }
 
 const graph_list = reactive([] as Array<graph>)
-
-const handle_select = (idx: string) => {
-  loading.value = true
-  graph_list[+idx].enable()
-}
 
 ;(async () => {
   const data = await loadASData()
@@ -96,9 +84,11 @@ const handle_select = (idx: string) => {
     return a.display().localeCompare(b.display())
   })
 
-  if (graph_list.length !== 0) {
-    graph_list[0]?.enable()
-  } else {
+  if (router.currentRoute.value.path === '/') {
+    router.push(graph_list[0].path())
+  }
+
+  if (graph_list.length === 0) {
     alert('no data')
   }
   dataReady.value = true
@@ -119,27 +109,19 @@ const handle_select = (idx: string) => {
         :collapse-transition="false"
         class="menu-list transition-06s"
         :class="menu_scale"
-        default-active="0"
-        @select="handle_select"
+        router
       >
         <el-menu-item
           class="menu-item"
-          v-for="(graph, index) in graph_list"
-          :index="index.toString()"
+          v-for="graph in graph_list"
+          :index="graph.path()"
         >
           <span>{{ graph.display() }}</span>
         </el-menu-item>
       </el-menu>
     </div>
   </div>
-  <template v-if="dataReady">
-    <OSPF
-      v-if="graph_type === 'ospf' && asn != null && dataReady"
-      :asn="asn"
-      :loaded="loaded"
-    />
-    <BGP v-else-if="graph_type === 'bgp' && dataReady" :loaded="loaded" />
-  </template>
+  <router-view v-if="dataReady" />
 </template>
 
 <style scoped>
