@@ -19,8 +19,24 @@ import { selectItem } from './SearchBar.vue'
 
 import BGPUptime from './uptime/BGPUptime.vue'
 import { useDark } from '@vueuse/core'
+import { useRoute } from 'vue-router'
 
 const isDark = useDark()
+
+const route = useRoute()
+
+const highlightOnce = (() => {
+  let once = true
+  return () => {
+    if (!once) return
+    setTimeout(() => {
+      if (route.params.asn) {
+        selectList.value.find((a) => a.asn === route.params.asn)?.onselected()
+      }
+    }, 1000)
+    once = false
+  }
+})()
 
 const echarts = ref<ECharts | null>()
 
@@ -348,7 +364,7 @@ const refreshData = async () => {
   selectList.value = nodes.map((n) => {
     return {
       label: n.meta?.display || n.name,
-      asn: n.value,
+      asn: n.name,
       name: n.name,
       display: n.meta?.display || n.name,
       network: [
@@ -372,6 +388,7 @@ const refreshData = async () => {
       },
     }
   })
+  highlightOnce()
 }
 
 setLoading()
