@@ -13,7 +13,7 @@ import { getBGP } from '../api/bgp'
 import { prettierNet } from '../utils/colornet'
 import { ASData } from '../api/meta'
 
-import { ASDataKey } from '../inject/key'
+import { ASDataKey, LoadingKey } from '../inject/key'
 
 import { selectItem } from './SearchBar.vue'
 
@@ -24,7 +24,10 @@ const isDark = useDark()
 
 const echarts = ref<ECharts | null>()
 
-const loading = ref(true)
+const { setLoading, doneLoading } = inject(LoadingKey) as {
+  setLoading: () => void
+  doneLoading: () => void
+}
 
 const asdata = inject(ASDataKey)?.value
 
@@ -88,7 +91,7 @@ const option: any = reactive({
   tooltip: {
     trigger: 'item',
     triggerOn: 'mousemove',
-    backgroundColor: computed(() => (isDark.value ? '#333' : 'white')),
+    backgroundColor: computed(() => (isDark.value ? '#121212' : 'white')),
     textStyle: {
       color: computed(() => (isDark.value ? 'white' : 'black')),
     },
@@ -271,7 +274,7 @@ const refreshData = async () => {
     return () => {
       if (once) return
       once = true
-      loading.value = true
+      setLoading()
       option.series[0].force.friction = 1
       return
     }
@@ -341,7 +344,7 @@ const refreshData = async () => {
     0,
   )} Peers: ${edges.length}`
   option.series[0].force.friction = 0.15
-  loading.value = false
+  doneLoading()
   selectList.value = nodes.map((n) => {
     return {
       label: n.meta?.display || n.name,
@@ -371,6 +374,7 @@ const refreshData = async () => {
   })
 }
 
+setLoading()
 refreshData()
 setInterval(() => {
   refreshData()
@@ -409,7 +413,6 @@ const handle_click_zr = (e: ElementEvent) => {
 </script>
 
 <template>
-  <div v-if="loading" class="graph loading">Loading...</div>
   <v-chart
     ref="echarts"
     :option="option"

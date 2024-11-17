@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { getList } from './api/list'
 import { ASData, loadASData } from './api/meta'
-import { provide, ref, reactive } from 'vue'
-import { ASDataKey } from './inject/key'
+import { provide, ref, reactive, computed } from 'vue'
+import { ASDataKey, LoadingKey } from './inject/key'
 import { useRouter } from 'vue-router'
+import { useDark } from '@vueuse/core'
 
 const router = useRouter()
 const menu_rotate = ref('rotate-closed-margin')
@@ -23,7 +24,19 @@ const click_fold = () => {
 }
 
 const asdata = ref({} as ASData | null)
+const isDark = useDark()
+const bgColor = computed(() => (isDark ? '#121212' : 'white'))
+const loading = ref(true)
+
 provide(ASDataKey, asdata)
+provide(LoadingKey, {
+  setLoading: () => {
+    loading.value = true
+  },
+  doneLoading: () => {
+    loading.value = false
+  },
+})
 
 class bgp {
   display() {
@@ -122,6 +135,13 @@ const graph_list = reactive([] as Array<graph>)
     </div>
   </div>
   <router-view v-if="dataReady" />
+  <div
+    v-if="loading"
+    class="loading graph"
+    :style="{ 'background-color': bgColor }"
+  >
+    Loading...
+  </div>
 </template>
 
 <style scoped>
@@ -219,5 +239,22 @@ const graph_list = reactive([] as Array<graph>)
 .menu-expend {
   max-height: 70vh;
   max-width: 12em;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 2rem;
+  font-weight: bold;
+  color: #2242a3;
+}
+
+.graph {
+  height: 100dvh;
+  width: 100vw;
+  top: 0;
+  left: 0;
+  position: absolute;
 }
 </style>

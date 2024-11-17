@@ -9,7 +9,7 @@ import VChart from 'vue-echarts'
 import { ECElementEvent, ECharts } from 'echarts'
 
 import { getOSPF } from '../api/ospf'
-import { ASDataKey } from '../inject/key'
+import { ASDataKey, LoadingKey } from '../inject/key'
 import { ASData } from '../api/meta'
 import { useDark } from '@vueuse/core'
 import { useRoute } from 'vue-router'
@@ -43,7 +43,10 @@ interface Params<T> {
   data: T
 }
 
-const loading = ref(true)
+const { setLoading, doneLoading } = inject(LoadingKey) as {
+  setLoading: () => void
+  doneLoading: () => void
+}
 
 const asdata = inject(ASDataKey)?.value as ASData
 
@@ -318,9 +321,9 @@ const load_data = async (asn: string) => {
 watch(
   () => route.params.asn,
   async (new_asn) => {
-    loading.value = true
+    setLoading();
     await load_data(new_asn as string)
-    loading.value = false
+    doneLoading();
   },
   { immediate: true },
 )
@@ -343,9 +346,7 @@ const handle_mouse_up = (_: ECElementEvent) => {
 </script>
 
 <template>
-  <div v-if="loading" class="graph loading">Loading...</div>
   <v-chart
-    v-if="!loading"
     ref="echarts"
     :option="option"
     class="graph"

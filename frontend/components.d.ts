@@ -23,6 +23,7 @@ declare module 'vue' {
     IEpSunny: typeof import('~icons/ep/sunny')['default']
     LatestStatus: typeof import('./src/components/uptime/LatestStatus.vue')['default']
     LinksHistory: typeof import('./src/components/uptime/LinksHistory.vue')['default']
+    Loading: typeof import('./src/components/status/Loading.vue')['default']
     OSPF: typeof import('./src/components/OSPF.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
