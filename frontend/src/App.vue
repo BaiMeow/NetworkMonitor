@@ -25,7 +25,7 @@ const click_fold = () => {
 
 const asdata = ref({} as ASData | null)
 const isDark = useDark()
-const bgColor = computed(() => (isDark ? '#121212' : 'white'))
+const bgColor = computed(() => (isDark.value ? '#121212' : 'white'))
 const loading = ref(true)
 
 provide(ASDataKey, asdata)
