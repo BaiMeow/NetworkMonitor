@@ -136,13 +136,6 @@ const graph_list = reactive([] as Array<graph>)
   </div>
   <Graph/>
   <router-view v-if="dataReady" />
-  <div
-    v-if="loading"
-    class="loading graph"
-    :style="{ 'background-color': bgColor }"
-  >
-    Loading...
-  </div>
 </template>
 
 <style scoped>
