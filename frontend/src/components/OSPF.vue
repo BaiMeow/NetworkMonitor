@@ -1,14 +1,14 @@
 <script lang="ts" setup>
-import { inject, ref, watch, computed } from 'vue'
+import { inject, watch, computed } from 'vue'
 
 import { use } from 'echarts/core'
 import { CanvasRenderer } from 'echarts/renderers'
 import { GraphChart } from 'echarts/charts'
 import { TooltipComponent, TitleComponent } from 'echarts/components'
-import { ECElementEvent, ECharts } from 'echarts'
+import { ECElementEvent } from 'echarts'
 
 import { getOSPF } from '../api/ospf'
-import { ASDataKey, LoadingKey } from '../inject/key'
+import { ASDataKey } from '../inject/key'
 import { ASData } from '../api/meta'
 import { useDark } from '@vueuse/core'
 import { onBeforeRouteLeave, useRoute } from 'vue-router'

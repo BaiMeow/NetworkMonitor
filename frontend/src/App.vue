@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import { getList } from './api/list'
 import { ASData, loadASData } from './api/meta'
-import { provide, ref, reactive, computed } from 'vue'
+import { provide, ref, reactive } from 'vue'
 import { ASDataKey, LoadingKey } from './inject/key'
 import { useRouter } from 'vue-router'
-import { useDark } from '@vueuse/core'
 
 const router = useRouter()
 const menu_rotate = ref('rotate-closed-margin')
@@ -24,8 +23,6 @@ const click_fold = () => {
 }
 
 const asdata = ref({} as ASData | null)
-const isDark = useDark()
-const bgColor = computed(() => (isDark.value ? '#121212' : 'white'))
 const loading = ref(true)
 
 provide(ASDataKey, asdata)
