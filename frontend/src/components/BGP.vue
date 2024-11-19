@@ -246,7 +246,6 @@ const refreshData = async () => {
     return () => {
       if (once) return
       once = true
-      loading.value = true
       option.series[0].force.friction = 1
       return
     }
@@ -320,7 +319,7 @@ const refreshData = async () => {
   selectList.value = nodes.map((n) => {
     return {
       label: n.meta?.display || n.name,
-      asn: n.value,
+      asn: n.name,
       name: n.name,
       display: n.meta?.display || n.name,
       network: [

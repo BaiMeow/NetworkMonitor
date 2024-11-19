@@ -8,7 +8,7 @@ import { TooltipComponent, TitleComponent } from 'echarts/components'
 import { ECElementEvent, ECharts } from 'echarts'
 
 import { getOSPF } from '../api/ospf'
-import { ASDataKey } from '../inject/key'
+import { ASDataKey, LoadingKey } from '../inject/key'
 import { ASData } from '../api/meta'
 import { useDark } from '@vueuse/core'
 import { onBeforeRouteLeave, useRoute } from 'vue-router'
@@ -314,7 +314,6 @@ const load_data = async (asn: string) => {
 watch(
   () => route.params.asn,
   async (new_asn) => {
-    loading.value = true
     await load_data(new_asn as string)
     option.series[0].force.layoutAnimation = false
     loading.value = false
