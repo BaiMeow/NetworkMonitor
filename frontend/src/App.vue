@@ -121,6 +121,7 @@ const graph_list = reactive([] as Array<graph>)
       </el-menu>
     </div>
   </div>
+  <Graph/>
   <router-view v-if="dataReady" />
 </template>
 

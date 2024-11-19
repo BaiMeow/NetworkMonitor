@@ -1,24 +1,26 @@
 <script lang="ts" setup>
-import { inject, reactive, ref, watch, computed } from 'vue'
+import { inject, ref, watch, computed } from 'vue'
 
 import { use } from 'echarts/core'
 import { CanvasRenderer } from 'echarts/renderers'
 import { GraphChart } from 'echarts/charts'
 import { TooltipComponent, TitleComponent } from 'echarts/components'
-import VChart from 'vue-echarts'
 import { ECElementEvent, ECharts } from 'echarts'
 
 import { getOSPF } from '../api/ospf'
 import { ASDataKey } from '../inject/key'
 import { ASData } from '../api/meta'
 import { useDark } from '@vueuse/core'
-import { useRoute } from 'vue-router'
+import { onBeforeRouteLeave, useRoute } from 'vue-router'
+import { useGraph, useGraphEvent } from '@/state/graph'
+
+import { dispatchEchartAction } from '@/state/graph'
 
 const route = useRoute()
 use([CanvasRenderer, GraphChart, TooltipComponent, TitleComponent])
 const isDark = useDark()
 
-const echarts = ref<ECharts | null>()
+const { option, selectList, loading } = useGraph()
 
 interface Edge {
   source: string
@@ -43,102 +45,96 @@ interface Params<T> {
   data: T
 }
 
-const loading = ref(true)
-
 const asdata = inject(ASDataKey)?.value as ASData
 
-const selectList = ref([] as Array<any>)
-
-const option: any = reactive({
-  title: {
-    text: '',
-    textStyle: {
+option.title = {
+  text: '',
+  textStyle: {
+    color: computed(() => (isDark.value ? '#E5EAF3' : 'black')),
+  },
+  subtext: '',
+}
+option.tooltip = {
+  trigger: 'item',
+  triggerOn: 'mousemove',
+  backgroundColor: computed(() => (isDark.value ? '#333' : 'white')),
+  textStyle: {
+    color: computed(() => (isDark.value ? 'white' : 'black')),
+  },
+  confine: true,
+  enterable: true,
+  formatter: (params: Params<any>) => {
+    if (params.dataType === 'edge') {
+      params = params as Params<Edge>
+      return `Link: ${params.data.source} ↔ ${params.data.target} <br/> Cost: <div class="cost">${params.data.cost}</div>`
+    } else {
+      params = params as Params<Node>
+      let output = `Router ID: ${params.data.value}`
+      if ('meta' in params.data) {
+        output += '<br/>'
+        for (let key in params.data.meta) {
+          output += `${key}: ${params.data.meta[key]} <br/>`
+        }
+        output += `Area: ${params.data.area.join(', ')}`
+        output += ` <br/> Peer Count: <div class="peer_count"> ${params.data.peer_num} </div>`
+      }
+      return output
+    }
+  },
+}
+option.symbolSize = 50
+option.animationDurationUpdate = 1500
+option.animationEasingUpdate = 'quinticInOut'
+option.series = [
+  {
+    type: 'graph',
+    layout: 'force',
+    circular: {
+      rotateLabel: true,
+    },
+    force: {
+      initLayout: 'circular',
+      repulsion: 120,
+      gravity: 0.02,
+      edgeLength: [40, 300],
+      friction: 1,
+      layoutAnimation: false,
+    },
+    roam: true,
+    label: {
+      show: true,
+      position: 'right',
+      color: 'inherit',
+      fontWeight: 1000,
+      fontFamily: 'Microsoft YaHei',
+      formatter: (params: any) => {
+        if (params.data.meta && params.data.meta.name) {
+          return params.data.meta.name
+        }
+        return params.data.value
+      },
+    },
+    draggable: true,
+    edgeLabel: {
+      show: true,
+      formatter: (params: any) => params.data.cost,
+      padding: 0,
       color: computed(() => (isDark.value ? '#E5EAF3' : 'black')),
     },
-    subtext: '',
-  },
-  tooltip: {
-    trigger: 'item',
-    triggerOn: 'mousemove',
-    backgroundColor: computed(() => (isDark.value ? '#333' : 'white')),
-    textStyle: {
-      color: computed(() => (isDark.value ? 'white' : 'black')),
-    },
-    confine: true,
-    enterable: true,
-    formatter: (params: Params<any>) => {
-      if (params.dataType === 'edge') {
-        params = params as Params<Edge>
-        return `Link: ${params.data.source} ↔ ${params.data.target} <br/> Cost: <div class="cost">${params.data.cost}</div>`
-      } else {
-        params = params as Params<Node>
-        let output = `Router ID: ${params.data.value}`
-        if ('meta' in params.data) {
-          output += '<br/>'
-          for (let key in params.data.meta) {
-            output += `${key}: ${params.data.meta[key]} <br/>`
-          }
-          output += `Area: ${params.data.area.join(', ')}`
-          output += ` <br/> Peer Count: <div class="peer_count"> ${params.data.peer_num} </div>`
-        }
-        return output
-      }
-    },
-  },
-  symbolSize: 50,
-  animationDurationUpdate: 1500,
-  animationEasingUpdate: 'quinticInOut' as any,
-  series: [
-    {
-      type: 'graph',
-      layout: 'force',
-      circular: {
-        rotateLabel: true,
-      },
-      force: {
-        initLayout: 'circular',
-        repulsion: 120,
-        gravity: 0.02,
-        edgeLength: [40, 300],
-        friction: 1,
-        layoutAnimation: false,
-      },
-      roam: true,
-      label: {
-        show: true,
-        position: 'right',
-        color: 'inherit',
-        fontWeight: 1000,
-        fontFamily: 'Microsoft YaHei',
-        formatter: (params: any) => {
-          if (params.data.meta && params.data.meta.name) {
-            return params.data.meta.name
-          }
-          return params.data.value
-        },
-      },
-      draggable: true,
-      edgeLabel: {
-        show: true,
-        formatter: (params: any) => params.data.cost,
-        padding: 0,
-        color: computed(() => (isDark.value ? '#E5EAF3' : 'black')),
-      },
-      data: [],
-      links: [],
-      emphasis: {
-        focus: 'adjacency',
-        lineStyle: {
-          width: 10,
-        },
+    data: [],
+    links: [],
+    emphasis: {
+      focus: 'adjacency',
+      lineStyle: {
+        width: 10,
       },
     },
-  ],
-  lineStyle: {
-    opacity: 0.9,
-    width: 2,
   },
-})
+]
+option.lineStyle = {
+  opacity: 0.9,
+  width: 2,
+}
 
 const load_data = async (asn: string) => {
   const areas = await getOSPF(parseInt(asn as string))
@@ -305,7 +301,7 @@ const load_data = async (asn: string) => {
       label: n.name,
       value: n.value,
       onselected: () => {
-        echarts.value?.dispatchAction({
+        dispatchEchartAction({
           type: 'highlight',
           seriesIndex: 0,
           name: n.name,
@@ -320,6 +316,7 @@ watch(
   async (new_asn) => {
     loading.value = true
     await load_data(new_asn as string)
+    option.series[0].force.layoutAnimation = false
     loading.value = false
   },
   { immediate: true },
@@ -327,7 +324,8 @@ watch(
 
 let timer: NodeJS.Timeout | null = null
 
-const handle_mouse_down = (_: ECElementEvent) => {
+const { handleMouseUp, handleMouseDown } = useGraphEvent()
+handleMouseDown.value = (_: ECElementEvent) => {
   if (timer) {
     clearTimeout(timer)
   }
@@ -335,58 +333,18 @@ const handle_mouse_down = (_: ECElementEvent) => {
   option.series[0].force.layoutAnimation = true
 }
 
-const handle_mouse_up = (_: ECElementEvent) => {
+handleMouseUp.value = (_: ECElementEvent) => {
   timer = setTimeout(() => {
     option.series[0].force.layoutAnimation = false
   }, 6000)
 }
+
+onBeforeRouteLeave(() => {
+  if (timer) {
+    clearTimeout(timer)
+  }
+})
 </script>
 
-<template>
-  <div v-if="loading" class="graph loading">Loading...</div>
-  <v-chart
-    v-if="!loading"
-    ref="echarts"
-    :option="option"
-    class="graph"
-    autoresize
-    @mousedown="handle_mouse_down"
-    @mouseup="handle_mouse_up"
-  />
-  <div class="top-bar">
-    <Dark />
-    <SearchBar class="search-bar" :data="selectList" />
-  </div>
-</template>
-<style scoped>
-.top-bar {
-  position: absolute;
-  display: flex;
-  top: 2vh;
-  right: 2vw;
-  width: 14rem;
-  align-items: center;
-  gap: 1rem;
-}
-
-.search-bar {
-  flex-grow: 1;
-}
-
-.graph {
-  width: 100vw;
-  height: 100%;
-  top: 0;
-  left: 0;
-  position: absolute;
-}
-
-.loading {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 2rem;
-  font-weight: bold;
-  color: #2242a3;
-}
-</style>
+<template></template>
+<style scoped></style>

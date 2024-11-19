@@ -17,6 +17,7 @@ declare module 'vue' {
     ElMenuItem: typeof import('element-plus/es')['ElMenuItem']
     ElOption: typeof import('element-plus/es')['ElOption']
     ElSelect: typeof import('element-plus/es')['ElSelect']
+    Graph: typeof import('./src/components/Graph.vue')['default']
     IEpArrowRightBold: typeof import('~icons/ep/arrow-right-bold')['default']
     IEpMoon: typeof import('~icons/ep/moon')['default']
     IEpSearch: typeof import('~icons/ep/search')['default']

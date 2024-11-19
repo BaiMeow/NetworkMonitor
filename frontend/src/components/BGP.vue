@@ -3,34 +3,23 @@ import { use } from 'echarts/core'
 import { CanvasRenderer } from 'echarts/renderers'
 import { GraphChart } from 'echarts/charts'
 import { TooltipComponent, TitleComponent } from 'echarts/components'
-import VChart from 'vue-echarts'
 import { ECElementEvent, ECharts, ElementEvent } from 'echarts'
 import { reactive, inject, ref, computed } from 'vue'
-
 import { Netmask } from 'netmask'
-
 import { getBGP } from '../api/bgp'
 import { prettierNet } from '../utils/colornet'
 import { ASData } from '../api/meta'
-
 import { ASDataKey } from '../inject/key'
-
-import { selectItem } from './SearchBar.vue'
-
 import BGPUptime from './uptime/BGPUptime.vue'
 import { useDark } from '@vueuse/core'
-
 import { mergeObjects } from '../utils/obj'
+import { useGraph, useGraphEvent } from '@/state/graph'
+import { onBeforeRouteLeave } from 'vue-router'
+import { dispatchEchartAction } from '@/state/graph'
 
 const isDark = useDark()
 
-const echarts = ref<ECharts | null>()
-
-const loading = ref(true)
-
 const asdata = inject(ASDataKey)?.value
-
-const selectList = ref([] as Array<selectItem>)
 
 interface Edge {
   source: string
@@ -59,120 +48,124 @@ interface Params<T> {
 
 use([CanvasRenderer, GraphChart, TooltipComponent, TitleComponent])
 
-const option: any = reactive({
-  title: {
-    text: 'DN11 & Vidar Network',
-    textStyle: {
-      color: computed(() => (isDark.value ? '#E5EAF3' : 'black')),
-    },
-    subtext: '',
+const { option, selectList, loading } = useGraph()
+
+option.title = {
+  text: 'DN11 & Vidar Network',
+  textStyle: {
+    color: computed(() => (isDark.value ? '#E5EAF3' : 'black')),
   },
-  tooltip: {
-    trigger: 'item',
-    triggerOn: 'mousemove',
-    backgroundColor: computed(() => (isDark.value ? '#333' : 'white')),
-    textStyle: {
-      color: computed(() => (isDark.value ? 'white' : 'black')),
-    },
-    confine: true,
-    enterable: true,
-    formatter: (params: Params<any>) => {
-      if (params.dataType === 'edge') {
-        params = params as Params<Edge>
-        return `${params.data.source} ↔ ${params.data.target}`
+  subtext: '',
+}
+option.tooltip = {
+  trigger: 'item',
+  triggerOn: 'mousemove',
+  backgroundColor: computed(() => (isDark.value ? '#333' : 'white')),
+  textStyle: {
+    color: computed(() => (isDark.value ? 'white' : 'black')),
+  },
+  confine: true,
+  enterable: true,
+  formatter: (params: Params<any>) => {
+    if (params.dataType === 'edge') {
+      params = params as Params<Edge>
+      return `${params.data.source} ↔ ${params.data.target}`
+    }
+
+    // dataType === node
+    params = params as Params<Node>
+    let output = `ASN: ${params.data.name}`
+
+    if (params.data.meta) {
+      const metadata: ASData['metadata'][''] = params.data.meta
+      if (metadata.display) {
+        output += `<br/>name: ${metadata.display}`
       }
-
-      // dataType === node
-      params = params as Params<Node>
-      let output = `ASN: ${params.data.name}`
-
-      if (params.data.meta) {
-        const metadata: ASData['metadata'][''] = params.data.meta
-        if (metadata.display) {
-          output += `<br/>name: ${metadata.display}`
-        }
-        if (metadata?.monitor?.appendix) {
-          const {
-            monitor: { appendix },
-          } = metadata
-          for (let key in appendix) {
-            const value = appendix[key] as string | string[]
-            if (typeof value === 'string') {
-              output += `<br/>${key}: ${value}`
-            } else if (Array.isArray(value)) {
-              output += `<br/>${key}:`
-              for (let i in value) {
-                output += `<br/> - ${value[i]}`
-              }
+      if (metadata?.monitor?.appendix) {
+        const {
+          monitor: { appendix },
+        } = metadata
+        for (let key in appendix) {
+          const value = appendix[key] as string | string[]
+          if (typeof value === 'string') {
+            output += `<br/>${key}: ${value}`
+          } else if (Array.isArray(value)) {
+            output += `<br/>${key}:`
+            for (let i in value) {
+              output += `<br/> - ${value[i]}`
             }
           }
         }
       }
-      output += `<br/> network:<br/>`
-      if (asdata) {
-        output += prettierNet(
-          params.data.network,
-          params.data.name,
-          asdata.announcements,
-        )
-      } else {
-        output += params.data.network.join('<br/>')
-        output += `<br/>`
-      }
-      output += `Peer Count: <div class="peer_count"> ${params.data.peer_num} </div>`
-      return output
+    }
+    output += `<br/> network:<br/>`
+    if (asdata) {
+      output += prettierNet(
+        params.data.network,
+        params.data.name,
+        asdata.announcements,
+      )
+    } else {
+      output += params.data.network.join('<br/>')
+      output += `<br/>`
+    }
+    output += `Peer Count: <div class="peer_count"> ${params.data.peer_num} </div>`
+    return output
+  },
+  position: function () {
+    return [20, 50]
+  },
+}
+
+option.series = [
+  {
+    type: 'graph',
+    symbolSize: 50,
+    layout: 'force',
+    lineStyle: {
+      color: 'source',
+      opacity: 0.4,
+      width: 0.5,
+      curveness: 0.1,
     },
-    position: function () {
-      return [20, 50]
+    force: {
+      repulsion: 500,
+      gravity: 0.3,
+      friction: 1,
+      edgeLength: [10, 140],
+      layoutAnimation: false,
+    },
+    roam: true,
+    label: {
+      show: true,
+      position: 'right',
+      color: 'inherit',
+      fontWeight: 1000,
+      fontFamily: 'Microsoft YaHei',
+      formatter: (params: any) => {
+        if (params.data.meta && params.data.meta.display) {
+          return params.data.meta.display
+        }
+        return params.data.name
+      },
+    },
+    labelLayout: {
+      hideOverlap: true,
+    },
+    edgeLabel: {
+      show: false,
+    },
+    draggable: true,
+    data: [],
+    links: [],
+    emphasis: {
+      focus: 'adjacency',
+      lineStyle: {
+        width: 10,
+      },
     },
   },
-  series: [
-    {
-      type: 'graph',
-      symbolSize: 50,
-      layout: 'force',
-      lineStyle: {
-        color: 'source',
-        opacity: 0.4,
-        width: 0.5,
-        curveness: 0.1,
-      },
-      force: {
-        repulsion: 500,
-        gravity: 0.3,
-        friction: 1,
-        edgeLength: [10, 140],
-        layoutAnimation: false,
-      },
-      roam: true,
-      label: {
-        show: true,
-        position: 'right',
-        color: 'inherit',
-        fontWeight: 1000,
-        fontFamily: 'Microsoft YaHei',
-        formatter: (params: any) => {
-          if (params.data.meta && params.data.meta.display) {
-            return params.data.meta.display
-          }
-          return params.data.name
-        },
-      },
-      labelLayout: {
-        hideOverlap: true,
-      },
-      draggable: true,
-      data: [],
-      links: [],
-      emphasis: {
-        focus: 'adjacency',
-        lineStyle: {
-          width: 10,
-        },
-      },
-    },
-  ],
-})
+]
 
 const refreshData = async () => {
   const resp = await getBGP()
@@ -338,12 +331,12 @@ const refreshData = async () => {
       ],
       value: n.name,
       onselected: () => {
-        echarts.value?.dispatchAction({
+        dispatchEchartAction({
           type: 'highlight',
           seriesIndex: 0,
           name: n.name,
         })
-        echarts.value?.dispatchAction({
+        dispatchEchartAction({
           type: 'showTip',
           seriesIndex: 0,
           name: n.name,
@@ -354,13 +347,15 @@ const refreshData = async () => {
 }
 
 refreshData()
-setInterval(() => {
+const interval = setInterval(() => {
   refreshData()
 }, 60 * 1000)
 
 let timer: NodeJS.Timeout | null = null
 
-const handle_mouse_down = (_: ECElementEvent) => {
+const { handleClick, handleMouseDown, handleMouseUp, handleZrClick } =
+  useGraphEvent()
+handleMouseDown.value = (_: ECElementEvent) => {
   if (timer) {
     clearTimeout(timer)
   }
@@ -368,7 +363,7 @@ const handle_mouse_down = (_: ECElementEvent) => {
   option.series[0].force.layoutAnimation = true
 }
 
-const handle_mouse_up = (_: ECElementEvent) => {
+handleMouseUp.value = (_: ECElementEvent) => {
   timer = setTimeout(() => {
     option.series[0].force.layoutAnimation = false
   }, 6000)
@@ -376,36 +371,30 @@ const handle_mouse_up = (_: ECElementEvent) => {
 
 const uptime_asn = ref(0)
 
-const handle_click = (e: ECElementEvent) => {
+handleClick.value = (e: ECElementEvent) => {
   if (e.dataType === 'node') {
     const data = e.data as Node
     uptime_asn.value = parseInt(data.name)
   }
 }
 
-const handle_click_zr = (e: ElementEvent) => {
+handleZrClick.value = (e: ElementEvent) => {
   if (e.target === undefined) {
     uptime_asn.value = 0
   }
 }
+
+onBeforeRouteLeave(() => {
+  if (timer) {
+    clearTimeout(timer)
+  }
+  if (interval) {
+    clearInterval(interval)
+  }
+})
 </script>
 
 <template>
-  <div v-if="loading" class="graph loading">Loading...</div>
-  <v-chart
-    ref="echarts"
-    :option="option"
-    class="graph"
-    autoresize
-    @zr:click="handle_click_zr"
-    @click="handle_click"
-    @mousedown="handle_mouse_down"
-    @mouseup="handle_mouse_up"
-  />
-  <div class="top-bar">
-    <Dark />
-    <SearchBar class="search-bar" :data="selectList" />
-  </div>
   <Transition name="fade" appear>
     <BGPUptime class="uptime" v-if="uptime_asn != 0" :asn="uptime_asn" />
   </Transition>
@@ -423,35 +412,12 @@ const handle_click_zr = (e: ElementEvent) => {
   margin: auto;
 }
 
-.top-bar {
-  position: absolute;
-  display: flex;
-  top: 2vh;
-  right: 2vw;
-  width: 14rem;
-  align-items: center;
-  gap: 1rem;
-}
-
-.search-bar {
-  flex-grow: 1;
-}
-
 .graph {
   height: 100dvh;
   width: 100vw;
   top: 0;
   left: 0;
   position: absolute;
-}
-
-.loading {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 2rem;
-  font-weight: bold;
-  color: #2242a3;
 }
 
 .fade-enter-active {
