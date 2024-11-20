@@ -2,7 +2,7 @@
 import { getList } from './api/list'
 import { ASData, loadASData } from './api/meta'
 import { provide, ref, reactive } from 'vue'
-import { ASDataKey, LoadingKey } from './inject/key'
+import { ASDataKey } from './inject/key'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
@@ -10,6 +10,7 @@ const menu_rotate = ref('rotate-closed-margin')
 const menu_clp = ref('menu-clp')
 const dataReady = ref(false)
 const menu_scale = ref('')
+
 const click_fold = () => {
   if (menu_rotate.value == 'rotate-open') {
     menu_rotate.value = 'rotate-close rotate-closed-margin'
@@ -23,17 +24,8 @@ const click_fold = () => {
 }
 
 const asdata = ref({} as ASData | null)
-const loading = ref(true)
 
 provide(ASDataKey, asdata)
-provide(LoadingKey, {
-  setLoading: () => {
-    loading.value = true
-  },
-  doneLoading: () => {
-    loading.value = false
-  },
-})
 
 class bgp {
   display() {
