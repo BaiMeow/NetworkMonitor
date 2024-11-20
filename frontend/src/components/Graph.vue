@@ -1,16 +1,12 @@
 <script lang="ts" setup>
-import {
-  listenEchartAction,
-  useGraph,
-  useGraphEvent,
-} from '@/state/graph'
+import { listenEchartAction, useGraph, useGraphEvent } from '@/state/graph'
 import { ECElementEvent, ECharts, ElementEvent } from 'echarts'
 import VChart from 'vue-echarts'
 import { TooltipComponent, TitleComponent } from 'echarts/components'
 import { CanvasRenderer } from 'echarts/renderers'
 import { GraphChart } from 'echarts/charts'
 import { use } from 'echarts/core'
-import { ref, watch } from 'vue'
+import { ref } from 'vue'
 
 use([CanvasRenderer, GraphChart, TooltipComponent, TitleComponent])
 
@@ -22,36 +18,41 @@ listenEchartAction((payload, opt) => {
   echarts.value?.dispatchAction(payload, opt)
 })
 
-let showLoadingTimeout = setTimeout(()=>{},0)
-
-const showLoading = ref(true)
-watch(()=>loading.value,(cur,old)=>{
-  if (old&&!cur){
-    clearTimeout(showLoadingTimeout)
-    showLoading.value = false
-  }else if (cur&&!old){
-    showLoadingTimeout = setTimeout(()=>{
-      showLoading.value = true
-    },200)
-  }else{
-    showLoading.value = cur
-  }
-})
-
+// let showLoadingTimeout = setTimeout(() => {}, 0)
+// const showLoading = ref(true)
+// watch(
+//   () => loading.value,
+//   (cur, old) => {
+//     if (old && !cur) {
+//       clearTimeout(showLoadingTimeout)
+//       showLoading.value = false
+//     } else if (cur && !old) {
+//       showLoadingTimeout = setTimeout(() => {
+//         showLoading.value = true
+//       }, 200)
+//     } else {
+//       showLoading.value = cur
+//     }
+//   },
+// )
 </script>
 <template>
-  <div v-if="showLoading" class="graph loading">Loading...</div>
-  <v-chart
-    v-else
-    ref="echarts"
-    :option="option"
-    class="graph"
-    autoresize
-    @mousedown="(e: ECElementEvent) => handleMouseDown?.(e)"
-    @mouseup="(e: ECElementEvent) => handleMouseUp?.(e)"
-    @click="(e: ECElementEvent) => handleClick?.(e)"
-    @zr:click="(e: ElementEvent) => handleZrClick?.(e)"
-  />
+  <Transition>
+    <div v-if="loading" class="graph loading">Loading...</div>
+  </Transition>
+  <Transition>
+    <v-chart
+      v-if="!loading"
+      ref="echarts"
+      :option="option"
+      class="graph"
+      autoresize
+      @mousedown="(e: ECElementEvent) => handleMouseDown?.(e)"
+      @mouseup="(e: ECElementEvent) => handleMouseUp?.(e)"
+      @click="(e: ECElementEvent) => handleClick?.(e)"
+      @zr:click="(e: ElementEvent) => handleZrClick?.(e)"
+    />
+  </Transition>
   <div class="top-bar">
     <Dark />
     <SearchBar class="search-bar" :data="selectList" />
@@ -88,5 +89,15 @@ watch(()=>loading.value,(cur,old)=>{
 
 .search-bar {
   flex-grow: 1;
+}
+
+.v-enter-active,
+.v-leave-active {
+  transition: opacity 0.5s ease;
+}
+
+.v-enter-from,
+.v-leave-to {
+  opacity: 0;
 }
 </style>
