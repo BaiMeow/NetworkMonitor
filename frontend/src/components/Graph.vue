@@ -21,9 +21,6 @@ const echarts = ref<ECharts | null>(null)
 listenEchartAction((payload, opt) => {
   echarts.value?.dispatchAction(payload, opt)
 })
-setInterval(() => {
-  console.log(option.series[0])
-}, 1000)
 </script>
 <template>
   <div v-if="loading" class="graph loading">Loading...</div>
