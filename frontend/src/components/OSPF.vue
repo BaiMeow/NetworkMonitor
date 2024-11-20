@@ -22,6 +22,8 @@ const isDark = useDark()
 
 const { option, selectList, loading } = useGraph()
 
+loading.value = true
+
 interface Edge {
   source: string
   target: string

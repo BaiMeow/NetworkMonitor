@@ -10,7 +10,7 @@ import { TooltipComponent, TitleComponent } from 'echarts/components'
 import { CanvasRenderer } from 'echarts/renderers'
 import { GraphChart } from 'echarts/charts'
 import { use } from 'echarts/core'
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 
 use([CanvasRenderer, GraphChart, TooltipComponent, TitleComponent])
 
@@ -21,10 +21,28 @@ const echarts = ref<ECharts | null>(null)
 listenEchartAction((payload, opt) => {
   echarts.value?.dispatchAction(payload, opt)
 })
+
+let showLoadingTimeout = setTimeout(()=>{},0)
+
+const showLoading = ref(true)
+watch(()=>loading.value,(cur,old)=>{
+  if (old&&!cur){
+    clearTimeout(showLoadingTimeout)
+    showLoading.value = false
+  }else if (cur&&!old){
+    showLoadingTimeout = setTimeout(()=>{
+      showLoading.value = true
+    },200)
+  }else{
+    showLoading.value = cur
+  }
+})
+
 </script>
 <template>
-  <div v-if="loading" class="graph loading">Loading...</div>
+  <div v-if="showLoading" class="graph loading">Loading...</div>
   <v-chart
+    v-else
     ref="echarts"
     :option="option"
     class="graph"

@@ -50,6 +50,8 @@ use([CanvasRenderer, GraphChart, TooltipComponent, TitleComponent])
 
 const { option, selectList, loading } = useGraph()
 
+loading.value = true
+
 option.title = {
   text: 'DN11 & Vidar Network',
   textStyle: {
