@@ -216,13 +216,15 @@ const refreshData = async () => {
     }).length
     node.value = '' + node.peer_num
     node.symbolSize = Math.pow(node.peer_num + 3, 1 / 2) * 7
-    if (asdata?.metadata && node.name in asdata?.metadata) {
-      const customNode = asdata.metadata[node.name].monitor?.customNode
-      if (customNode) {
-        mergeObjects(node, asdata.metadata[node.name].monitor?.customNode)
-      }
-      node.meta = asdata.metadata[node.name]
+
+    const nodeMeta = asdata?.metadata?.[node.name]
+    if (nodeMeta?.monitor?.customNode) {
+      mergeObjects(node, nodeMeta.monitor?.customNode)
     }
+    if (nodeMeta) {
+      node.meta = nodeMeta
+    }
+
     if (node.peer_num === 0) {
       node.symbol =
         'path://M255.633,0C145.341,0.198,55.994,89.667,55.994,200.006v278.66c0,14.849,17.953,22.285,28.453,11.786l38.216-39.328 l54.883,55.994c6.51,6.509,17.063,6.509,23.572,0L256,451.124l54.883,55.994c6.509,6.509,17.062,6.509,23.571,0l54.884-55.994 l38.216,39.327c10.499,10.499,28.453,3.063,28.453-11.786V201.719C456.006,91.512,365.84-0.197,255.633,0z M172.664,266.674 c-27.572,0-50.001-22.429-50.001-50.001s22.43-50.001,50.001-50.001s50.001,22.43,50.001,50.001S200.236,266.674,172.664,266.674z M339.336,266.674c-27.572,0-50.001-22.429-50.001-50.001s22.43-50.001,50.001-50.001s50.001,22.43,50.001,50.001 S366.908,266.674,339.336,266.674z'
@@ -352,19 +354,19 @@ const interval = setInterval(() => {
   refreshData()
 }, 60 * 1000)
 
-let timer: NodeJS.Timeout | null = null
+let timer:any = null
 
 const { handleClick, handleMouseDown, handleMouseUp, handleZrClick } =
   useGraphEvent()
-handleMouseDown.value = (_: ECElementEvent) => {
+handleMouseDown.value = () => {
   if (timer) {
     clearTimeout(timer)
   }
   option.series[0].force.friction = 0.15
   option.series[0].force.layoutAnimation = true
-}
+} 
 
-handleMouseUp.value = (_: ECElementEvent) => {
+handleMouseUp.value = () => {
   timer = setTimeout(() => {
     option.series[0].force.layoutAnimation = false
   }, 6000)
