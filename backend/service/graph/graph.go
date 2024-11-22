@@ -2,16 +2,16 @@ package graph
 
 import (
 	"github.com/BaiMeow/NetworkMonitor/graph"
-	"github.com/BaiMeow/NetworkMonitor/parse"
+	parse2 "github.com/BaiMeow/NetworkMonitor/graph/parse"
 	"github.com/BaiMeow/NetworkMonitor/service/uptime"
 	"log"
 	"net/netip"
 	"slices"
 )
 
-func GetOSPF(asn uint32) *parse.OSPF { return graph.OSPF[asn] }
+func GetOSPF(asn uint32) *parse2.OSPF { return graph.OSPF[asn] }
 
-func GetBGP() *parse.BGP {
+func GetBGP() *parse2.BGP {
 	bgp := *graph.BGP
 	recordASNs, err := uptime.AllASNRecord()
 	if err != nil {
@@ -19,11 +19,11 @@ func GetBGP() *parse.BGP {
 		return &bgp
 	}
 
-	currentASs := make([]*parse.AS, len(bgp.AS))
+	currentASs := make([]*parse2.AS, len(bgp.AS))
 	copy(currentASs, bgp.AS)
-	var addon []*parse.AS
+	var addon []*parse2.AS
 
-	slices.SortFunc(currentASs, func(i, j *parse.AS) int {
+	slices.SortFunc(currentASs, func(i, j *parse2.AS) int {
 		if i.ASN < j.ASN {
 			return -1
 		} else if i.ASN > j.ASN {
@@ -35,7 +35,7 @@ func GetBGP() *parse.BGP {
 
 	// append ghost AS
 	for _, as := range recordASNs {
-		if _, found := slices.BinarySearchFunc(currentASs, as, func(as *parse.AS, as2 uint32) int {
+		if _, found := slices.BinarySearchFunc(currentASs, as, func(as *parse2.AS, as2 uint32) int {
 			if as.ASN < as2 {
 				return -1
 			} else if as.ASN > as2 {
@@ -44,7 +44,7 @@ func GetBGP() *parse.BGP {
 				return 0
 			}
 		}); !found {
-			addon = append(addon, &parse.AS{ASN: as, Network: []netip.Prefix{}})
+			addon = append(addon, &parse2.AS{ASN: as, Network: []netip.Prefix{}})
 		}
 	}
 

@@ -3,14 +3,14 @@ package graph
 import (
 	"fmt"
 	"github.com/BaiMeow/NetworkMonitor/conf"
-	"github.com/BaiMeow/NetworkMonitor/parse"
+	parse2 "github.com/BaiMeow/NetworkMonitor/graph/parse"
 	"log"
 	"sync"
 	"time"
 )
 
-var OSPF map[uint32]*parse.OSPF
-var BGP *parse.BGP
+var OSPF map[uint32]*parse2.OSPF
+var BGP *parse2.BGP
 
 var probes []*Probe
 var probesLock sync.Mutex
@@ -52,9 +52,9 @@ func Init() error {
 
 func draw() {
 	var wg sync.WaitGroup
-	var drawing parse.Drawing
-	drawing.OSPF = make(map[uint32]*parse.OSPF)
-	drawing.BGP = &parse.BGP{}
+	var drawing parse2.Drawing
+	drawing.OSPF = make(map[uint32]*parse2.OSPF)
+	drawing.BGP = &parse2.BGP{}
 
 	probesLock.Lock()
 	defer probesLock.Unlock()
