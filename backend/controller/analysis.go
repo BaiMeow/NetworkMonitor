@@ -22,11 +22,15 @@ func BGPAnalysisBetweenness(c *gin.Context) {
 		c.JSON(400, RespErrASNInvalid)
 		return
 	}
-	c.JSON(200, Resp{
-		Code: 0,
-		Msg:  "ok",
-		Data: betweenness[uint32(asnUint)],
-	})
+	if _, ok := betweenness[uint32(asnUint)]; ok {
+		c.JSON(200, Resp{
+			Code: 0,
+			Msg:  "ok",
+			Data: betweenness[uint32(asnUint)],
+		})
+	} else {
+		c.JSON(404, RespErrASNNotFound)
+	}
 }
 
 func BGPAnalysisCloseness(c *gin.Context) {
@@ -45,9 +49,15 @@ func BGPAnalysisCloseness(c *gin.Context) {
 		c.JSON(400, RespErrASNInvalid)
 		return
 	}
-	c.JSON(200, Resp{
-		Code: 0,
-		Msg:  "ok",
-		Data: closeness[uint32(asnUint)],
-	})
+
+	if _, ok := closeness[uint32(asnUint)]; ok {
+		c.JSON(200, Resp{
+			Code: 0,
+			Msg:  "ok",
+			Data: closeness[uint32(asnUint)],
+		})
+	} else {
+		c.JSON(404, RespErrASNNotFound)
+	}
+
 }

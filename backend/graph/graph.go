@@ -99,8 +99,8 @@ func draw() {
 	}
 
 	var (
-		tempBetweenness map[uint32]float64
-		tempCloseness   map[uint32]float64
+		tempBetweenness = make(map[uint32]float64)
+		tempCloseness   = make(map[uint32]float64)
 	)
 	drawing.Lock()
 	defer drawing.Unlock()

@@ -20,3 +20,8 @@ var RespInternalError = Resp{
 	Code: -3,
 	Msg:  "internal error",
 }
+
+var RespErrASNNotFound = Resp{
+	Code: -4,
+	Msg:  "asn not found",
+}
