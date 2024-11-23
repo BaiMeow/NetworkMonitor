@@ -6,7 +6,7 @@ import { TooltipComponent, TitleComponent } from 'echarts/components'
 import { ECElementEvent, ElementEvent } from 'echarts'
 import { reactive, inject, ref, computed } from 'vue'
 import { Netmask } from 'netmask'
-import { getBGP } from '../api/bgp'
+import { getBetweenness, getBGP, getCloseness } from '../api/bgp'
 import { prettierNet } from '../utils/colornet'
 import { ASData } from '../api/meta'
 import { ASDataKey } from '../inject/key'
@@ -35,6 +35,8 @@ interface Node {
   value: string
   meta?: any
   peer_num: number
+  betweenness?: number
+  closeness?: number
   symbolSize?: number
   symbol?: string
   network: string[]
@@ -99,6 +101,12 @@ option.tooltip = {
           }
         }
       }
+    }
+    if (params.data.betweenness) {
+      output += `<br/>betweenness: ${params.data.betweenness.toFixed(3)}`
+    }
+    if (params.data.closeness) {
+      output += `<br/>closeness: ${params.data.closeness.toFixed(3)}`
     }
     output += `<br/> network:<br/>`
     if (asdata) {
@@ -171,6 +179,8 @@ option.series = [
 
 const refreshData = async () => {
   const resp = await getBGP()
+  const betweenness = await getBetweenness()
+  const closeness = await getCloseness()
   if (!resp.as) {
     alert('no data')
     return
@@ -181,6 +191,8 @@ const refreshData = async () => {
       name: cur.asn.toString(),
       value: cur.asn.toString(),
       peer_num: 0,
+      betweenness: betweenness[cur.asn.toString()] || 0,
+      closeness: closeness[cur.asn.toString()] || 0,
       network: cur.network
         .sort((a, b) => parseInt(a.split('/')[1]) - parseInt(b.split('/')[1]))
         .reduce(
