@@ -25,3 +25,8 @@ var RespErrASNNotFound = Resp{
 	Code: -4,
 	Msg:  "asn not found",
 }
+
+var RespErrNotEnabled = Resp{
+	Code: -5,
+	Msg:  "api not enabled",
+}

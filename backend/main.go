@@ -61,10 +61,23 @@ func main() {
 	r.GET("/api/ospf/:asn", controller.OSPF)
 	r.GET("/api/ospf/uptime/:routerId/recent", controller.OSPFRecentUptime)
 	r.GET("/api/bgp", controller.BGP)
-	r.GET("/api/bgp/uptime/:asn/recent", controller.BGPRecentUptime)
-	r.GET("/api/bgp/uptime/:asn/links", controller.BGPLinks)
-	r.GET("/api/bgp/analysis/betweenness", controller.BGPAnalysisBetweenness)
-	r.GET("/api/bgp/analysis/closeness", controller.BGPAnalysisCloseness)
+
+	up := r.Group("/api/bgp/uptime", func(c *gin.Context) {
+		if conf.Influxdb.Addr == "" {
+			c.AbortWithStatusJSON(403, controller.RespErrNotEnabled)
+		}
+	})
+	up.GET("/:asn/recent", controller.BGPRecentUptime)
+	up.GET("/:asn/links", controller.BGPLinks)
+
+	ana := r.Group("/api/bgp/analysis", func(c *gin.Context) {
+		if !conf.Analysis {
+			c.AbortWithStatusJSON(403, controller.RespErrNotEnabled)
+		}
+	})
+	ana.GET("/betweenness", controller.BGPAnalysisBetweenness)
+	ana.GET("/closeness", controller.BGPAnalysisCloseness)
+
 	r.GET("/api/list", controller.List)
 	r.StaticFS("/assets/", &staticRouter{"/static/assets"})
 	r.StaticFileFS("/avatar.png", "/static/avatar.png", http.FS(FS))
