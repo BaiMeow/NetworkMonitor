@@ -25,6 +25,7 @@ var (
 	ProbeTimeout     time.Duration
 	UpdateCallBack   func()
 	MetadataRedirect string
+	Analysis         bool
 )
 
 func Init() error {
@@ -32,6 +33,7 @@ func Init() error {
 	viper.SetDefault("interval", 60)
 	viper.SetDefault("probeTimeout", 10)
 	viper.SetDefault("uptime.recordDuration", "48h")
+	viper.SetDefault("analysis", true)
 
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
@@ -84,6 +86,7 @@ func update() error {
 	Interval = time.Duration(viper.GetInt("interval")) * time.Second
 	ProbeTimeout = time.Duration(viper.GetInt("probeTimeout")) * time.Second
 	MetadataRedirect = viper.GetString("metadataRedirect")
+	Analysis = viper.GetBool("analysis")
 
 	dur, err := time.ParseDuration(viper.GetString("uptime.store-duration"))
 	if err != nil {

@@ -3,15 +3,22 @@ package graph
 import (
 	"fmt"
 	"github.com/BaiMeow/NetworkMonitor/conf"
-	parse2 "github.com/BaiMeow/NetworkMonitor/graph/parse"
+	"github.com/BaiMeow/NetworkMonitor/graph/analysis"
+	"github.com/BaiMeow/NetworkMonitor/graph/parse"
 	"log"
 	"sync"
 	"time"
 )
 
-var OSPF map[uint32]*parse2.OSPF
-var BGP *parse2.BGP
+var (
+	ospf map[uint32]*parse.OSPF
+	bgp  *parse.BGP
 
+	bgpBetweenness map[uint32]float64
+	bgpCloseness   map[uint32]float64
+
+	currentLock sync.RWMutex
+)
 var probes []*Probe
 var probesLock sync.Mutex
 
@@ -52,9 +59,9 @@ func Init() error {
 
 func draw() {
 	var wg sync.WaitGroup
-	var drawing parse2.Drawing
-	drawing.OSPF = make(map[uint32]*parse2.OSPF)
-	drawing.BGP = &parse2.BGP{}
+	var drawing parse.Drawing
+	drawing.OSPF = make(map[uint32]*parse.OSPF)
+	drawing.BGP = &parse.BGP{}
 
 	probesLock.Lock()
 	defer probesLock.Unlock()
@@ -91,8 +98,30 @@ func draw() {
 	}():
 	}
 
+	var (
+		tempBetweenness map[uint32]float64
+		tempCloseness   map[uint32]float64
+	)
 	drawing.Lock()
 	defer drawing.Unlock()
-	OSPF = drawing.OSPF
-	BGP = drawing.BGP
+	if conf.Analysis {
+		t := time.Now()
+		if drawing.BGP != nil {
+			g := analysis.ConvertFromBGP(drawing.BGP)
+			for _, b := range g.Betweenness() {
+				tempBetweenness[b.Node.Tag["asn"].(uint32)] = b.Betweenness
+			}
+			for _, c := range g.Closeness() {
+				tempCloseness[c.Node.Tag["asn"].(uint32)] = c.Closeness
+			}
+		}
+		log.Println("analysis time:", time.Since(t))
+	}
+
+	currentLock.Lock()
+	defer currentLock.Unlock()
+	ospf = drawing.OSPF
+	bgp = drawing.BGP
+	bgpBetweenness = tempBetweenness
+	bgpCloseness = tempCloseness
 }

@@ -1,6 +1,7 @@
 interval: 60
 probeTimeout: 60
 port: 8787
+analysis: true
 # begin uptime
 # if you don't want to use influxdb to record uptime, just left addr empty
 influxdb:

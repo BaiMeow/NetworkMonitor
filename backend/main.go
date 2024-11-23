@@ -63,6 +63,8 @@ func main() {
 	r.GET("/api/bgp", controller.BGP)
 	r.GET("/api/bgp/uptime/:asn/recent", controller.BGPRecentUptime)
 	r.GET("/api/bgp/uptime/:asn/links", controller.BGPLinks)
+	r.GET("/api/bgp/analysis/betweenness", controller.BGPAnalysisBetweenness)
+	r.GET("/api/bgp/analysis/closeness", controller.BGPAnalysisCloseness)
 	r.GET("/api/list", controller.List)
 	r.StaticFS("/assets/", &staticRouter{"/static/assets"})
 	r.StaticFileFS("/avatar.png", "/static/avatar.png", http.FS(FS))
