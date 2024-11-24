@@ -59,3 +59,28 @@ func TestGraph_SingleSourceShortestPaths2(t *testing.T) {
 		return p.Dst.Id != 1
 	})), "There should be 2 paths from 0 to 1")
 }
+
+func BenchmarkGraph_AllSourceShortestPaths(b *testing.B) {
+	const M = 300
+	const N = 60
+	g := &Graph{}
+	for i := 0; i < N; i++ {
+		g.Nodes = append(g.Nodes, &Node{Id: i})
+	}
+	addLink := func(src, dst *Node) {
+		src.Out = append(src.Out, &Edge{Src: src, Dst: dst, Cost: 1})
+		dst.Out = append(dst.Out, &Edge{Src: dst, Dst: src, Cost: 1})
+	}
+	for i := 0; i < M; i++ {
+		src := rand.Intn(N)
+		dst := rand.Intn(N - 1)
+		if dst == src {
+			dst = N - 1
+		}
+		addLink(g.Nodes[src], g.Nodes[dst])
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		g.AllSourceShortestPaths()
+	}
+}
