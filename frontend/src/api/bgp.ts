@@ -25,3 +25,25 @@ export async function getBGP() {
   }
   return data.data
 }
+
+export async function getCloseness(){
+  const res = await axios.get(`${ApiHost}/api/bgp/analysis/closeness`)
+  const data = res.data as Resp<{
+    [key: string]: number
+  }>
+  if (data.code !== 0) {
+    throw new Error(data.msg)
+  }
+  return data.data
+}
+
+export async function getBetweenness(){
+  const res = await axios.get(`${ApiHost}/api/bgp/analysis/betweenness`)
+  const data = res.data as Resp<{
+    [key: string]: number
+  }>
+  if (data.code !== 0) {
+    throw new Error(data.msg)
+  }
+  return data.data
+}
