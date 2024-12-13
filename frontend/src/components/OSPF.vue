@@ -113,7 +113,7 @@ option.series = [
         if (params.data.meta && params.data.meta.name) {
           return params.data.meta.name
         }
-        return params.data.value
+        return params.data.name
       },
     },
     draggable: true,
@@ -180,15 +180,15 @@ const load_data = async (asn: string) => {
   )
 
   // calculate node peers and size
-  let { min, max } = all_links.reduce(
-    ({ min, max }, cur) => {
-      return {
-        min: Math.min(min, cur.cost),
-        max: Math.max(max, cur.cost),
-      }
-    },
-    { min: all_links[0]?.cost, max: all_links[0]?.cost },
-  )
+  // let { min, max } = all_links.reduce(
+  //   ({ min, max }, cur) => {
+  //     return {
+  //       min: Math.min(min, cur.cost),
+  //       max: Math.max(max, cur.cost),
+  //     }
+  //   },
+  //   { min: all_links[0]?.cost, max: all_links[0]?.cost },
+  // )
 
   nodes.forEach((node) => {
     let markedPeer = new Set<string>()
@@ -199,6 +199,7 @@ const load_data = async (asn: string) => {
       }
       return false
     }).length
+    node.value = '' + node.peer_num
     node.symbolSize = Math.pow(node.peer_num + 3, 1 / 2) * 7
   })
 
@@ -283,8 +284,8 @@ const load_data = async (asn: string) => {
     })
   })
 
-  option.series[0].force.edgeLength = [(150 * min) / max, 150]
-  option.series[0].force.repulsion = [(100 * max) / min, 100]
+  option.series[0].force.edgeLength = [30, 150]
+  option.series[0].force.repulsion = [30, 150]
   option.series[0].data = nodes
   option.series[0].links = edges
   option.title.text = asdata?.metadata?.[asn as string]?.display
