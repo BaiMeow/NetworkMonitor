@@ -12,7 +12,7 @@ routerEntry      : 'router' IP ('metric' INT)
 
 // Lexer Rules
 Prefix  : IP '/' INT;
-VERSION : 'BIRD' WS+ INT '.' INT '.' INT WS+ 'ready.' -> skip;
+VERSION : 'BIRD' WS+ INT '.' INT ('.' INT)? WS+ 'ready.' -> skip;
 IP      : [0-9]+ '.' [0-9]+ '.' [0-9]+ '.' [0-9]+;
 STRING  : '"' .*? '"'
         | [a-zA-Z][a-zA-Z0-9_-]*

@@ -13,7 +13,6 @@ IP=12
 STRING=13
 INT=14
 WS=15
-COMMENT=16
 'area'=1
 'distance'=2
 'router'=3

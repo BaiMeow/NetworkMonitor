@@ -37,14 +37,14 @@ func birdospfParserInit() {
 	}
 	staticData.SymbolicNames = []string{
 		"", "", "", "", "", "", "", "", "", "", "Prefix", "VERSION", "IP", "STRING",
-		"INT", "WS", "COMMENT",
+		"INT", "WS",
 	}
 	staticData.RuleNames = []string{
 		"state", "area", "router", "routerEntry",
 	}
 	staticData.PredictionContextCache = antlr.NewPredictionContextCache()
 	staticData.serializedATN = []int32{
-		4, 1, 16, 57, 2, 0, 7, 0, 2, 1, 7, 1, 2, 2, 7, 2, 2, 3, 7, 3, 1, 0, 4,
+		4, 1, 15, 57, 2, 0, 7, 0, 2, 1, 7, 1, 2, 2, 7, 2, 2, 3, 7, 3, 1, 0, 4,
 		0, 10, 8, 0, 11, 0, 12, 0, 11, 1, 1, 1, 1, 1, 1, 1, 1, 3, 1, 18, 8, 1,
 		1, 1, 5, 1, 21, 8, 1, 10, 1, 12, 1, 24, 9, 1, 1, 2, 1, 2, 1, 2, 1, 2, 1,
 		2, 4, 2, 31, 8, 2, 11, 2, 12, 2, 32, 1, 3, 1, 3, 1, 3, 1, 3, 1, 3, 1, 3,
@@ -121,7 +121,6 @@ const (
 	BirdOSPFParserSTRING  = 13
 	BirdOSPFParserINT     = 14
 	BirdOSPFParserWS      = 15
-	BirdOSPFParserCOMMENT = 16
 )
 
 // BirdOSPFParser rules.
