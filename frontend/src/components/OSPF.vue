@@ -282,7 +282,7 @@ const load_data = async (asn: string) => {
   })
 
   option.series[0].force.edgeLength = [30, 150]
-  option.series[0].force.repulsion = [30, 150]
+  option.series[0].force.repulsion = 200
   option.series[0].data = nodes
   option.series[0].links = edges
   option.title.text = asdata?.metadata?.[asn as string]?.display
