@@ -65,7 +65,7 @@ func (p *RosOSPF) ParseAndMerge(drawing *Drawing) (err error) {
 		if sentence.Map["type"] != "router" || sentence.Map["area"] == "" || sentence.Map["id"] == "" {
 			continue
 		}
-		p.graph.getArea(sentence.Map["area"]).addRouter(sentence.Map["id"])
+		p.graph.GetArea(sentence.Map["area"]).AddRouter(sentence.Map["id"])
 
 		ptp := ros6BodyPtpReg.FindAllStringSubmatch(sentence.Map["body"], -1)
 		for _, field := range ptp {
@@ -76,7 +76,7 @@ func (p *RosOSPF) ParseAndMerge(drawing *Drawing) (err error) {
 			if err != nil {
 				continue
 			}
-			p.graph.addLink(sentence.Map["area"], sentence.Map["id"], field[1], cost)
+			p.graph.AddLink(sentence.Map["area"], sentence.Map["id"], field[1], cost)
 		}
 		ptp = ros7BodyPtpReg.FindAllStringSubmatch(sentence.Map["body"], -1)
 		for _, field := range ptp {
@@ -87,7 +87,7 @@ func (p *RosOSPF) ParseAndMerge(drawing *Drawing) (err error) {
 			if err != nil {
 				continue
 			}
-			p.graph.addLink(sentence.Map["area"], sentence.Map["id"], field[1], cost)
+			p.graph.AddLink(sentence.Map["area"], sentence.Map["id"], field[1], cost)
 		}
 	}
 	return

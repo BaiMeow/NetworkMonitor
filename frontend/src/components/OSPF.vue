@@ -38,6 +38,7 @@ interface Node {
   value: string
   meta?: any
   peer_num?: number
+  subnet?: string[]
   symbolSize?: number
   area: string[]
 }
@@ -70,16 +71,22 @@ option.tooltip = {
       params = params as Params<Edge>
       return `Link: ${params.data.source} ↔ ${params.data.target} <br/> Cost: <div class="cost">${params.data.cost}</div>`
     } else {
-      params = params as Params<Node>
-      let output = `Router ID: ${params.data.value}`
-      if ('meta' in params.data) {
+      const node = params as Params<Node>
+      let output = `Router ID: ${node.data.value}`
+      output += `<br/>Area: ${params.data.area.join(', ')}`
+      if (Object.keys(node.data.meta).length !== 0) {
         output += '<br/>'
-        for (let key in params.data.meta) {
-          output += `${key}: ${params.data.meta[key]} <br/>`
+        for (let key in node.data.meta) {
+          output += `${key}: ${node.data.meta[key]}`
         }
-        output += `Area: ${params.data.area.join(', ')}`
-        output += ` <br/> Peer Count: <div class="peer_count"> ${params.data.peer_num} </div>`
       }
+      if (node.data.subnet?.length) {
+        output += '<br/>Subnet:'
+        node.data.subnet.forEach((net) => {
+          output += `<br/>${net}`
+        })
+      }
+      output += ` <br/> Peer Count: <div class="peer_count"> ${params.data.peer_num} </div>`
       return output
     }
   },
@@ -152,6 +159,7 @@ const load_data = async (asn: string) => {
           name: router.router_id,
           value: router.router_id,
           meta: router.metadata ? router.metadata : {},
+          subnet: router.subnet,
           area: [cur.area_id],
         })
       })
@@ -178,17 +186,6 @@ const load_data = async (asn: string) => {
     },
     [] as (typeof areas)[number]['router'],
   )
-
-  // calculate node peers and size
-  // let { min, max } = all_links.reduce(
-  //   ({ min, max }, cur) => {
-  //     return {
-  //       min: Math.min(min, cur.cost),
-  //       max: Math.max(max, cur.cost),
-  //     }
-  //   },
-  //   { min: all_links[0]?.cost, max: all_links[0]?.cost },
-  // )
 
   nodes.forEach((node) => {
     let markedPeer = new Set<string>()

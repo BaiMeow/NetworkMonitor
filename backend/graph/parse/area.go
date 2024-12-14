@@ -6,7 +6,12 @@ type Area struct {
 	Links  []Link   `json:"links,omitempty"`
 }
 
-func (a *Area) addRouter(RouterId string) {
+func (a *Area) FromANTLRContext(ctx interface{}) error {
+	// 这里将添加从ANTLR Context解析数据的逻辑
+	return nil
+}
+
+func (a *Area) AddRouter(RouterId string) {
 	for _, router := range a.Router {
 		if router.RouterId == RouterId {
 			return
@@ -15,7 +20,16 @@ func (a *Area) addRouter(RouterId string) {
 	a.Router = append(a.Router, *newRouter(RouterId))
 }
 
-func (a *Area) addLink(src, dst string, cost int) {
+func (a *Area) GetRouter(routerId string) *Router {
+	for i, router := range a.Router {
+		if router.RouterId == routerId {
+			return &a.Router[i]
+		}
+	}
+	return nil
+}
+
+func (a *Area) AddLink(src, dst string, cost int) error {
 	var found bool
 	link := newLink(src, dst, cost)
 	for _, l := range a.Links {
@@ -27,21 +41,24 @@ func (a *Area) addLink(src, dst string, cost int) {
 	if !found {
 		a.Links = append(a.Links, link)
 	}
+	return nil
 }
 
-func (a *Area) merge(ar *Area) {
+func (a *Area) Merge(ar *Area) error {
 	if len(a.Router) == 0 {
 		a.Router = ar.Router
 		a.Links = ar.Links
-		return
+		return nil
 	}
 
 	for _, v := range ar.Router {
-		a.addRouter(v.RouterId)
+		a.AddRouter(v.RouterId)
 	}
 
-	// 暂时无法处理两个router间有多条隧道且cost相同的情况
 	for _, newLink := range ar.Links {
-		a.addLink(newLink.Src, newLink.Dst, newLink.Cost)
+		if err := a.AddLink(newLink.Src, newLink.Dst, newLink.Cost); err != nil {
+			return err
+		}
 	}
+	return nil
 }
