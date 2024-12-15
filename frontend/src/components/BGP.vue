@@ -178,9 +178,11 @@ option.series = [
 ]
 
 const refreshData = async () => {
-  const resp = await getBGP()
-  const betweenness = await getBetweenness()
-  const closeness = await getCloseness()
+  const [resp, betweenness, closeness] = await Promise.all([
+    getBGP(),
+    getBetweenness(),
+    getCloseness(),
+  ])
   if (!resp.as) {
     alert('no data')
     return
@@ -366,7 +368,7 @@ const interval = setInterval(() => {
   refreshData()
 }, 60 * 1000)
 
-let timer:any = null
+let timer: any = null
 
 const { handleClick, handleMouseDown, handleMouseUp, handleZrClick } =
   useGraphEvent()
@@ -376,7 +378,7 @@ handleMouseDown.value = () => {
   }
   option.series[0].force.friction = 0.15
   option.series[0].force.layoutAnimation = true
-} 
+}
 
 handleMouseUp.value = () => {
   timer = setTimeout(() => {
