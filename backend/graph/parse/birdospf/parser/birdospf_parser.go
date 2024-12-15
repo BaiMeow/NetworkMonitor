@@ -32,42 +32,39 @@ var BirdOSPFParserStaticData struct {
 func birdospfParserInit() {
 	staticData := &BirdOSPFParserStaticData
 	staticData.LiteralNames = []string{
-		"", "'area'", "'distance'", "'router'", "'metric'", "'stubnet'", "'xnetwork'",
-		"'external'", "'metric2'", "'xrouter'",
+		"", "'area'", "'distance'", "'router'", "'stubnet'", "'xnetwork'", "'external'",
+		"'xrouter'", "'metric'", "'metric2'",
 	}
 	staticData.SymbolicNames = []string{
-		"", "", "", "", "", "", "", "", "", "", "Prefix", "VERSION", "IP", "STRING",
-		"INT", "WS",
+		"", "", "", "", "", "", "", "", "Metric", "Metric2", "Prefix", "VERSION",
+		"IP", "STRING", "INT", "WS",
 	}
 	staticData.RuleNames = []string{
 		"state", "area", "router", "routerEntry",
 	}
 	staticData.PredictionContextCache = antlr.NewPredictionContextCache()
 	staticData.serializedATN = []int32{
-		4, 1, 15, 57, 2, 0, 7, 0, 2, 1, 7, 1, 2, 2, 7, 2, 2, 3, 7, 3, 1, 0, 4,
+		4, 1, 15, 50, 2, 0, 7, 0, 2, 1, 7, 1, 2, 2, 7, 2, 2, 3, 7, 3, 1, 0, 4,
 		0, 10, 8, 0, 11, 0, 12, 0, 11, 1, 1, 1, 1, 1, 1, 1, 1, 3, 1, 18, 8, 1,
 		1, 1, 5, 1, 21, 8, 1, 10, 1, 12, 1, 24, 9, 1, 1, 2, 1, 2, 1, 2, 1, 2, 1,
 		2, 4, 2, 31, 8, 2, 11, 2, 12, 2, 32, 1, 3, 1, 3, 1, 3, 1, 3, 1, 3, 1, 3,
-		1, 3, 1, 3, 1, 3, 1, 3, 1, 3, 1, 3, 1, 3, 1, 3, 1, 3, 1, 3, 1, 3, 1, 3,
-		1, 3, 1, 3, 3, 3, 55, 8, 3, 1, 3, 0, 0, 4, 0, 2, 4, 6, 0, 0, 61, 0, 9,
-		1, 0, 0, 0, 2, 13, 1, 0, 0, 0, 4, 25, 1, 0, 0, 0, 6, 54, 1, 0, 0, 0, 8,
-		10, 3, 2, 1, 0, 9, 8, 1, 0, 0, 0, 10, 11, 1, 0, 0, 0, 11, 9, 1, 0, 0, 0,
-		11, 12, 1, 0, 0, 0, 12, 1, 1, 0, 0, 0, 13, 14, 5, 1, 0, 0, 14, 17, 5, 12,
-		0, 0, 15, 16, 5, 2, 0, 0, 16, 18, 5, 14, 0, 0, 17, 15, 1, 0, 0, 0, 17,
-		18, 1, 0, 0, 0, 18, 22, 1, 0, 0, 0, 19, 21, 3, 4, 2, 0, 20, 19, 1, 0, 0,
-		0, 21, 24, 1, 0, 0, 0, 22, 20, 1, 0, 0, 0, 22, 23, 1, 0, 0, 0, 23, 3, 1,
-		0, 0, 0, 24, 22, 1, 0, 0, 0, 25, 26, 5, 3, 0, 0, 26, 30, 5, 12, 0, 0, 27,
-		28, 5, 2, 0, 0, 28, 31, 5, 14, 0, 0, 29, 31, 3, 6, 3, 0, 30, 27, 1, 0,
-		0, 0, 30, 29, 1, 0, 0, 0, 31, 32, 1, 0, 0, 0, 32, 30, 1, 0, 0, 0, 32, 33,
-		1, 0, 0, 0, 33, 5, 1, 0, 0, 0, 34, 35, 5, 3, 0, 0, 35, 36, 5, 12, 0, 0,
-		36, 37, 5, 4, 0, 0, 37, 55, 5, 14, 0, 0, 38, 39, 5, 5, 0, 0, 39, 40, 5,
-		10, 0, 0, 40, 41, 5, 4, 0, 0, 41, 55, 5, 14, 0, 0, 42, 43, 5, 6, 0, 0,
-		43, 44, 5, 10, 0, 0, 44, 45, 5, 4, 0, 0, 45, 55, 5, 14, 0, 0, 46, 47, 5,
-		7, 0, 0, 47, 48, 5, 10, 0, 0, 48, 49, 5, 8, 0, 0, 49, 55, 5, 14, 0, 0,
-		50, 51, 5, 9, 0, 0, 51, 52, 5, 12, 0, 0, 52, 53, 5, 4, 0, 0, 53, 55, 5,
-		14, 0, 0, 54, 34, 1, 0, 0, 0, 54, 38, 1, 0, 0, 0, 54, 42, 1, 0, 0, 0, 54,
-		46, 1, 0, 0, 0, 54, 50, 1, 0, 0, 0, 55, 7, 1, 0, 0, 0, 6, 11, 17, 22, 30,
-		32, 54,
+		1, 3, 1, 3, 1, 3, 1, 3, 3, 3, 45, 8, 3, 1, 3, 1, 3, 1, 3, 1, 3, 0, 0, 4,
+		0, 2, 4, 6, 0, 1, 1, 0, 8, 9, 54, 0, 9, 1, 0, 0, 0, 2, 13, 1, 0, 0, 0,
+		4, 25, 1, 0, 0, 0, 6, 44, 1, 0, 0, 0, 8, 10, 3, 2, 1, 0, 9, 8, 1, 0, 0,
+		0, 10, 11, 1, 0, 0, 0, 11, 9, 1, 0, 0, 0, 11, 12, 1, 0, 0, 0, 12, 1, 1,
+		0, 0, 0, 13, 14, 5, 1, 0, 0, 14, 17, 5, 12, 0, 0, 15, 16, 5, 2, 0, 0, 16,
+		18, 5, 14, 0, 0, 17, 15, 1, 0, 0, 0, 17, 18, 1, 0, 0, 0, 18, 22, 1, 0,
+		0, 0, 19, 21, 3, 4, 2, 0, 20, 19, 1, 0, 0, 0, 21, 24, 1, 0, 0, 0, 22, 20,
+		1, 0, 0, 0, 22, 23, 1, 0, 0, 0, 23, 3, 1, 0, 0, 0, 24, 22, 1, 0, 0, 0,
+		25, 26, 5, 3, 0, 0, 26, 30, 5, 12, 0, 0, 27, 28, 5, 2, 0, 0, 28, 31, 5,
+		14, 0, 0, 29, 31, 3, 6, 3, 0, 30, 27, 1, 0, 0, 0, 30, 29, 1, 0, 0, 0, 31,
+		32, 1, 0, 0, 0, 32, 30, 1, 0, 0, 0, 32, 33, 1, 0, 0, 0, 33, 5, 1, 0, 0,
+		0, 34, 35, 5, 3, 0, 0, 35, 45, 5, 12, 0, 0, 36, 37, 5, 4, 0, 0, 37, 45,
+		5, 10, 0, 0, 38, 39, 5, 5, 0, 0, 39, 45, 5, 10, 0, 0, 40, 41, 5, 6, 0,
+		0, 41, 45, 5, 10, 0, 0, 42, 43, 5, 7, 0, 0, 43, 45, 5, 12, 0, 0, 44, 34,
+		1, 0, 0, 0, 44, 36, 1, 0, 0, 0, 44, 38, 1, 0, 0, 0, 44, 40, 1, 0, 0, 0,
+		44, 42, 1, 0, 0, 0, 45, 46, 1, 0, 0, 0, 46, 47, 7, 0, 0, 0, 47, 48, 5,
+		14, 0, 0, 48, 7, 1, 0, 0, 0, 6, 11, 17, 22, 30, 32, 44,
 	}
 	deserializer := antlr.NewATNDeserializer(nil)
 	staticData.atn = deserializer.Deserialize(staticData.serializedATN)
@@ -113,8 +110,8 @@ const (
 	BirdOSPFParserT__4    = 5
 	BirdOSPFParserT__5    = 6
 	BirdOSPFParserT__6    = 7
-	BirdOSPFParserT__7    = 8
-	BirdOSPFParserT__8    = 9
+	BirdOSPFParserMetric  = 8
+	BirdOSPFParserMetric2 = 9
 	BirdOSPFParserPrefix  = 10
 	BirdOSPFParserVERSION = 11
 	BirdOSPFParserIP      = 12
@@ -688,7 +685,7 @@ func (p *BirdOSPFParser) Router() (localctx IRouterContext) {
 					}
 				}
 
-			case BirdOSPFParserT__2, BirdOSPFParserT__4, BirdOSPFParserT__5, BirdOSPFParserT__6, BirdOSPFParserT__8:
+			case BirdOSPFParserT__2, BirdOSPFParserT__3, BirdOSPFParserT__4, BirdOSPFParserT__5, BirdOSPFParserT__6:
 				{
 					p.SetState(29)
 					p.RouterEntry()
@@ -733,8 +730,10 @@ type IRouterEntryContext interface {
 	GetParser() antlr.Parser
 
 	// Getter signatures
-	IP() antlr.TerminalNode
 	INT() antlr.TerminalNode
+	Metric() antlr.TerminalNode
+	Metric2() antlr.TerminalNode
+	IP() antlr.TerminalNode
 	Prefix() antlr.TerminalNode
 
 	// IsRouterEntryContext differentiates from other interfaces.
@@ -773,12 +772,20 @@ func NewRouterEntryContext(parser antlr.Parser, parent antlr.ParserRuleContext, 
 
 func (s *RouterEntryContext) GetParser() antlr.Parser { return s.parser }
 
-func (s *RouterEntryContext) IP() antlr.TerminalNode {
-	return s.GetToken(BirdOSPFParserIP, 0)
-}
-
 func (s *RouterEntryContext) INT() antlr.TerminalNode {
 	return s.GetToken(BirdOSPFParserINT, 0)
+}
+
+func (s *RouterEntryContext) Metric() antlr.TerminalNode {
+	return s.GetToken(BirdOSPFParserMetric, 0)
+}
+
+func (s *RouterEntryContext) Metric2() antlr.TerminalNode {
+	return s.GetToken(BirdOSPFParserMetric2, 0)
+}
+
+func (s *RouterEntryContext) IP() antlr.TerminalNode {
+	return s.GetToken(BirdOSPFParserIP, 0)
 }
 
 func (s *RouterEntryContext) Prefix() antlr.TerminalNode {
@@ -818,7 +825,10 @@ func (s *RouterEntryContext) Accept(visitor antlr.ParseTreeVisitor) interface{} 
 func (p *BirdOSPFParser) RouterEntry() (localctx IRouterEntryContext) {
 	localctx = NewRouterEntryContext(p, p.GetParserRuleContext(), p.GetState())
 	p.EnterRule(localctx, 6, BirdOSPFParserRULE_routerEntry)
-	p.SetState(54)
+	var _la int
+
+	p.EnterOuterAlt(localctx, 1)
+	p.SetState(44)
 	p.GetErrorHandler().Sync(p)
 	if p.HasError() {
 		goto errorExit
@@ -826,7 +836,6 @@ func (p *BirdOSPFParser) RouterEntry() (localctx IRouterEntryContext) {
 
 	switch p.GetTokenStream().LA(1) {
 	case BirdOSPFParserT__2:
-		p.EnterOuterAlt(localctx, 1)
 		{
 			p.SetState(34)
 			p.Match(BirdOSPFParserT__2)
@@ -844,6 +853,7 @@ func (p *BirdOSPFParser) RouterEntry() (localctx IRouterEntryContext) {
 			}
 		}
 
+	case BirdOSPFParserT__3:
 		{
 			p.SetState(36)
 			p.Match(BirdOSPFParserT__3)
@@ -854,7 +864,7 @@ func (p *BirdOSPFParser) RouterEntry() (localctx IRouterEntryContext) {
 		}
 		{
 			p.SetState(37)
-			p.Match(BirdOSPFParserINT)
+			p.Match(BirdOSPFParserPrefix)
 			if p.HasError() {
 				// Recognition error - abort rule
 				goto errorExit
@@ -862,7 +872,6 @@ func (p *BirdOSPFParser) RouterEntry() (localctx IRouterEntryContext) {
 		}
 
 	case BirdOSPFParserT__4:
-		p.EnterOuterAlt(localctx, 2)
 		{
 			p.SetState(38)
 			p.Match(BirdOSPFParserT__4)
@@ -880,27 +889,9 @@ func (p *BirdOSPFParser) RouterEntry() (localctx IRouterEntryContext) {
 			}
 		}
 
+	case BirdOSPFParserT__5:
 		{
 			p.SetState(40)
-			p.Match(BirdOSPFParserT__3)
-			if p.HasError() {
-				// Recognition error - abort rule
-				goto errorExit
-			}
-		}
-		{
-			p.SetState(41)
-			p.Match(BirdOSPFParserINT)
-			if p.HasError() {
-				// Recognition error - abort rule
-				goto errorExit
-			}
-		}
-
-	case BirdOSPFParserT__5:
-		p.EnterOuterAlt(localctx, 3)
-		{
-			p.SetState(42)
 			p.Match(BirdOSPFParserT__5)
 			if p.HasError() {
 				// Recognition error - abort rule
@@ -908,25 +899,8 @@ func (p *BirdOSPFParser) RouterEntry() (localctx IRouterEntryContext) {
 			}
 		}
 		{
-			p.SetState(43)
+			p.SetState(41)
 			p.Match(BirdOSPFParserPrefix)
-			if p.HasError() {
-				// Recognition error - abort rule
-				goto errorExit
-			}
-		}
-
-		{
-			p.SetState(44)
-			p.Match(BirdOSPFParserT__3)
-			if p.HasError() {
-				// Recognition error - abort rule
-				goto errorExit
-			}
-		}
-		{
-			p.SetState(45)
-			p.Match(BirdOSPFParserINT)
 			if p.HasError() {
 				// Recognition error - abort rule
 				goto errorExit
@@ -934,9 +908,8 @@ func (p *BirdOSPFParser) RouterEntry() (localctx IRouterEntryContext) {
 		}
 
 	case BirdOSPFParserT__6:
-		p.EnterOuterAlt(localctx, 4)
 		{
-			p.SetState(46)
+			p.SetState(42)
 			p.Match(BirdOSPFParserT__6)
 			if p.HasError() {
 				// Recognition error - abort rule
@@ -944,61 +917,8 @@ func (p *BirdOSPFParser) RouterEntry() (localctx IRouterEntryContext) {
 			}
 		}
 		{
-			p.SetState(47)
-			p.Match(BirdOSPFParserPrefix)
-			if p.HasError() {
-				// Recognition error - abort rule
-				goto errorExit
-			}
-		}
-
-		{
-			p.SetState(48)
-			p.Match(BirdOSPFParserT__7)
-			if p.HasError() {
-				// Recognition error - abort rule
-				goto errorExit
-			}
-		}
-		{
-			p.SetState(49)
-			p.Match(BirdOSPFParserINT)
-			if p.HasError() {
-				// Recognition error - abort rule
-				goto errorExit
-			}
-		}
-
-	case BirdOSPFParserT__8:
-		p.EnterOuterAlt(localctx, 5)
-		{
-			p.SetState(50)
-			p.Match(BirdOSPFParserT__8)
-			if p.HasError() {
-				// Recognition error - abort rule
-				goto errorExit
-			}
-		}
-		{
-			p.SetState(51)
+			p.SetState(43)
 			p.Match(BirdOSPFParserIP)
-			if p.HasError() {
-				// Recognition error - abort rule
-				goto errorExit
-			}
-		}
-
-		{
-			p.SetState(52)
-			p.Match(BirdOSPFParserT__3)
-			if p.HasError() {
-				// Recognition error - abort rule
-				goto errorExit
-			}
-		}
-		{
-			p.SetState(53)
-			p.Match(BirdOSPFParserINT)
 			if p.HasError() {
 				// Recognition error - abort rule
 				goto errorExit
@@ -1008,6 +928,25 @@ func (p *BirdOSPFParser) RouterEntry() (localctx IRouterEntryContext) {
 	default:
 		p.SetError(antlr.NewNoViableAltException(p, nil, nil, nil, nil, nil))
 		goto errorExit
+	}
+	{
+		p.SetState(46)
+		_la = p.GetTokenStream().LA(1)
+
+		if !(_la == BirdOSPFParserMetric || _la == BirdOSPFParserMetric2) {
+			p.GetErrorHandler().RecoverInline(p)
+		} else {
+			p.GetErrorHandler().ReportMatch(p)
+			p.Consume()
+		}
+	}
+	{
+		p.SetState(47)
+		p.Match(BirdOSPFParserINT)
+		if p.HasError() {
+			// Recognition error - abort rule
+			goto errorExit
+		}
 	}
 
 errorExit:
