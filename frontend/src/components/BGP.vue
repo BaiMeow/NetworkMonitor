@@ -83,7 +83,7 @@ option.tooltip = {
     if (params.data.meta) {
       const metadata: ASData['metadata'][''] = params.data.meta
       if (metadata.display) {
-        output += `<br/>name: ${metadata.display}`
+        output += `<br/>Name: ${metadata.display}`
       }
       if (metadata?.monitor?.appendix) {
         const {
@@ -103,12 +103,12 @@ option.tooltip = {
       }
     }
     if (params.data.betweenness) {
-      output += `<br/>betweenness: ${params.data.betweenness.toFixed(3)}`
+      output += `<br/>Betweenness: ${params.data.betweenness.toFixed(3)}`
     }
     if (params.data.closeness) {
-      output += `<br/>closeness: ${params.data.closeness.toFixed(3)}`
+      output += `<br/>Closeness: ${params.data.closeness.toFixed(3)}`
     }
-    output += `<br/> network:<br/>`
+    output += `<br/>Network:<br/>`
     if (asdata) {
       output += prettierNet(
         params.data.network,

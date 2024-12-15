@@ -72,7 +72,7 @@ option.tooltip = {
       return `Link: ${params.data.source} ↔ ${params.data.target} <br/> Cost: <div class="cost">${params.data.cost}</div>`
     } else {
       const node = params as Params<Node>
-      let output = `Router ID: ${node.data.value}`
+      let output = `Router ID: ${node.data.name}`
       output += `<br/>Area: ${params.data.area.join(', ')}`
       if (Object.keys(node.data.meta).length !== 0) {
         output += '<br/>'
