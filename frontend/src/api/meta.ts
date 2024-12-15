@@ -1,15 +1,6 @@
 import { MetadataHost } from './consts'
 import axios from 'axios'
 
-export interface ASMetaData {
-  display: string
-  appendix?: {
-    [key: string]: string | string[]
-  }
-  customNode?: Object
-  announce: string[]
-}
-
 export interface ASData {
   announcements: {
     assigned: {

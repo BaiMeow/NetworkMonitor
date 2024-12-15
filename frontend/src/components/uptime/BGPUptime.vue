@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { ref, inject } from 'vue'
-import { ASDataKey } from '@/inject/key'
+import { useASMeta } from '@/state/meta';
+import { ref } from 'vue'
 
 const { asn } = defineProps<{
   asn: number
 }>()
 
-const asdata = inject(ASDataKey)?.value
+const ASMeta = useASMeta();
 
 const graph_mode = ref('24h')
 </script>
@@ -16,8 +16,8 @@ const graph_mode = ref('24h')
     <div class="uptime-head">
       <div class="title">
         {{
-          asdata?.metadata?.[asn + '']?.display
-            ? `${asdata.metadata[asn + ''].display} Network`
+          ASMeta?.metadata?.[asn + '']?.display
+            ? `${ASMeta.metadata[asn + ''].display} Network`
             : `AS ${asn}`
         }}
       </div>

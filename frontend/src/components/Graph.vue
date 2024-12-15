@@ -7,6 +7,7 @@ import { CanvasRenderer } from 'echarts/renderers'
 import { GraphChart } from 'echarts/charts'
 import { use } from 'echarts/core'
 import { ref } from 'vue'
+import { useASMetaLoading } from '@/state/meta'
 
 use([CanvasRenderer, GraphChart, TooltipComponent, TitleComponent])
 
@@ -17,6 +18,7 @@ const echarts = ref<ECharts | null>(null)
 listenEchartAction((payload, opt) => {
   echarts.value?.dispatchAction(payload, opt)
 })
+const ASMetaLoading = useASMetaLoading()
 
 // let showLoadingTimeout = setTimeout(() => {}, 0)
 // const showLoading = ref(true)
@@ -38,11 +40,11 @@ listenEchartAction((payload, opt) => {
 </script>
 <template>
   <Transition>
-    <div v-if="loading" class="graph loading">Loading...</div>
+    <div v-if="loading || ASMetaLoading" class="graph loading">Loading...</div>
   </Transition>
   <Transition>
     <v-chart
-      v-if="!loading"
+      v-if="!(loading || ASMetaLoading)"
       ref="echarts"
       :option="option"
       class="graph"

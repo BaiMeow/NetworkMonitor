@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { inject, watch, computed } from 'vue'
+import { watch, computed } from 'vue'
 
 import { use } from 'echarts/core'
 import { CanvasRenderer } from 'echarts/renderers'
@@ -8,13 +8,12 @@ import { TooltipComponent, TitleComponent } from 'echarts/components'
 import { ECElementEvent } from 'echarts'
 
 import { getOSPF } from '../api/ospf'
-import { ASDataKey } from '../inject/key'
-import { ASData } from '../api/meta'
 import { useDark } from '@vueuse/core'
 import { onBeforeRouteLeave, useRoute } from 'vue-router'
 import { useGraph, useGraphEvent } from '@/state/graph'
 
 import { dispatchEchartAction } from '@/state/graph'
+import { useASMeta } from '@/state/meta'
 
 const route = useRoute()
 use([CanvasRenderer, GraphChart, TooltipComponent, TitleComponent])
@@ -48,7 +47,7 @@ interface Params<T> {
   data: T
 }
 
-const asdata = inject(ASDataKey)?.value as ASData
+const ASMeta = useASMeta();
 
 option.title = {
   text: '',
@@ -285,8 +284,8 @@ const load_data = async (asn: string) => {
   option.series[0].force.repulsion = 200
   option.series[0].data = nodes
   option.series[0].links = edges
-  option.title.text = asdata?.metadata?.[asn as string]?.display
-    ? `${asdata.metadata[asn as string].display} Network`
+  option.title.text = ASMeta.value?.metadata?.[asn as string]?.display
+    ? `${ASMeta.value.metadata[asn as string].display} Network`
     : `AS ${asn}`
   let markedPeer = new Set<string>()
   for (const link of all_links) {

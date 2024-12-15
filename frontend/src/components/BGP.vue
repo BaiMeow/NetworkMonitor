@@ -4,22 +4,22 @@ import { CanvasRenderer } from 'echarts/renderers'
 import { GraphChart } from 'echarts/charts'
 import { TooltipComponent, TitleComponent } from 'echarts/components'
 import { ECElementEvent, ElementEvent } from 'echarts'
-import { reactive, inject, ref, computed } from 'vue'
+import { reactive, ref, computed, watch } from 'vue'
 import { Netmask } from 'netmask'
 import { getBetweenness, getBGP, getCloseness } from '../api/bgp'
 import { prettierNet } from '../utils/colornet'
 import { ASData } from '../api/meta'
-import { ASDataKey } from '../inject/key'
 import BGPUptime from './uptime/BGPUptime.vue'
 import { useDark } from '@vueuse/core'
 import { mergeObjects } from '../utils/obj'
 import { useGraph, useGraphEvent } from '@/state/graph'
 import { onBeforeRouteLeave } from 'vue-router'
 import { dispatchEchartAction } from '@/state/graph'
+import { useASMeta } from '@/state/meta'
 
 const isDark = useDark()
 
-const asdata = inject(ASDataKey)?.value
+const ASMeta = useASMeta();
 
 interface Edge {
   source: string
@@ -109,11 +109,11 @@ option.tooltip = {
       output += `<br/>Closeness: ${params.data.closeness.toFixed(3)}`
     }
     output += `<br/>Network:<br/>`
-    if (asdata) {
+    if (ASMeta.value) {
       output += prettierNet(
         params.data.network,
         params.data.name,
-        asdata.announcements,
+        ASMeta.value.announcements,
       )
     } else {
       output += params.data.network.join('<br/>')
@@ -231,7 +231,7 @@ const refreshData = async () => {
     node.value = '' + node.peer_num
     node.symbolSize = Math.pow(node.peer_num + 3, 1 / 2) * 7
 
-    const nodeMeta = asdata?.metadata?.[node.name]
+    const nodeMeta = ASMeta.value?.metadata?.[node.name]
     if (nodeMeta?.monitor?.customNode) {
       mergeObjects(node, nodeMeta.monitor?.customNode)
     }
@@ -342,7 +342,7 @@ const refreshData = async () => {
       display: n.meta?.display || n.name,
       network: [
         ...n.network,
-        ...(asdata?.announcements.assigned
+        ...(ASMeta.value?.announcements.assigned
           .filter((a) => a.asn === n.name)
           .map((a) => a.prefix) || []),
       ],
@@ -363,7 +363,10 @@ const refreshData = async () => {
   })
 }
 
-refreshData()
+watch([ASMeta], refreshData, {
+  immediate: true,
+})
+
 const interval = setInterval(() => {
   refreshData()
 }, 60 * 1000)

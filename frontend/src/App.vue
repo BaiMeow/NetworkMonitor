@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { getList } from './api/list'
-import { ASData, loadASData } from './api/meta'
-import { provide, ref, reactive } from 'vue'
-import { ASDataKey } from './inject/key'
+import { ref, reactive, computed, ComputedRef, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import { useASMeta } from './state/meta'
 
 const router = useRouter()
 const menu_rotate = ref('rotate-closed-margin')
@@ -23,9 +22,7 @@ const click_fold = () => {
   }
 }
 
-const asdata = ref({} as ASData | null)
-
-provide(ASDataKey, asdata)
+const ASMeta = useASMeta();
 
 class bgp {
   display() {
@@ -38,12 +35,14 @@ class bgp {
 
 class ospf {
   asn: number
-  name!: string
+  name!: ComputedRef<string>
   constructor(asn: number) {
     this.asn = asn
   }
   async init() {
-    this.name = asdata.value?.metadata?.[this.asn + '']?.display || ''
+    this.name = computed(
+      () => ASMeta.value?.metadata?.[this.asn + '']?.display || '',
+    )
   }
   display() {
     return this.name ? `${this.name} Network` : `AS ${this.asn}`
@@ -60,11 +59,16 @@ interface graph {
 
 const graph_list = reactive([] as Array<graph>)
 
-;(async () => {
-  const data = await loadASData()
-  if (data) {
-    asdata.value = data
-  }
+const sort_list = () =>
+  graph_list.sort((a, b) => {
+    if (a instanceof ospf && b instanceof bgp) return 1
+    if (b instanceof bgp && a instanceof ospf) return -1
+    return a.display().localeCompare(b.display())
+  })
+
+watch([graph_list], sort_list)
+
+async function load_list() {
   const list = await getList()
 
   list.forEach((graph) => {
@@ -80,11 +84,7 @@ const graph_list = reactive([] as Array<graph>)
     }
   })
 
-  graph_list.sort((a, b) => {
-    if (a instanceof ospf && b instanceof bgp) return 1
-    if (b instanceof bgp && a instanceof ospf) return -1
-    return a.display().localeCompare(b.display())
-  })
+  sort_list()
 
   if (router.currentRoute.value.path === '/') {
     router.push(graph_list[0].path())
@@ -94,7 +94,9 @@ const graph_list = reactive([] as Array<graph>)
     alert('no data')
   }
   dataReady.value = true
-})()
+}
+
+load_list()
 </script>
 <template>
   <div class="aside">
@@ -123,7 +125,7 @@ const graph_list = reactive([] as Array<graph>)
       </el-menu>
     </div>
   </div>
-  <Graph/>
+  <Graph />
   <router-view v-if="dataReady" />
 </template>
 
