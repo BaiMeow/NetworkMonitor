@@ -4,7 +4,7 @@ import { CanvasRenderer } from 'echarts/renderers'
 import { GraphChart } from 'echarts/charts'
 import { TooltipComponent, TitleComponent } from 'echarts/components'
 import { ECElementEvent, ElementEvent } from 'echarts'
-import { reactive, ref, computed, watch } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { Netmask } from 'netmask'
 import { getBetweenness, getBGP, getCloseness } from '../api/bgp'
 import { prettierNet } from '../utils/colornet'
@@ -19,7 +19,7 @@ import { useASMeta } from '@/state/meta'
 
 const isDark = useDark()
 
-const ASMeta = useASMeta();
+const ASMeta = useASMeta()
 
 interface Edge {
   source: string
@@ -177,77 +177,75 @@ option.series = [
   },
 ]
 
-const refreshData = async () => {
-  const [resp, betweenness, closeness] = await Promise.all([
-    getBGP(),
-    getBetweenness(),
-    getCloseness(),
-  ])
-  if (!resp.as) {
-    alert('no data')
-    return
-  }
-
-  const nodes = resp.as.reduce((nodes, cur) => {
-    nodes.push({
-      name: cur.asn.toString(),
-      value: cur.asn.toString(),
-      peer_num: 0,
-      betweenness: betweenness[cur.asn.toString()] || 0,
-      closeness: closeness[cur.asn.toString()] || 0,
-      network: cur.network
-        .sort((a, b) => parseInt(a.split('/')[1]) - parseInt(b.split('/')[1]))
-        .reduce(
-          (network, cur) =>
-            network.findIndex((net) => {
-              let nmask = new Netmask(net)
-              return nmask.contains(cur) || nmask.toString() === cur
-            }) === -1
-              ? [...network, cur]
-              : network,
-          [] as string[],
-        )
-        .sort((a, b) => {
-          let an = a.split(/[./]/).map((x) => parseInt(x))
-          let bn = b.split(/[./]/).map((x) => parseInt(x))
-          for (let i = 0; i < an.length; i++) {
-            if (an[i] > bn[i]) {
-              return 1
-            } else if (an[i] < bn[i]) {
-              return -1
+const bgpData = ref<Awaited<ReturnType<typeof getBGP>>>()
+const betweenness = ref<Awaited<ReturnType<typeof getBetweenness>>>()
+const closeness = ref<Awaited<ReturnType<typeof getCloseness>>>()
+const nodes = computed(() =>
+  bgpData.value?.as
+    .reduce((nodes, cur) => {
+      nodes.push({
+        name: cur.asn.toString(),
+        value: cur.asn.toString(),
+        peer_num: 0,
+        betweenness: betweenness.value?.[cur.asn.toString()] || 0,
+        closeness: closeness.value?.[cur.asn.toString()] || 0,
+        network: cur.network
+          .sort((a, b) => parseInt(a.split('/')[1]) - parseInt(b.split('/')[1]))
+          .reduce(
+            (network, cur) =>
+              network.findIndex((net) => {
+                let nmask = new Netmask(net)
+                return nmask.contains(cur) || nmask.toString() === cur
+              }) === -1
+                ? [...network, cur]
+                : network,
+            [] as string[],
+          )
+          .sort((a, b) => {
+            let an = a.split(/[./]/).map((x) => parseInt(x))
+            let bn = b.split(/[./]/).map((x) => parseInt(x))
+            for (let i = 0; i < an.length; i++) {
+              if (an[i] > bn[i]) {
+                return 1
+              } else if (an[i] < bn[i]) {
+                return -1
+              }
             }
-          }
-          return -1
-        }),
-    })
-    return nodes
-  }, [] as Node[])
+            return -1
+          }),
+      })
+      return nodes
+    }, [] as Node[])
+    .map((node) => {
+      node.peer_num =
+        bgpData.value?.link.filter((lk) => {
+          return (
+            lk.src === parseInt(node.name) || lk.dst === parseInt(node.name)
+          )
+        }).length || 0
+      node.value = '' + node.peer_num
+      node.symbolSize = Math.pow(node.peer_num + 3, 1 / 2) * 7
 
-  nodes.map((node) => {
-    node = reactive(node)
-    node.peer_num = resp.link.filter((lk) => {
-      return lk.src === parseInt(node.name) || lk.dst === parseInt(node.name)
-    }).length
-    node.value = '' + node.peer_num
-    node.symbolSize = Math.pow(node.peer_num + 3, 1 / 2) * 7
+      const nodeMeta = ASMeta.value?.metadata?.[node.name]
+      if (nodeMeta?.monitor?.customNode) {
+        mergeObjects(node, nodeMeta.monitor?.customNode)
+      }
+      if (nodeMeta) {
+        node.meta = nodeMeta
+      }
 
-    const nodeMeta = ASMeta.value?.metadata?.[node.name]
-    if (nodeMeta?.monitor?.customNode) {
-      mergeObjects(node, nodeMeta.monitor?.customNode)
-    }
-    if (nodeMeta) {
-      node.meta = nodeMeta
-    }
+      if (node.peer_num === 0) {
+        node.symbol =
+          'path://M255.633,0C145.341,0.198,55.994,89.667,55.994,200.006v278.66c0,14.849,17.953,22.285,28.453,11.786l38.216-39.328 l54.883,55.994c6.51,6.509,17.063,6.509,23.572,0L256,451.124l54.883,55.994c6.509,6.509,17.062,6.509,23.571,0l54.884-55.994 l38.216,39.327c10.499,10.499,28.453,3.063,28.453-11.786V201.719C456.006,91.512,365.84-0.197,255.633,0z M172.664,266.674 c-27.572,0-50.001-22.429-50.001-50.001s22.43-50.001,50.001-50.001s50.001,22.43,50.001,50.001S200.236,266.674,172.664,266.674z M339.336,266.674c-27.572,0-50.001-22.429-50.001-50.001s22.43-50.001,50.001-50.001s50.001,22.43,50.001,50.001 S366.908,266.674,339.336,266.674z'
+      }
+      return node
+    }),
+)
 
-    if (node.peer_num === 0) {
-      node.symbol =
-        'path://M255.633,0C145.341,0.198,55.994,89.667,55.994,200.006v278.66c0,14.849,17.953,22.285,28.453,11.786l38.216-39.328 l54.883,55.994c6.51,6.509,17.063,6.509,23.572,0L256,451.124l54.883,55.994c6.509,6.509,17.062,6.509,23.571,0l54.884-55.994 l38.216,39.327c10.499,10.499,28.453,3.063,28.453-11.786V201.719C456.006,91.512,365.84-0.197,255.633,0z M172.664,266.674 c-27.572,0-50.001-22.429-50.001-50.001s22.43-50.001,50.001-50.001s50.001,22.43,50.001,50.001S200.236,266.674,172.664,266.674z M339.336,266.674c-27.572,0-50.001-22.429-50.001-50.001s22.43-50.001,50.001-50.001s50.001,22.43,50.001,50.001 S366.908,266.674,339.336,266.674z'
-    }
-  })
-
-  const edges = resp.link.reduce((edges, cur) => {
-    const src = nodes.find((node) => node.name === cur.src.toString())
-    const dst = nodes.find((node) => node.name === cur.dst.toString())
+const edges = computed(() =>
+  bgpData.value?.link.reduce((edges, cur) => {
+    const src = nodes.value?.find((node) => node.name === cur.src.toString())
+    const dst = nodes.value?.find((node) => node.name === cur.dst.toString())
     if (src == null || dst == null) {
       return edges
     }
@@ -257,8 +255,13 @@ const refreshData = async () => {
       value: 100 / Math.min(src.peer_num, dst.peer_num) + 10,
     })
     return edges
-  }, [] as Edge[])
+  }, [] as Edge[]),
+)
 
+watch([nodes, edges], async () => {
+  if (!nodes.value || !edges.value) {
+    return
+  }
   const setLoadingOnce = (() => {
     let once = false
     return () => {
@@ -272,7 +275,7 @@ const refreshData = async () => {
   // remove not existed edges
   for (let i = 0; i < option.series[0].links.length; i++) {
     if (
-      edges.findIndex(
+      edges.value?.findIndex(
         (edge) =>
           edge.source === option.series[0].links[i].source &&
           edge.target === option.series[0].links[i].target,
@@ -283,9 +286,10 @@ const refreshData = async () => {
       i--
     }
   }
+
   // refresh nodes
   for (let i = 0; i < option.series[0].data.length; i++) {
-    const idx = nodes.findIndex(
+    const idx = nodes.value?.findIndex(
       (node) => node.name === option.series[0].data[i].name,
     )
     if (idx === -1) {
@@ -295,46 +299,48 @@ const refreshData = async () => {
       continue
     }
     if (
-      option.series[0].data[i].peer_num !== nodes[idx].peer_num ||
+      option.series[0].data[i].peer_num !== nodes.value[idx].peer_num ||
       option.series[0].data[i].network.join('|') !==
-        nodes[idx].network.join('|')
+        nodes.value[idx].network.join('|')
     ) {
       setLoadingOnce()
-      option.series[0].data[i] = nodes[idx]
-    }
-  }
-  // add new nodes
-  for (let i = 0; i < nodes.length; i++) {
-    if (
-      option.series[0].data.findIndex(
-        (node: Node) => node.name === nodes[i].name,
-      ) === -1
-    ) {
-      setLoadingOnce()
-      option.series[0].data.push(nodes[i])
-    }
-  }
-  // add new edges
-  for (let i = 0; i < edges.length; i++) {
-    if (
-      option.series[0].links.findIndex(
-        (edge: Edge) =>
-          edge.source === edges[i].source && edge.target === edges[i].target,
-      ) === -1
-    ) {
-      setLoadingOnce()
-      option.series[0].links.push(edges[i])
+      option.series[0].data[i] = nodes.value[idx]
     }
   }
 
-  option.series[0].force.edgeLength[1] = nodes.length * 3.5
-  option.title.subtext = `Nodes: ${nodes.reduce(
+  // add new nodes
+  for (let i = 0; i < nodes.value.length; i++) {
+    if (
+      option.series[0].data.findIndex(
+        (node: Node) => node.name === nodes.value?.[i].name,
+      ) === -1
+    ) {
+      setLoadingOnce()
+      option.series[0].data.push(nodes.value[i])
+    }
+  }
+  // add new edges
+  for (let i = 0; i < edges.value.length; i++) {
+    if (
+      option.series[0].links.findIndex(
+        (edge: Edge) =>
+          edge.source === edges.value?.[i].source &&
+          edge.target === edges.value?.[i].target,
+      ) === -1
+    ) {
+      setLoadingOnce()
+      option.series[0].links.push(edges.value[i])
+    }
+  }
+
+  option.series[0].force.edgeLength[1] = nodes.value.length * 3.5
+  option.title.subtext = `Nodes: ${nodes.value.reduce(
     (p, c) => p + (c.peer_num === 0 ? 0 : 1),
     0,
-  )} Peers: ${edges.length}`
+  )} Peers: ${edges.value.length}`
   option.series[0].force.friction = 0.15
   loading.value = false
-  selectList.value = nodes.map((n) => {
+  selectList.value = nodes.value.map((n) => {
     return {
       label: n.meta?.display || n.name,
       asn: n.name,
@@ -361,14 +367,16 @@ const refreshData = async () => {
       },
     }
   })
-}
-
-watch([ASMeta], refreshData, {
-  immediate: true,
 })
 
+async function loadData() {
+  bgpData.value = await getBGP()
+  closeness.value = await getCloseness()
+  betweenness.value = await getBetweenness()
+}
+loadData()
 const interval = setInterval(() => {
-  refreshData()
+  loadData()
 }, 60 * 1000)
 
 let timer: any = null
