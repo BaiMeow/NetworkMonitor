@@ -75,7 +75,6 @@ function search(val: string) {
     >
       <el-option
         v-for="item in options"
-        :key="item.value"
         :label="item.label"
         :value="item.value"
       >
@@ -97,5 +96,4 @@ function search(val: string) {
   </div>
 </template>
 
-<style>
-</style>
+<style></style>

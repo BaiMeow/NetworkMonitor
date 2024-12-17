@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { watch, computed } from 'vue'
+import { watch, computed, ref } from 'vue'
 
 import { use } from 'echarts/core'
 import { CanvasRenderer } from 'echarts/renderers'
@@ -8,7 +8,7 @@ import { TooltipComponent, TitleComponent } from 'echarts/components'
 import { ECElementEvent } from 'echarts'
 
 import { getOSPF } from '../api/ospf'
-import { useDark } from '@vueuse/core'
+import { ElementOf, useDark } from '@vueuse/core'
 import { onBeforeRouteLeave, useRoute } from 'vue-router'
 import { useGraph, useGraphEvent } from '@/state/graph'
 
@@ -47,14 +47,22 @@ interface Params<T> {
   data: T
 }
 
-const ASMeta = useASMeta();
+const ASMeta = useASMeta()
+
+const asn = computed<string>(() => route.params.asn as string)
 
 option.title = {
-  text: '',
+  text: computed(() =>
+    ASMeta.value?.metadata?.[asn.value]?.display
+      ? `${ASMeta.value.metadata[asn.value].display} Network`
+      : `AS ${asn}`,
+  ),
   textStyle: {
     color: computed(() => (isDark.value ? '#E5EAF3' : 'black')),
   },
-  subtext: '',
+  subtext: computed(
+    () => `Nodes: ${nodes.value?.length}  Peers: ${peers.value}`,
+  ),
 }
 option.tooltip = {
   trigger: 'item',
@@ -144,37 +152,40 @@ option.lineStyle = {
   width: 2,
 }
 
-const load_data = async (asn: string) => {
-  const areas = await getOSPF(parseInt(asn as string))
-  const nodes = areas.reduce((nodes, cur) => {
-    if (cur.router && cur.router.length !== 0) {
-      cur.router.forEach((router) => {
-        let index = nodes.findIndex((r) => r.name == router.router_id)
-        if (index !== -1) {
-          nodes[index].area.push(cur.area_id)
-          return
-        }
-        nodes.push({
-          name: router.router_id,
-          value: router.router_id,
-          meta: router.metadata ? router.metadata : {},
-          subnet: router.subnet,
-          area: [cur.area_id],
-        })
-      })
-    }
-    return nodes
-  }, [] as Node[])
+// load data
+const ospfData = ref<Awaited<ReturnType<typeof getOSPF>>>()
+async function loadData() {
+  ospfData.value = await getOSPF(parseInt(asn.value))
+}
 
-  const all_links = areas
-    .flatMap((area) => area.links)
-    .filter((link) => link !== undefined)
+// auto refresh
+let autoRefreshInterval: ReturnType<typeof setTimeout>
+watch(
+  [asn],
+  () => {
+    if (autoRefreshInterval) clearInterval(autoRefreshInterval)
+    loadData()
+    autoRefreshInterval = setInterval(() => {
+      loadData()
+    }, 60 * 1000)
+  },
+  {
+    immediate: true,
+  },
+)
+onBeforeRouteLeave(() => {
+  if (autoRefreshInterval) clearInterval(autoRefreshInterval)
+})
 
-  const all_routers = areas.reduce(
+const all_links = computed(() =>
+  ospfData.value
+    ?.flatMap((area) => area.links)
+    .filter((link) => link !== undefined),
+)
+
+const all_routers = computed(() =>
+  ospfData.value?.reduce(
     (routers, cur) => {
-      if (cur.router === undefined || cur.router.length === 0) {
-        return routers
-      }
       cur.router.forEach((r) => {
         if (
           routers.findIndex((router) => router.router_id === r.router_id) === -1
@@ -183,39 +194,64 @@ const load_data = async (asn: string) => {
       })
       return routers
     },
-    [] as (typeof areas)[number]['router'],
-  )
+    [] as ElementOf<typeof ospfData.value>['router'],
+  ),
+)
 
-  nodes.forEach((node) => {
-    let markedPeer = new Set<string>()
-    node.peer_num = all_links.filter((lk) => {
-      if (lk.src === node.name && !markedPeer.has(lk.dst)) {
-        markedPeer.add(lk.dst)
-        return true
+const nodes = computed(() =>
+  ospfData.value?.reduce((nodes, cur) => {
+    cur.router.forEach((router) => {
+      let index = nodes.findIndex((r) => r.name == router.router_id)
+      if (index !== -1) {
+        nodes[index].area.push(cur.area_id)
+        return
       }
-      return false
-    }).length
-    node.value = '' + node.peer_num
-    node.symbolSize = Math.pow(node.peer_num + 3, 1 / 2) * 7
-  })
-
-  let edges: Edge[] = []
-  // prepare edges for render
-  all_routers.forEach((a) => {
-    all_routers.forEach((b) => {
-      if (a.router_id >= b.router_id) return
-
-      let links = all_links.filter((lk) => {
-        return (
-          (lk.src === a.router_id && lk.dst === b.router_id) ||
-          (lk.src === b.router_id && lk.dst === a.router_id)
-        )
+      let markedPeer = new Set<string>()
+      const peer_num =
+        all_links.value?.filter((lk) => {
+          if (lk.src === router.router_id && !markedPeer.has(lk.dst)) {
+            markedPeer.add(lk.dst)
+            return true
+          }
+          return false
+        }).length || 0
+      nodes.push({
+        name: router.router_id,
+        value: '' + peer_num,
+        meta: router.metadata ? router.metadata : {},
+        subnet: router.subnet,
+        area: [cur.area_id],
+        peer_num: peer_num,
+        symbolSize: Math.pow(peer_num + 3, 1 / 2) * 7,
       })
+    })
+    return nodes
+  }, [] as Node[]),
+)
 
-      let lines: typeof all_links = []
-      let arrows: typeof all_links = []
+const edges = computed(() =>
+  all_routers.value
+    ?.flatMap((value, index, array) => {
+      return array.slice(index + 1).map((r) => [value, r])
+    })
+    .flatMap(([a, b]) => {
+      let edges: Edge[] = []
+
+      // all links between two nodes
+      let links =
+        all_links.value?.filter((lk) => {
+          return (
+            (lk.src === a.router_id && lk.dst === b.router_id) ||
+            (lk.src === b.router_id && lk.dst === a.router_id)
+          )
+        }) || []
+
+      let lines: NonNullable<typeof all_links.value> = []
+      let arrows: typeof all_links.value = []
+
+      // convert to line or arrow
       while (links.length !== 0) {
-        let cur = links.pop() as NonNullable<(typeof links)[number]>
+        let cur = links.pop() as NonNullable<ElementOf<typeof links>>
         let pair_idx = links.findIndex(
           (lk) =>
             lk.src === cur.dst && lk.dst === cur.src && lk.cost === cur.cost,
@@ -228,7 +264,17 @@ const load_data = async (asn: string) => {
         }
       }
 
-      let curveness = 0.07
+      lines = lines.map((line) =>
+        line.src < line.dst
+          ? line
+          : {
+              src: line.dst,
+              dst: line.src,
+              cost: line.cost,
+            },
+      )
+
+      // middle line
       if (lines.length % 2 === 1) {
         const line = lines.pop() as NonNullable<(typeof lines)[number]>
         edges.push({
@@ -238,6 +284,8 @@ const load_data = async (asn: string) => {
           cost: line.cost,
         })
       }
+
+      let curveness = 0.07
       let next_curveness = false
       while (lines.length !== 0) {
         const l1 = lines.pop() as NonNullable<(typeof lines)[number]>
@@ -277,28 +325,35 @@ const load_data = async (asn: string) => {
           next_curveness = false
         } else next_curveness = true
       }
-    })
-  })
+      return edges
+    }),
+)
 
-  option.series[0].force.edgeLength = [30, 150]
-  option.series[0].force.repulsion = 200
-  option.series[0].data = nodes
-  option.series[0].links = edges
-  option.title.text = ASMeta.value?.metadata?.[asn as string]?.display
-    ? `${ASMeta.value.metadata[asn as string].display} Network`
-    : `AS ${asn}`
+const peers = computed(() => {
   let markedPeer = new Set<string>()
-  for (const link of all_links) {
+  for (const link of all_links.value || []) {
     if (!markedPeer.has(link.src + link.dst)) {
       markedPeer.add(link.src + link.dst)
       markedPeer.add(link.dst + link.src)
     }
   }
-  option.title.subtext = `Nodes: ${nodes.length}  Peers: ${markedPeer.size / 2}`
-  selectList.value = nodes.map((n) => {
+  return markedPeer.size / 2
+})
+
+const renderData = async () => {
+  if (!nodes.value || !edges.value) return
+  option.series[0].force.edgeLength = [30, 150]
+  option.series[0].force.repulsion = 200
+  option.series[0].data = nodes
+  option.series[0].links = edges
+}
+
+watch([nodes], () => {
+  if (!nodes.value) return
+  selectList.value = nodes.value.map((n) => {
     return {
       label: n.name,
-      value: n.value,
+      value: n.name,
       onselected: () => {
         dispatchEchartAction({
           type: 'highlight',
@@ -308,12 +363,12 @@ const load_data = async (asn: string) => {
       },
     }
   })
-}
+})
 
 watch(
-  () => route.params.asn,
-  async (new_asn) => {
-    await load_data(new_asn as string)
+  ospfData,
+  async () => {
+    await renderData()
     option.series[0].force.layoutAnimation = false
     loading.value = false
   },
