@@ -2,7 +2,7 @@ import { ASData, loadASData } from '@/api/meta'
 import { ref } from 'vue'
 
 const ASMeta = ref<ASData>()
-const doneLoading = ref<Boolean>(true)
+const doneLoading = ref<boolean>(true)
 
 async function loadMetadata() {
   const data = await loadASData()

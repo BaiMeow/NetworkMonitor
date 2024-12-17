@@ -22,7 +22,7 @@ const click_fold = () => {
   }
 }
 
-const ASMeta = useASMeta();
+const ASMeta = useASMeta()
 
 class bgp {
   display() {
@@ -76,11 +76,12 @@ async function load_list() {
       case 'bgp':
         graph_list.push(new bgp())
         break
-      case 'ospf':
+      case 'ospf': {
         const gr = new ospf(graph.asn)
         gr.init()
         graph_list.push(gr)
         break
+      }
     }
   })
 
@@ -118,6 +119,7 @@ load_list()
         <el-menu-item
           class="menu-item"
           v-for="graph in graph_list"
+          :key="graph.path"
           :index="graph.path()"
         >
           <span>{{ graph.display() }}</span>

@@ -40,7 +40,7 @@ interface Node {
   symbolSize?: number
   symbol?: string
   network: string[]
-  itemStyle?: any
+  itemStyle?: object
 }
 
 interface Params<T> {
@@ -153,7 +153,7 @@ option.series = [
       fontWeight: 1000,
       fontFamily: 'Microsoft YaHei',
       formatter: (params: any) => {
-        if (params.data.meta && params.data.meta.display) {
+        if (params.data.meta?.display) {
           return params.data.meta.display
         }
         return params.data.name
@@ -298,12 +298,20 @@ watch([nodes, edges], async () => {
       i--
       continue
     }
+
+    if (option.series[0].data[i].peer_num !== nodes.value[idx].peer_num)
+      option.series[0].data[i].peer_num = nodes.value[idx].peer_num
+
     if (
-      option.series[0].data[i].peer_num !== nodes.value[idx].peer_num ||
       option.series[0].data[i].network.join('|') !==
-        nodes.value[idx].network.join('|')
+      nodes.value[idx].network.join('|')
+    )
+      option.series[0].data[i].network = nodes.value[idx].network
+
+    if (
+      JSON.stringify(option.series[0].data[i].meta) !==
+      JSON.stringify(nodes.value[idx].meta)
     ) {
-      setLoadingOnce()
       option.series[0].data[i] = nodes.value[idx]
     }
   }
@@ -379,7 +387,7 @@ const interval = setInterval(() => {
   loadData()
 }, 60 * 1000)
 
-let timer: any = null
+let timer: ReturnType<typeof setTimeout>
 
 const { handleClick, handleMouseDown, handleMouseUp, handleZrClick } =
   useGraphEvent()

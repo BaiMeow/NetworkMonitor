@@ -4,7 +4,7 @@ import { Resp, ApiHost } from './consts'
 interface Router {
   router_id: string
   subnet: string[]
-  metadata?: Object
+  metadata?: object
 }
 
 interface Link {

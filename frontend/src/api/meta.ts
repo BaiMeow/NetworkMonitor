@@ -24,7 +24,7 @@ export interface ASData {
         appendix?: {
           [key: string]: string | string[]
         }
-        customNode?: Object
+        customNode?: object
       }
     }
   }
