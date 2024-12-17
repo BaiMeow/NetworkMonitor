@@ -50,16 +50,25 @@ interface Params<T> {
 
 use([CanvasRenderer, GraphChart, TooltipComponent, TitleComponent])
 
-const { option, selectList, loading } = useGraph()
+const { option, selectList, loading: graphLoading } = useGraph()
 
-loading.value = true
+graphLoading.value = true
 
 option.title = {
   text: 'DN11 & Vidar Network',
   textStyle: {
     color: computed(() => (isDark.value ? '#E5EAF3' : 'black')),
   },
-  subtext: '',
+  subtext: computed(
+    () =>
+      (nodes.value &&
+        edges.value &&
+        `Nodes: ${nodes.value.reduce(
+          (p, c) => p + (c.peer_num === 0 ? 0 : 1),
+          0,
+        )} Peers: ${edges.value.length}`) ||
+      '',
+  ),
 }
 option.tooltip = {
   trigger: 'item',
@@ -258,6 +267,7 @@ const edges = computed(() =>
   }, [] as Edge[]),
 )
 
+// update graph
 watch([nodes, edges], async () => {
   if (!nodes.value || !edges.value) {
     return
@@ -342,12 +352,13 @@ watch([nodes, edges], async () => {
   }
 
   option.series[0].force.edgeLength[1] = nodes.value.length * 3.5
-  option.title.subtext = `Nodes: ${nodes.value.reduce(
-    (p, c) => p + (c.peer_num === 0 ? 0 : 1),
-    0,
-  )} Peers: ${edges.value.length}`
   option.series[0].force.friction = 0.15
-  loading.value = false
+  graphLoading.value = false
+})
+
+// update selectList
+watch([nodes, ASMeta], () => {
+  if (!nodes.value) return
   selectList.value = nodes.value.map((n) => {
     return {
       label: n.meta?.display || n.name,
@@ -432,7 +443,7 @@ onBeforeRouteLeave(() => {
 
 <template>
   <Transition name="fade" appear>
-    <BGPUptime class="uptime" v-if="uptime_asn != 0" :asn="uptime_asn" />
+    <BGPUptime class="uptime" v-if="uptime_asn !== 0" :asn="uptime_asn" />
   </Transition>
 </template>
 
