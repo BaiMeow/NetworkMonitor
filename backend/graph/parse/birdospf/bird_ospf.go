@@ -28,7 +28,6 @@ var _ parse.Parser = (*BirdOSPF)(nil)
 
 type BirdOSPF struct {
 	parser *parser.BirdOSPFParser
-	graph  parse.OSPF
 	asn    uint32
 }
 
@@ -41,7 +40,7 @@ func (p *BirdOSPF) Init(input []byte) {
 func (p *BirdOSPF) ParseAndMerge(drawing *parse.Drawing) (err error) {
 	tree := p.parser.State()
 	visitor := &birdOSPFVisitor{
-		graph: &p.graph,
+		graph: new(parse.OSPF),
 	}
 	state, ok := tree.(*parser.StateContext)
 	if !ok {
@@ -50,7 +49,7 @@ func (p *BirdOSPF) ParseAndMerge(drawing *parse.Drawing) (err error) {
 	visitor.visitState(state)
 	drawing.Lock()
 	defer drawing.Unlock()
-	drawing.OSPF[p.asn] = &p.graph
+	drawing.OSPF[p.asn] = visitor.graph
 	return nil
 }
 
