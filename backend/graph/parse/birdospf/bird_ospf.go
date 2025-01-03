@@ -29,14 +29,19 @@ var _ parse.Parser = (*BirdOSPF)(nil)
 type BirdOSPF struct {
 	lexer  *parser.BirdOSPFLexer
 	parser *parser.BirdOSPFParser
+	errL   *errorListener
 	asn    uint32
 }
 
 func (p *BirdOSPF) Init(input []byte) {
 	lexer := parser.NewBirdOSPFLexer(antlr.NewIoStream(bytes.NewReader(input)))
 	stream := antlr.NewCommonTokenStream(lexer, 0)
+	el := &errorListener{}
+
 	p.lexer = lexer
 	p.parser = parser.NewBirdOSPFParser(stream)
+	p.errL = el
+	p.parser.AddErrorListener(el)
 }
 
 func (p *BirdOSPF) ParseAndMerge(drawing *parse.Drawing) (err error) {
@@ -52,6 +57,14 @@ func (p *BirdOSPF) ParseAndMerge(drawing *parse.Drawing) (err error) {
 	drawing.Lock()
 	defer drawing.Unlock()
 	drawing.OSPF[p.asn] = visitor.graph
+
+	if len(p.errL.errs) != 0 {
+		err := fmt.Errorf("parse fail")
+		for _, e := range p.errL.errs {
+			err = fmt.Errorf("%w: %s at line %d, col %d", err, e.msg, e.line, e.col)
+		}
+		return err
+	}
 	return nil
 }
 
