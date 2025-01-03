@@ -6,10 +6,10 @@ router           : 'router' IP (('distance' INT) | routerEntry)+;
 routerEntry      : ('router' IP
                   | 'stubnet' Prefix
                   | 'xnetwork' Prefix
+                  | 'network' Prefix
                   | 'external' Prefix
                   | 'xrouter' IP )
-                  ( Metric | Metric2 ) INT
-                  ( 'via' IP )?
+                  ( Metric | Metric2 ) INT ( 'via' IP )?
                   ;
 
 
