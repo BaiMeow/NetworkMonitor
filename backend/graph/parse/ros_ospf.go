@@ -39,6 +39,7 @@ type RosOSPF struct {
 
 func (p *RosOSPF) Init(input []byte) {
 	p.raw = input
+	p.graph = nil
 }
 
 func (p *RosOSPF) ParseAndMerge(drawing *Drawing) (err error) {
