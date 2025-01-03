@@ -32,43 +32,48 @@ var BirdOSPFParserStaticData struct {
 func birdospfParserInit() {
 	staticData := &BirdOSPFParserStaticData
 	staticData.LiteralNames = []string{
-		"", "'area'", "'distance'", "'router'", "'stubnet'", "'xnetwork'", "'network'",
-		"'external'", "'xrouter'", "'via'", "'metric'", "'metric2'",
+		"", "'area'", "'router'", "'network'", "'stubnet'", "'xnetwork'", "'external'",
+		"'xrouter'", "'via'", "'dr'", "'distance'", "'metric'", "'metric2'",
 	}
 	staticData.SymbolicNames = []string{
-		"", "", "", "", "", "", "", "", "", "", "Metric", "Metric2", "Prefix",
-		"VERSION", "IP", "STRING", "INT", "WS",
+		"", "", "", "", "", "", "", "", "", "DR", "Distance", "Metric", "Metric2",
+		"Prefix", "VERSION", "IP", "STRING", "INT", "WS",
 	}
 	staticData.RuleNames = []string{
-		"state", "area", "router", "routerEntry",
+		"state", "area", "router", "network", "routerEntry", "distance",
 	}
 	staticData.PredictionContextCache = antlr.NewPredictionContextCache()
 	staticData.serializedATN = []int32{
-		4, 1, 17, 57, 2, 0, 7, 0, 2, 1, 7, 1, 2, 2, 7, 2, 2, 3, 7, 3, 1, 0, 4,
-		0, 10, 8, 0, 11, 0, 12, 0, 11, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 3, 1,
-		20, 8, 1, 1, 1, 5, 1, 23, 8, 1, 10, 1, 12, 1, 26, 9, 1, 1, 2, 1, 2, 1,
-		2, 1, 2, 1, 2, 4, 2, 33, 8, 2, 11, 2, 12, 2, 34, 1, 3, 1, 3, 1, 3, 1, 3,
-		1, 3, 1, 3, 1, 3, 1, 3, 1, 3, 1, 3, 1, 3, 1, 3, 3, 3, 49, 8, 3, 1, 3, 1,
-		3, 1, 3, 1, 3, 3, 3, 55, 8, 3, 1, 3, 0, 0, 4, 0, 2, 4, 6, 0, 1, 1, 0, 10,
-		11, 63, 0, 9, 1, 0, 0, 0, 2, 15, 1, 0, 0, 0, 4, 27, 1, 0, 0, 0, 6, 48,
-		1, 0, 0, 0, 8, 10, 3, 2, 1, 0, 9, 8, 1, 0, 0, 0, 10, 11, 1, 0, 0, 0, 11,
-		9, 1, 0, 0, 0, 11, 12, 1, 0, 0, 0, 12, 13, 1, 0, 0, 0, 13, 14, 5, 0, 0,
-		1, 14, 1, 1, 0, 0, 0, 15, 16, 5, 1, 0, 0, 16, 19, 5, 14, 0, 0, 17, 18,
-		5, 2, 0, 0, 18, 20, 5, 16, 0, 0, 19, 17, 1, 0, 0, 0, 19, 20, 1, 0, 0, 0,
-		20, 24, 1, 0, 0, 0, 21, 23, 3, 4, 2, 0, 22, 21, 1, 0, 0, 0, 23, 26, 1,
-		0, 0, 0, 24, 22, 1, 0, 0, 0, 24, 25, 1, 0, 0, 0, 25, 3, 1, 0, 0, 0, 26,
-		24, 1, 0, 0, 0, 27, 28, 5, 3, 0, 0, 28, 32, 5, 14, 0, 0, 29, 30, 5, 2,
-		0, 0, 30, 33, 5, 16, 0, 0, 31, 33, 3, 6, 3, 0, 32, 29, 1, 0, 0, 0, 32,
-		31, 1, 0, 0, 0, 33, 34, 1, 0, 0, 0, 34, 32, 1, 0, 0, 0, 34, 35, 1, 0, 0,
-		0, 35, 5, 1, 0, 0, 0, 36, 37, 5, 3, 0, 0, 37, 49, 5, 14, 0, 0, 38, 39,
-		5, 4, 0, 0, 39, 49, 5, 12, 0, 0, 40, 41, 5, 5, 0, 0, 41, 49, 5, 12, 0,
-		0, 42, 43, 5, 6, 0, 0, 43, 49, 5, 12, 0, 0, 44, 45, 5, 7, 0, 0, 45, 49,
-		5, 12, 0, 0, 46, 47, 5, 8, 0, 0, 47, 49, 5, 14, 0, 0, 48, 36, 1, 0, 0,
-		0, 48, 38, 1, 0, 0, 0, 48, 40, 1, 0, 0, 0, 48, 42, 1, 0, 0, 0, 48, 44,
-		1, 0, 0, 0, 48, 46, 1, 0, 0, 0, 49, 50, 1, 0, 0, 0, 50, 51, 7, 0, 0, 0,
-		51, 54, 5, 16, 0, 0, 52, 53, 5, 9, 0, 0, 53, 55, 5, 14, 0, 0, 54, 52, 1,
-		0, 0, 0, 54, 55, 1, 0, 0, 0, 55, 7, 1, 0, 0, 0, 7, 11, 19, 24, 32, 34,
-		48, 54,
+		4, 1, 18, 73, 2, 0, 7, 0, 2, 1, 7, 1, 2, 2, 7, 2, 2, 3, 7, 3, 2, 4, 7,
+		4, 2, 5, 7, 5, 1, 0, 4, 0, 14, 8, 0, 11, 0, 12, 0, 15, 1, 0, 1, 0, 1, 1,
+		1, 1, 1, 1, 1, 1, 5, 1, 24, 8, 1, 10, 1, 12, 1, 27, 9, 1, 1, 2, 1, 2, 1,
+		2, 1, 2, 5, 2, 33, 8, 2, 10, 2, 12, 2, 36, 9, 2, 1, 3, 1, 3, 1, 3, 1, 3,
+		1, 3, 1, 3, 1, 3, 5, 3, 45, 8, 3, 10, 3, 12, 3, 48, 9, 3, 1, 4, 1, 4, 1,
+		4, 1, 4, 1, 4, 1, 4, 1, 4, 1, 4, 1, 4, 1, 4, 1, 4, 1, 4, 3, 4, 62, 8, 4,
+		1, 4, 1, 4, 1, 4, 1, 4, 3, 4, 68, 8, 4, 1, 5, 1, 5, 1, 5, 1, 5, 0, 0, 6,
+		0, 2, 4, 6, 8, 10, 0, 1, 1, 0, 11, 12, 77, 0, 13, 1, 0, 0, 0, 2, 19, 1,
+		0, 0, 0, 4, 28, 1, 0, 0, 0, 6, 37, 1, 0, 0, 0, 8, 61, 1, 0, 0, 0, 10, 69,
+		1, 0, 0, 0, 12, 14, 3, 2, 1, 0, 13, 12, 1, 0, 0, 0, 14, 15, 1, 0, 0, 0,
+		15, 13, 1, 0, 0, 0, 15, 16, 1, 0, 0, 0, 16, 17, 1, 0, 0, 0, 17, 18, 5,
+		0, 0, 1, 18, 1, 1, 0, 0, 0, 19, 20, 5, 1, 0, 0, 20, 25, 5, 15, 0, 0, 21,
+		24, 3, 4, 2, 0, 22, 24, 3, 6, 3, 0, 23, 21, 1, 0, 0, 0, 23, 22, 1, 0, 0,
+		0, 24, 27, 1, 0, 0, 0, 25, 23, 1, 0, 0, 0, 25, 26, 1, 0, 0, 0, 26, 3, 1,
+		0, 0, 0, 27, 25, 1, 0, 0, 0, 28, 29, 5, 2, 0, 0, 29, 30, 5, 15, 0, 0, 30,
+		34, 3, 10, 5, 0, 31, 33, 3, 8, 4, 0, 32, 31, 1, 0, 0, 0, 33, 36, 1, 0,
+		0, 0, 34, 32, 1, 0, 0, 0, 34, 35, 1, 0, 0, 0, 35, 5, 1, 0, 0, 0, 36, 34,
+		1, 0, 0, 0, 37, 38, 5, 3, 0, 0, 38, 39, 5, 13, 0, 0, 39, 40, 5, 9, 0, 0,
+		40, 41, 5, 15, 0, 0, 41, 46, 3, 10, 5, 0, 42, 43, 5, 2, 0, 0, 43, 45, 5,
+		15, 0, 0, 44, 42, 1, 0, 0, 0, 45, 48, 1, 0, 0, 0, 46, 44, 1, 0, 0, 0, 46,
+		47, 1, 0, 0, 0, 47, 7, 1, 0, 0, 0, 48, 46, 1, 0, 0, 0, 49, 50, 5, 2, 0,
+		0, 50, 62, 5, 15, 0, 0, 51, 52, 5, 4, 0, 0, 52, 62, 5, 13, 0, 0, 53, 54,
+		5, 5, 0, 0, 54, 62, 5, 13, 0, 0, 55, 56, 5, 3, 0, 0, 56, 62, 5, 13, 0,
+		0, 57, 58, 5, 6, 0, 0, 58, 62, 5, 13, 0, 0, 59, 60, 5, 7, 0, 0, 60, 62,
+		5, 15, 0, 0, 61, 49, 1, 0, 0, 0, 61, 51, 1, 0, 0, 0, 61, 53, 1, 0, 0, 0,
+		61, 55, 1, 0, 0, 0, 61, 57, 1, 0, 0, 0, 61, 59, 1, 0, 0, 0, 62, 63, 1,
+		0, 0, 0, 63, 64, 7, 0, 0, 0, 64, 67, 5, 17, 0, 0, 65, 66, 5, 8, 0, 0, 66,
+		68, 5, 15, 0, 0, 67, 65, 1, 0, 0, 0, 67, 68, 1, 0, 0, 0, 68, 9, 1, 0, 0,
+		0, 69, 70, 5, 10, 0, 0, 70, 71, 5, 17, 0, 0, 71, 11, 1, 0, 0, 0, 7, 15,
+		23, 25, 34, 46, 61, 67,
 	}
 	deserializer := antlr.NewATNDeserializer(nil)
 	staticData.atn = deserializer.Deserialize(staticData.serializedATN)
@@ -106,24 +111,25 @@ func NewBirdOSPFParser(input antlr.TokenStream) *BirdOSPFParser {
 
 // BirdOSPFParser tokens.
 const (
-	BirdOSPFParserEOF     = antlr.TokenEOF
-	BirdOSPFParserT__0    = 1
-	BirdOSPFParserT__1    = 2
-	BirdOSPFParserT__2    = 3
-	BirdOSPFParserT__3    = 4
-	BirdOSPFParserT__4    = 5
-	BirdOSPFParserT__5    = 6
-	BirdOSPFParserT__6    = 7
-	BirdOSPFParserT__7    = 8
-	BirdOSPFParserT__8    = 9
-	BirdOSPFParserMetric  = 10
-	BirdOSPFParserMetric2 = 11
-	BirdOSPFParserPrefix  = 12
-	BirdOSPFParserVERSION = 13
-	BirdOSPFParserIP      = 14
-	BirdOSPFParserSTRING  = 15
-	BirdOSPFParserINT     = 16
-	BirdOSPFParserWS      = 17
+	BirdOSPFParserEOF      = antlr.TokenEOF
+	BirdOSPFParserT__0     = 1
+	BirdOSPFParserT__1     = 2
+	BirdOSPFParserT__2     = 3
+	BirdOSPFParserT__3     = 4
+	BirdOSPFParserT__4     = 5
+	BirdOSPFParserT__5     = 6
+	BirdOSPFParserT__6     = 7
+	BirdOSPFParserT__7     = 8
+	BirdOSPFParserDR       = 9
+	BirdOSPFParserDistance = 10
+	BirdOSPFParserMetric   = 11
+	BirdOSPFParserMetric2  = 12
+	BirdOSPFParserPrefix   = 13
+	BirdOSPFParserVERSION  = 14
+	BirdOSPFParserIP       = 15
+	BirdOSPFParserSTRING   = 16
+	BirdOSPFParserINT      = 17
+	BirdOSPFParserWS       = 18
 )
 
 // BirdOSPFParser rules.
@@ -131,7 +137,9 @@ const (
 	BirdOSPFParserRULE_state       = 0
 	BirdOSPFParserRULE_area        = 1
 	BirdOSPFParserRULE_router      = 2
-	BirdOSPFParserRULE_routerEntry = 3
+	BirdOSPFParserRULE_network     = 3
+	BirdOSPFParserRULE_routerEntry = 4
+	BirdOSPFParserRULE_distance    = 5
 )
 
 // IStateContext is an interface to support dynamic dispatch.
@@ -263,7 +271,7 @@ func (p *BirdOSPFParser) State() (localctx IStateContext) {
 	var _la int
 
 	p.EnterOuterAlt(localctx, 1)
-	p.SetState(9)
+	p.SetState(13)
 	p.GetErrorHandler().Sync(p)
 	if p.HasError() {
 		goto errorExit
@@ -272,11 +280,11 @@ func (p *BirdOSPFParser) State() (localctx IStateContext) {
 
 	for ok := true; ok; ok = _la == BirdOSPFParserT__0 {
 		{
-			p.SetState(8)
+			p.SetState(12)
 			p.Area()
 		}
 
-		p.SetState(11)
+		p.SetState(15)
 		p.GetErrorHandler().Sync(p)
 		if p.HasError() {
 			goto errorExit
@@ -284,7 +292,7 @@ func (p *BirdOSPFParser) State() (localctx IStateContext) {
 		_la = p.GetTokenStream().LA(1)
 	}
 	{
-		p.SetState(13)
+		p.SetState(17)
 		p.Match(BirdOSPFParserEOF)
 		if p.HasError() {
 			// Recognition error - abort rule
@@ -314,9 +322,10 @@ type IAreaContext interface {
 
 	// Getter signatures
 	IP() antlr.TerminalNode
-	INT() antlr.TerminalNode
 	AllRouter() []IRouterContext
 	Router(i int) IRouterContext
+	AllNetwork() []INetworkContext
+	Network(i int) INetworkContext
 
 	// IsAreaContext differentiates from other interfaces.
 	IsAreaContext()
@@ -356,10 +365,6 @@ func (s *AreaContext) GetParser() antlr.Parser { return s.parser }
 
 func (s *AreaContext) IP() antlr.TerminalNode {
 	return s.GetToken(BirdOSPFParserIP, 0)
-}
-
-func (s *AreaContext) INT() antlr.TerminalNode {
-	return s.GetToken(BirdOSPFParserINT, 0)
 }
 
 func (s *AreaContext) AllRouter() []IRouterContext {
@@ -403,6 +408,47 @@ func (s *AreaContext) Router(i int) IRouterContext {
 	return t.(IRouterContext)
 }
 
+func (s *AreaContext) AllNetwork() []INetworkContext {
+	children := s.GetChildren()
+	len := 0
+	for _, ctx := range children {
+		if _, ok := ctx.(INetworkContext); ok {
+			len++
+		}
+	}
+
+	tst := make([]INetworkContext, len)
+	i := 0
+	for _, ctx := range children {
+		if t, ok := ctx.(INetworkContext); ok {
+			tst[i] = t.(INetworkContext)
+			i++
+		}
+	}
+
+	return tst
+}
+
+func (s *AreaContext) Network(i int) INetworkContext {
+	var t antlr.RuleContext
+	j := 0
+	for _, ctx := range s.GetChildren() {
+		if _, ok := ctx.(INetworkContext); ok {
+			if j == i {
+				t = ctx.(antlr.RuleContext)
+				break
+			}
+			j++
+		}
+	}
+
+	if t == nil {
+		return nil
+	}
+
+	return t.(INetworkContext)
+}
+
 func (s *AreaContext) GetRuleContext() antlr.RuleContext {
 	return s
 }
@@ -440,7 +486,7 @@ func (p *BirdOSPFParser) Area() (localctx IAreaContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(15)
+		p.SetState(19)
 		p.Match(BirdOSPFParserT__0)
 		if p.HasError() {
 			// Recognition error - abort rule
@@ -448,53 +494,46 @@ func (p *BirdOSPFParser) Area() (localctx IAreaContext) {
 		}
 	}
 	{
-		p.SetState(16)
+		p.SetState(20)
 		p.Match(BirdOSPFParserIP)
 		if p.HasError() {
 			// Recognition error - abort rule
 			goto errorExit
 		}
 	}
-	p.SetState(19)
+	p.SetState(25)
 	p.GetErrorHandler().Sync(p)
 	if p.HasError() {
 		goto errorExit
 	}
 	_la = p.GetTokenStream().LA(1)
 
-	if _la == BirdOSPFParserT__1 {
-		{
-			p.SetState(17)
-			p.Match(BirdOSPFParserT__1)
-			if p.HasError() {
-				// Recognition error - abort rule
-				goto errorExit
+	for _la == BirdOSPFParserT__1 || _la == BirdOSPFParserT__2 {
+		p.SetState(23)
+		p.GetErrorHandler().Sync(p)
+		if p.HasError() {
+			goto errorExit
+		}
+
+		switch p.GetTokenStream().LA(1) {
+		case BirdOSPFParserT__1:
+			{
+				p.SetState(21)
+				p.Router()
 			}
-		}
-		{
-			p.SetState(18)
-			p.Match(BirdOSPFParserINT)
-			if p.HasError() {
-				// Recognition error - abort rule
-				goto errorExit
+
+		case BirdOSPFParserT__2:
+			{
+				p.SetState(22)
+				p.Network()
 			}
+
+		default:
+			p.SetError(antlr.NewNoViableAltException(p, nil, nil, nil, nil, nil))
+			goto errorExit
 		}
 
-	}
-	p.SetState(24)
-	p.GetErrorHandler().Sync(p)
-	if p.HasError() {
-		goto errorExit
-	}
-	_la = p.GetTokenStream().LA(1)
-
-	for _la == BirdOSPFParserT__2 {
-		{
-			p.SetState(21)
-			p.Router()
-		}
-
-		p.SetState(26)
+		p.SetState(27)
 		p.GetErrorHandler().Sync(p)
 		if p.HasError() {
 			goto errorExit
@@ -524,10 +563,9 @@ type IRouterContext interface {
 
 	// Getter signatures
 	IP() antlr.TerminalNode
+	Distance() IDistanceContext
 	AllRouterEntry() []IRouterEntryContext
 	RouterEntry(i int) IRouterEntryContext
-	AllINT() []antlr.TerminalNode
-	INT(i int) antlr.TerminalNode
 
 	// IsRouterContext differentiates from other interfaces.
 	IsRouterContext()
@@ -567,6 +605,22 @@ func (s *RouterContext) GetParser() antlr.Parser { return s.parser }
 
 func (s *RouterContext) IP() antlr.TerminalNode {
 	return s.GetToken(BirdOSPFParserIP, 0)
+}
+
+func (s *RouterContext) Distance() IDistanceContext {
+	var t antlr.RuleContext
+	for _, ctx := range s.GetChildren() {
+		if _, ok := ctx.(IDistanceContext); ok {
+			t = ctx.(antlr.RuleContext)
+			break
+		}
+	}
+
+	if t == nil {
+		return nil
+	}
+
+	return t.(IDistanceContext)
 }
 
 func (s *RouterContext) AllRouterEntry() []IRouterEntryContext {
@@ -610,14 +664,6 @@ func (s *RouterContext) RouterEntry(i int) IRouterEntryContext {
 	return t.(IRouterEntryContext)
 }
 
-func (s *RouterContext) AllINT() []antlr.TerminalNode {
-	return s.GetTokens(BirdOSPFParserINT)
-}
-
-func (s *RouterContext) INT(i int) antlr.TerminalNode {
-	return s.GetToken(BirdOSPFParserINT, i)
-}
-
 func (s *RouterContext) GetRuleContext() antlr.RuleContext {
 	return s
 }
@@ -655,7 +701,186 @@ func (p *BirdOSPFParser) Router() (localctx IRouterContext) {
 
 	p.EnterOuterAlt(localctx, 1)
 	{
-		p.SetState(27)
+		p.SetState(28)
+		p.Match(BirdOSPFParserT__1)
+		if p.HasError() {
+			// Recognition error - abort rule
+			goto errorExit
+		}
+	}
+	{
+		p.SetState(29)
+		p.Match(BirdOSPFParserIP)
+		if p.HasError() {
+			// Recognition error - abort rule
+			goto errorExit
+		}
+	}
+	{
+		p.SetState(30)
+		p.Distance()
+	}
+	p.SetState(34)
+	p.GetErrorHandler().Sync(p)
+	if p.HasError() {
+		goto errorExit
+	}
+	_alt = p.GetInterpreter().AdaptivePredict(p.BaseParser, p.GetTokenStream(), 3, p.GetParserRuleContext())
+	if p.HasError() {
+		goto errorExit
+	}
+	for _alt != 2 && _alt != antlr.ATNInvalidAltNumber {
+		if _alt == 1 {
+			{
+				p.SetState(31)
+				p.RouterEntry()
+			}
+
+		}
+		p.SetState(36)
+		p.GetErrorHandler().Sync(p)
+		if p.HasError() {
+			goto errorExit
+		}
+		_alt = p.GetInterpreter().AdaptivePredict(p.BaseParser, p.GetTokenStream(), 3, p.GetParserRuleContext())
+		if p.HasError() {
+			goto errorExit
+		}
+	}
+
+errorExit:
+	if p.HasError() {
+		v := p.GetError()
+		localctx.SetException(v)
+		p.GetErrorHandler().ReportError(p, v)
+		p.GetErrorHandler().Recover(p, v)
+		p.SetError(nil)
+	}
+	p.ExitRule()
+	return localctx
+	goto errorExit // Trick to prevent compiler error if the label is not used
+}
+
+// INetworkContext is an interface to support dynamic dispatch.
+type INetworkContext interface {
+	antlr.ParserRuleContext
+
+	// GetParser returns the parser.
+	GetParser() antlr.Parser
+
+	// Getter signatures
+	Prefix() antlr.TerminalNode
+	DR() antlr.TerminalNode
+	AllIP() []antlr.TerminalNode
+	IP(i int) antlr.TerminalNode
+	Distance() IDistanceContext
+
+	// IsNetworkContext differentiates from other interfaces.
+	IsNetworkContext()
+}
+
+type NetworkContext struct {
+	antlr.BaseParserRuleContext
+	parser antlr.Parser
+}
+
+func NewEmptyNetworkContext() *NetworkContext {
+	var p = new(NetworkContext)
+	antlr.InitBaseParserRuleContext(&p.BaseParserRuleContext, nil, -1)
+	p.RuleIndex = BirdOSPFParserRULE_network
+	return p
+}
+
+func InitEmptyNetworkContext(p *NetworkContext) {
+	antlr.InitBaseParserRuleContext(&p.BaseParserRuleContext, nil, -1)
+	p.RuleIndex = BirdOSPFParserRULE_network
+}
+
+func (*NetworkContext) IsNetworkContext() {}
+
+func NewNetworkContext(parser antlr.Parser, parent antlr.ParserRuleContext, invokingState int) *NetworkContext {
+	var p = new(NetworkContext)
+
+	antlr.InitBaseParserRuleContext(&p.BaseParserRuleContext, parent, invokingState)
+
+	p.parser = parser
+	p.RuleIndex = BirdOSPFParserRULE_network
+
+	return p
+}
+
+func (s *NetworkContext) GetParser() antlr.Parser { return s.parser }
+
+func (s *NetworkContext) Prefix() antlr.TerminalNode {
+	return s.GetToken(BirdOSPFParserPrefix, 0)
+}
+
+func (s *NetworkContext) DR() antlr.TerminalNode {
+	return s.GetToken(BirdOSPFParserDR, 0)
+}
+
+func (s *NetworkContext) AllIP() []antlr.TerminalNode {
+	return s.GetTokens(BirdOSPFParserIP)
+}
+
+func (s *NetworkContext) IP(i int) antlr.TerminalNode {
+	return s.GetToken(BirdOSPFParserIP, i)
+}
+
+func (s *NetworkContext) Distance() IDistanceContext {
+	var t antlr.RuleContext
+	for _, ctx := range s.GetChildren() {
+		if _, ok := ctx.(IDistanceContext); ok {
+			t = ctx.(antlr.RuleContext)
+			break
+		}
+	}
+
+	if t == nil {
+		return nil
+	}
+
+	return t.(IDistanceContext)
+}
+
+func (s *NetworkContext) GetRuleContext() antlr.RuleContext {
+	return s
+}
+
+func (s *NetworkContext) ToStringTree(ruleNames []string, recog antlr.Recognizer) string {
+	return antlr.TreesStringTree(s, ruleNames, recog)
+}
+
+func (s *NetworkContext) EnterRule(listener antlr.ParseTreeListener) {
+	if listenerT, ok := listener.(BirdOSPFListener); ok {
+		listenerT.EnterNetwork(s)
+	}
+}
+
+func (s *NetworkContext) ExitRule(listener antlr.ParseTreeListener) {
+	if listenerT, ok := listener.(BirdOSPFListener); ok {
+		listenerT.ExitNetwork(s)
+	}
+}
+
+func (s *NetworkContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case BirdOSPFVisitor:
+		return t.VisitNetwork(s)
+
+	default:
+		return t.VisitChildren(s)
+	}
+}
+
+func (p *BirdOSPFParser) Network() (localctx INetworkContext) {
+	localctx = NewNetworkContext(p, p.GetParserRuleContext(), p.GetState())
+	p.EnterRule(localctx, 6, BirdOSPFParserRULE_network)
+	var _alt int
+
+	p.EnterOuterAlt(localctx, 1)
+	{
+		p.SetState(37)
 		p.Match(BirdOSPFParserT__2)
 		if p.HasError() {
 			// Recognition error - abort rule
@@ -663,65 +888,67 @@ func (p *BirdOSPFParser) Router() (localctx IRouterContext) {
 		}
 	}
 	{
-		p.SetState(28)
+		p.SetState(38)
+		p.Match(BirdOSPFParserPrefix)
+		if p.HasError() {
+			// Recognition error - abort rule
+			goto errorExit
+		}
+	}
+	{
+		p.SetState(39)
+		p.Match(BirdOSPFParserDR)
+		if p.HasError() {
+			// Recognition error - abort rule
+			goto errorExit
+		}
+	}
+	{
+		p.SetState(40)
 		p.Match(BirdOSPFParserIP)
 		if p.HasError() {
 			// Recognition error - abort rule
 			goto errorExit
 		}
 	}
-	p.SetState(32)
+	{
+		p.SetState(41)
+		p.Distance()
+	}
+	p.SetState(46)
 	p.GetErrorHandler().Sync(p)
 	if p.HasError() {
 		goto errorExit
 	}
-	_alt = 1
-	for ok := true; ok; ok = _alt != 2 && _alt != antlr.ATNInvalidAltNumber {
-		switch _alt {
-		case 1:
-			p.SetState(32)
-			p.GetErrorHandler().Sync(p)
-			if p.HasError() {
-				goto errorExit
+	_alt = p.GetInterpreter().AdaptivePredict(p.BaseParser, p.GetTokenStream(), 4, p.GetParserRuleContext())
+	if p.HasError() {
+		goto errorExit
+	}
+	for _alt != 2 && _alt != antlr.ATNInvalidAltNumber {
+		if _alt == 1 {
+			{
+				p.SetState(42)
+				p.Match(BirdOSPFParserT__1)
+				if p.HasError() {
+					// Recognition error - abort rule
+					goto errorExit
+				}
+			}
+			{
+				p.SetState(43)
+				p.Match(BirdOSPFParserIP)
+				if p.HasError() {
+					// Recognition error - abort rule
+					goto errorExit
+				}
 			}
 
-			switch p.GetTokenStream().LA(1) {
-			case BirdOSPFParserT__1:
-				{
-					p.SetState(29)
-					p.Match(BirdOSPFParserT__1)
-					if p.HasError() {
-						// Recognition error - abort rule
-						goto errorExit
-					}
-				}
-				{
-					p.SetState(30)
-					p.Match(BirdOSPFParserINT)
-					if p.HasError() {
-						// Recognition error - abort rule
-						goto errorExit
-					}
-				}
-
-			case BirdOSPFParserT__2, BirdOSPFParserT__3, BirdOSPFParserT__4, BirdOSPFParserT__5, BirdOSPFParserT__6, BirdOSPFParserT__7:
-				{
-					p.SetState(31)
-					p.RouterEntry()
-				}
-
-			default:
-				p.SetError(antlr.NewNoViableAltException(p, nil, nil, nil, nil, nil))
-				goto errorExit
-			}
-
-		default:
-			p.SetError(antlr.NewNoViableAltException(p, nil, nil, nil, nil, nil))
+		}
+		p.SetState(48)
+		p.GetErrorHandler().Sync(p)
+		if p.HasError() {
 			goto errorExit
 		}
-
-		p.SetState(34)
-		p.GetErrorHandler().Sync(p)
 		_alt = p.GetInterpreter().AdaptivePredict(p.BaseParser, p.GetTokenStream(), 4, p.GetParserRuleContext())
 		if p.HasError() {
 			goto errorExit
@@ -848,28 +1075,28 @@ func (s *RouterEntryContext) Accept(visitor antlr.ParseTreeVisitor) interface{} 
 
 func (p *BirdOSPFParser) RouterEntry() (localctx IRouterEntryContext) {
 	localctx = NewRouterEntryContext(p, p.GetParserRuleContext(), p.GetState())
-	p.EnterRule(localctx, 6, BirdOSPFParserRULE_routerEntry)
+	p.EnterRule(localctx, 8, BirdOSPFParserRULE_routerEntry)
 	var _la int
 
 	p.EnterOuterAlt(localctx, 1)
-	p.SetState(48)
+	p.SetState(61)
 	p.GetErrorHandler().Sync(p)
 	if p.HasError() {
 		goto errorExit
 	}
 
 	switch p.GetTokenStream().LA(1) {
-	case BirdOSPFParserT__2:
+	case BirdOSPFParserT__1:
 		{
-			p.SetState(36)
-			p.Match(BirdOSPFParserT__2)
+			p.SetState(49)
+			p.Match(BirdOSPFParserT__1)
 			if p.HasError() {
 				// Recognition error - abort rule
 				goto errorExit
 			}
 		}
 		{
-			p.SetState(37)
+			p.SetState(50)
 			p.Match(BirdOSPFParserIP)
 			if p.HasError() {
 				// Recognition error - abort rule
@@ -879,7 +1106,7 @@ func (p *BirdOSPFParser) RouterEntry() (localctx IRouterEntryContext) {
 
 	case BirdOSPFParserT__3:
 		{
-			p.SetState(38)
+			p.SetState(51)
 			p.Match(BirdOSPFParserT__3)
 			if p.HasError() {
 				// Recognition error - abort rule
@@ -887,7 +1114,7 @@ func (p *BirdOSPFParser) RouterEntry() (localctx IRouterEntryContext) {
 			}
 		}
 		{
-			p.SetState(39)
+			p.SetState(52)
 			p.Match(BirdOSPFParserPrefix)
 			if p.HasError() {
 				// Recognition error - abort rule
@@ -897,7 +1124,7 @@ func (p *BirdOSPFParser) RouterEntry() (localctx IRouterEntryContext) {
 
 	case BirdOSPFParserT__4:
 		{
-			p.SetState(40)
+			p.SetState(53)
 			p.Match(BirdOSPFParserT__4)
 			if p.HasError() {
 				// Recognition error - abort rule
@@ -905,7 +1132,25 @@ func (p *BirdOSPFParser) RouterEntry() (localctx IRouterEntryContext) {
 			}
 		}
 		{
-			p.SetState(41)
+			p.SetState(54)
+			p.Match(BirdOSPFParserPrefix)
+			if p.HasError() {
+				// Recognition error - abort rule
+				goto errorExit
+			}
+		}
+
+	case BirdOSPFParserT__2:
+		{
+			p.SetState(55)
+			p.Match(BirdOSPFParserT__2)
+			if p.HasError() {
+				// Recognition error - abort rule
+				goto errorExit
+			}
+		}
+		{
+			p.SetState(56)
 			p.Match(BirdOSPFParserPrefix)
 			if p.HasError() {
 				// Recognition error - abort rule
@@ -915,7 +1160,7 @@ func (p *BirdOSPFParser) RouterEntry() (localctx IRouterEntryContext) {
 
 	case BirdOSPFParserT__5:
 		{
-			p.SetState(42)
+			p.SetState(57)
 			p.Match(BirdOSPFParserT__5)
 			if p.HasError() {
 				// Recognition error - abort rule
@@ -923,7 +1168,7 @@ func (p *BirdOSPFParser) RouterEntry() (localctx IRouterEntryContext) {
 			}
 		}
 		{
-			p.SetState(43)
+			p.SetState(58)
 			p.Match(BirdOSPFParserPrefix)
 			if p.HasError() {
 				// Recognition error - abort rule
@@ -933,7 +1178,7 @@ func (p *BirdOSPFParser) RouterEntry() (localctx IRouterEntryContext) {
 
 	case BirdOSPFParserT__6:
 		{
-			p.SetState(44)
+			p.SetState(59)
 			p.Match(BirdOSPFParserT__6)
 			if p.HasError() {
 				// Recognition error - abort rule
@@ -941,25 +1186,7 @@ func (p *BirdOSPFParser) RouterEntry() (localctx IRouterEntryContext) {
 			}
 		}
 		{
-			p.SetState(45)
-			p.Match(BirdOSPFParserPrefix)
-			if p.HasError() {
-				// Recognition error - abort rule
-				goto errorExit
-			}
-		}
-
-	case BirdOSPFParserT__7:
-		{
-			p.SetState(46)
-			p.Match(BirdOSPFParserT__7)
-			if p.HasError() {
-				// Recognition error - abort rule
-				goto errorExit
-			}
-		}
-		{
-			p.SetState(47)
+			p.SetState(60)
 			p.Match(BirdOSPFParserIP)
 			if p.HasError() {
 				// Recognition error - abort rule
@@ -972,7 +1199,7 @@ func (p *BirdOSPFParser) RouterEntry() (localctx IRouterEntryContext) {
 		goto errorExit
 	}
 	{
-		p.SetState(50)
+		p.SetState(63)
 		_la = p.GetTokenStream().LA(1)
 
 		if !(_la == BirdOSPFParserMetric || _la == BirdOSPFParserMetric2) {
@@ -983,31 +1210,31 @@ func (p *BirdOSPFParser) RouterEntry() (localctx IRouterEntryContext) {
 		}
 	}
 	{
-		p.SetState(51)
+		p.SetState(64)
 		p.Match(BirdOSPFParserINT)
 		if p.HasError() {
 			// Recognition error - abort rule
 			goto errorExit
 		}
 	}
-	p.SetState(54)
+	p.SetState(67)
 	p.GetErrorHandler().Sync(p)
 	if p.HasError() {
 		goto errorExit
 	}
 	_la = p.GetTokenStream().LA(1)
 
-	if _la == BirdOSPFParserT__8 {
+	if _la == BirdOSPFParserT__7 {
 		{
-			p.SetState(52)
-			p.Match(BirdOSPFParserT__8)
+			p.SetState(65)
+			p.Match(BirdOSPFParserT__7)
 			if p.HasError() {
 				// Recognition error - abort rule
 				goto errorExit
 			}
 		}
 		{
-			p.SetState(53)
+			p.SetState(66)
 			p.Match(BirdOSPFParserIP)
 			if p.HasError() {
 				// Recognition error - abort rule
@@ -1015,6 +1242,125 @@ func (p *BirdOSPFParser) RouterEntry() (localctx IRouterEntryContext) {
 			}
 		}
 
+	}
+
+errorExit:
+	if p.HasError() {
+		v := p.GetError()
+		localctx.SetException(v)
+		p.GetErrorHandler().ReportError(p, v)
+		p.GetErrorHandler().Recover(p, v)
+		p.SetError(nil)
+	}
+	p.ExitRule()
+	return localctx
+	goto errorExit // Trick to prevent compiler error if the label is not used
+}
+
+// IDistanceContext is an interface to support dynamic dispatch.
+type IDistanceContext interface {
+	antlr.ParserRuleContext
+
+	// GetParser returns the parser.
+	GetParser() antlr.Parser
+
+	// Getter signatures
+	Distance() antlr.TerminalNode
+	INT() antlr.TerminalNode
+
+	// IsDistanceContext differentiates from other interfaces.
+	IsDistanceContext()
+}
+
+type DistanceContext struct {
+	antlr.BaseParserRuleContext
+	parser antlr.Parser
+}
+
+func NewEmptyDistanceContext() *DistanceContext {
+	var p = new(DistanceContext)
+	antlr.InitBaseParserRuleContext(&p.BaseParserRuleContext, nil, -1)
+	p.RuleIndex = BirdOSPFParserRULE_distance
+	return p
+}
+
+func InitEmptyDistanceContext(p *DistanceContext) {
+	antlr.InitBaseParserRuleContext(&p.BaseParserRuleContext, nil, -1)
+	p.RuleIndex = BirdOSPFParserRULE_distance
+}
+
+func (*DistanceContext) IsDistanceContext() {}
+
+func NewDistanceContext(parser antlr.Parser, parent antlr.ParserRuleContext, invokingState int) *DistanceContext {
+	var p = new(DistanceContext)
+
+	antlr.InitBaseParserRuleContext(&p.BaseParserRuleContext, parent, invokingState)
+
+	p.parser = parser
+	p.RuleIndex = BirdOSPFParserRULE_distance
+
+	return p
+}
+
+func (s *DistanceContext) GetParser() antlr.Parser { return s.parser }
+
+func (s *DistanceContext) Distance() antlr.TerminalNode {
+	return s.GetToken(BirdOSPFParserDistance, 0)
+}
+
+func (s *DistanceContext) INT() antlr.TerminalNode {
+	return s.GetToken(BirdOSPFParserINT, 0)
+}
+
+func (s *DistanceContext) GetRuleContext() antlr.RuleContext {
+	return s
+}
+
+func (s *DistanceContext) ToStringTree(ruleNames []string, recog antlr.Recognizer) string {
+	return antlr.TreesStringTree(s, ruleNames, recog)
+}
+
+func (s *DistanceContext) EnterRule(listener antlr.ParseTreeListener) {
+	if listenerT, ok := listener.(BirdOSPFListener); ok {
+		listenerT.EnterDistance(s)
+	}
+}
+
+func (s *DistanceContext) ExitRule(listener antlr.ParseTreeListener) {
+	if listenerT, ok := listener.(BirdOSPFListener); ok {
+		listenerT.ExitDistance(s)
+	}
+}
+
+func (s *DistanceContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case BirdOSPFVisitor:
+		return t.VisitDistance(s)
+
+	default:
+		return t.VisitChildren(s)
+	}
+}
+
+func (p *BirdOSPFParser) Distance() (localctx IDistanceContext) {
+	localctx = NewDistanceContext(p, p.GetParserRuleContext(), p.GetState())
+	p.EnterRule(localctx, 10, BirdOSPFParserRULE_distance)
+	p.EnterOuterAlt(localctx, 1)
+	{
+		p.SetState(69)
+		p.Match(BirdOSPFParserDistance)
+		if p.HasError() {
+			// Recognition error - abort rule
+			goto errorExit
+		}
+	}
+	{
+		p.SetState(70)
+		p.Match(BirdOSPFParserINT)
+		if p.HasError() {
+			// Recognition error - abort rule
+			goto errorExit
+		}
 	}
 
 errorExit:

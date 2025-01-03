@@ -85,6 +85,9 @@ func (v *birdOSPFVisitor) visitArea(ctx *parser.AreaContext) {
 	for _, router := range ctx.AllRouter() {
 		v.visitRouter(router.(*parser.RouterContext), area)
 	}
+	for _, network := range ctx.AllNetwork() {
+		v.visitNetwork(network.(*parser.NetworkContext), area)
+	}
 }
 
 func (v *birdOSPFVisitor) visitRouter(ctx *parser.RouterContext, area *parse.Area) {
@@ -118,11 +121,31 @@ func (v *birdOSPFVisitor) visitRouterEntry(ctx *parser.RouterEntryContext, area 
 	case len(text) >= 8 && text[:8] == "external":
 		prefix := ctx.Prefix().GetText()
 		router.AddSubnet(prefix, cost)
-	case len(text) >= 9 && text[:9] == "xnetwork":
+	case len(text) >= 8 && text[:8] == "xnetwork":
 		prefix := ctx.Prefix().GetText()
 		router.AddSubnet(prefix, cost)
 	case len(text) >= 7 && text[:7] == "xrouter":
 		// dstRouter := ctx.IP().GetText()
 		// area.AddLink(routerID, dstRouter, cost)
+	}
+}
+
+func (v *birdOSPFVisitor) visitNetwork(ctx *parser.NetworkContext, area *parse.Area) {
+	c, err := strconv.ParseUint(ctx.Distance().INT().GetText(), 10, 64)
+	if err != nil {
+		fmt.Printf("invalid distance %v", err)
+		return
+	}
+	allRouterNode := ctx.AllIP()[1:]
+	allRouter := make([]string, len(allRouterNode))
+	for i, v := range allRouterNode {
+		allRouter[i] = v.GetText()
+	}
+	for _, r1 := range allRouter {
+		for _, r2 := range allRouter {
+			if r1 != r2 {
+				area.AddLink(r1, r2, int(c))
+			}
+		}
 	}
 }

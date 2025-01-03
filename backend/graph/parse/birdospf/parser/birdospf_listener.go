@@ -16,8 +16,14 @@ type BirdOSPFListener interface {
 	// EnterRouter is called when entering the router production.
 	EnterRouter(c *RouterContext)
 
+	// EnterNetwork is called when entering the network production.
+	EnterNetwork(c *NetworkContext)
+
 	// EnterRouterEntry is called when entering the routerEntry production.
 	EnterRouterEntry(c *RouterEntryContext)
+
+	// EnterDistance is called when entering the distance production.
+	EnterDistance(c *DistanceContext)
 
 	// ExitState is called when exiting the state production.
 	ExitState(c *StateContext)
@@ -28,6 +34,12 @@ type BirdOSPFListener interface {
 	// ExitRouter is called when exiting the router production.
 	ExitRouter(c *RouterContext)
 
+	// ExitNetwork is called when exiting the network production.
+	ExitNetwork(c *NetworkContext)
+
 	// ExitRouterEntry is called when exiting the routerEntry production.
 	ExitRouterEntry(c *RouterEntryContext)
+
+	// ExitDistance is called when exiting the distance production.
+	ExitDistance(c *DistanceContext)
 }

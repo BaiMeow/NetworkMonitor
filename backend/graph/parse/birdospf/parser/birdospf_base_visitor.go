@@ -19,6 +19,14 @@ func (v *BaseBirdOSPFVisitor) VisitRouter(ctx *RouterContext) interface{} {
 	return v.VisitChildren(ctx)
 }
 
+func (v *BaseBirdOSPFVisitor) VisitNetwork(ctx *NetworkContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
 func (v *BaseBirdOSPFVisitor) VisitRouterEntry(ctx *RouterEntryContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
+func (v *BaseBirdOSPFVisitor) VisitDistance(ctx *DistanceContext) interface{} {
 	return v.VisitChildren(ctx)
 }

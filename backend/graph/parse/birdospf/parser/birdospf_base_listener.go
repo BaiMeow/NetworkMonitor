@@ -38,8 +38,20 @@ func (s *BaseBirdOSPFListener) EnterRouter(ctx *RouterContext) {}
 // ExitRouter is called when production router is exited.
 func (s *BaseBirdOSPFListener) ExitRouter(ctx *RouterContext) {}
 
+// EnterNetwork is called when production network is entered.
+func (s *BaseBirdOSPFListener) EnterNetwork(ctx *NetworkContext) {}
+
+// ExitNetwork is called when production network is exited.
+func (s *BaseBirdOSPFListener) ExitNetwork(ctx *NetworkContext) {}
+
 // EnterRouterEntry is called when production routerEntry is entered.
 func (s *BaseBirdOSPFListener) EnterRouterEntry(ctx *RouterEntryContext) {}
 
 // ExitRouterEntry is called when production routerEntry is exited.
 func (s *BaseBirdOSPFListener) ExitRouterEntry(ctx *RouterEntryContext) {}
+
+// EnterDistance is called when production distance is entered.
+func (s *BaseBirdOSPFListener) EnterDistance(ctx *DistanceContext) {}
+
+// ExitDistance is called when production distance is exited.
+func (s *BaseBirdOSPFListener) ExitDistance(ctx *DistanceContext) {}

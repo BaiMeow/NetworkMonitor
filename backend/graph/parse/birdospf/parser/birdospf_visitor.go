@@ -16,6 +16,12 @@ type BirdOSPFVisitor interface {
 	// Visit a parse tree produced by BirdOSPFParser#router.
 	VisitRouter(ctx *RouterContext) interface{}
 
+	// Visit a parse tree produced by BirdOSPFParser#network.
+	VisitNetwork(ctx *NetworkContext) interface{}
+
 	// Visit a parse tree produced by BirdOSPFParser#routerEntry.
 	VisitRouterEntry(ctx *RouterEntryContext) interface{}
+
+	// Visit a parse tree produced by BirdOSPFParser#distance.
+	VisitDistance(ctx *DistanceContext) interface{}
 }

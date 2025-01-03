@@ -1,0 +1,36 @@
+area 0.0.0.0
+
+	router 172.16.3.1
+		distance 10
+		router 172.16.3.73 metric 20
+		router 172.16.3.97 metric 20
+		network 172.16.3.0/26 metric 10
+		stubnet 172.16.255.53/32 metric 0
+		stubnet 172.16.3.13/32 metric 0
+		stubnet 172.16.3.53/32 metric 0
+		stubnet 172.16.3.3/32 metric 0
+
+	router 172.16.3.20
+		distance 0
+		network 172.16.3.0/26 metric 10
+
+	router 172.16.3.40
+		distance 10
+		network 172.16.3.0/26 metric 10
+
+	router 172.16.3.73
+		distance 30
+		router 172.16.3.1 metric 20
+		stubnet 172.16.3.73/32 metric 0
+
+	router 172.16.3.97
+		distance 30
+		router 172.16.3.1 metric 20
+		stubnet 172.16.3.97/32 metric 0
+
+	network 172.16.3.0/26
+		dr 172.16.3.1
+		distance 10
+		router 172.16.3.1
+		router 172.16.3.20
+		router 172.16.3.40

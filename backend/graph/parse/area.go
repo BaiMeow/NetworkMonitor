@@ -6,11 +6,6 @@ type Area struct {
 	Links  []Link   `json:"links,omitempty"`
 }
 
-func (a *Area) FromANTLRContext(ctx interface{}) error {
-	// 这里将添加从ANTLR Context解析数据的逻辑
-	return nil
-}
-
 func (a *Area) AddRouter(RouterId string) {
 	for _, router := range a.Router {
 		if router.RouterId == RouterId {
@@ -29,19 +24,8 @@ func (a *Area) GetRouter(routerId string) *Router {
 	return nil
 }
 
-func (a *Area) AddLink(src, dst string, cost int) error {
-	var found bool
-	link := newLink(src, dst, cost)
-	for _, l := range a.Links {
-		if l == link {
-			found = true
-			break
-		}
-	}
-	if !found {
-		a.Links = append(a.Links, link)
-	}
-	return nil
+func (a *Area) AddLink(src, dst string, cost int) {
+	a.Links = append(a.Links, newLink(src, dst, cost))
 }
 
 func (a *Area) Merge(ar *Area) error {
@@ -56,9 +40,7 @@ func (a *Area) Merge(ar *Area) error {
 	}
 
 	for _, newLink := range ar.Links {
-		if err := a.AddLink(newLink.Src, newLink.Dst, newLink.Cost); err != nil {
-			return err
-		}
+		a.AddLink(newLink.Src, newLink.Dst, newLink.Cost)
 	}
 	return nil
 }
