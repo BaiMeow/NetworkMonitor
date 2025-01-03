@@ -27,6 +27,7 @@ func init() {
 var _ parse.Parser = (*BirdOSPF)(nil)
 
 type BirdOSPF struct {
+	lexer  *parser.BirdOSPFLexer
 	parser *parser.BirdOSPFParser
 	asn    uint32
 }
@@ -34,6 +35,7 @@ type BirdOSPF struct {
 func (p *BirdOSPF) Init(input []byte) {
 	lexer := parser.NewBirdOSPFLexer(antlr.NewIoStream(bytes.NewReader(input)))
 	stream := antlr.NewCommonTokenStream(lexer, 0)
+	p.lexer = lexer
 	p.parser = parser.NewBirdOSPFParser(stream)
 }
 
@@ -95,7 +97,7 @@ func (v *birdOSPFVisitor) visitRouterEntry(ctx *parser.RouterEntryContext, area 
 	text := ctx.GetText()
 	switch {
 	case len(text) >= 6 && text[:6] == "router":
-		dstRouter := ctx.IP().GetText()
+		dstRouter := ctx.IP(0).GetText()
 		area.AddLink(routerID, dstRouter, cost)
 	case len(text) >= 7 && text[:7] == "stubnet":
 		prefix := ctx.Prefix().GetText()

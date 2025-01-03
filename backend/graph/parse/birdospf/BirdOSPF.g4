@@ -1,6 +1,6 @@
 grammar BirdOSPF;
 
-state            : area+;
+state            : area+ EOF;
 area             : 'area' IP ('distance' INT)? router*;
 router           : 'router' IP (('distance' INT) | routerEntry)+;
 routerEntry      : ('router' IP
@@ -8,7 +8,9 @@ routerEntry      : ('router' IP
                   | 'xnetwork' Prefix
                   | 'external' Prefix
                   | 'xrouter' IP )
-                  ( Metric | Metric2 ) INT;
+                  ( Metric | Metric2 ) INT
+                  ( 'via' IP )?
+                  ;
 
 
 // Lexer Rules

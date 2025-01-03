@@ -1,0 +1,24 @@
+BIRD 2.15.1 ready.
+
+area 0.0.0.0
+
+	router 192.168.3.3
+		distance 0
+		router 192.168.3.254 metric 20
+		router 192.168.3.81 metric 35
+		stubnet 192.168.3.0/26 metric 10
+		external 192.168.3.64/28 metric2 10000 via 192.168.3.2
+
+	router 192.168.3.81
+		distance 35
+		router 192.168.3.3 metric 35
+		router 192.168.3.254 metric 20
+		stubnet 192.168.3.62/32 metric 35
+		stubnet 192.168.3.80/28 metric 1
+		stubnet 192.168.3.253/32 metric 20
+
+	router 192.168.3.254
+		distance 20
+		router 192.168.3.3 metric 20
+		router 192.168.3.81 metric 20
+		stubnet 192.168.3.254/32 metric 0
