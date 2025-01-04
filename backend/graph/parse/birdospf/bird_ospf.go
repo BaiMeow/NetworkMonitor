@@ -54,9 +54,10 @@ func (p *BirdOSPF) ParseAndMerge(drawing *parse.Drawing) (err error) {
 		return fmt.Errorf("parse as bird ospf state failed")
 	}
 	visitor.visitState(state)
+
 	drawing.Lock()
-	defer drawing.Unlock()
 	drawing.OSPF[p.asn] = visitor.graph
+	drawing.Unlock()
 
 	if len(p.errL.errs) != 0 {
 		err := fmt.Errorf("parse fail")
@@ -91,6 +92,9 @@ func (v *birdOSPFVisitor) visitArea(ctx *parser.AreaContext) {
 }
 
 func (v *birdOSPFVisitor) visitRouter(ctx *parser.RouterContext, area *parse.Area) {
+	if ctx.Distance().Unreachable() != nil {
+		return
+	}
 	routerID := ctx.IP().GetText()
 	area.AddRouter(routerID)
 	router := area.GetRouter(routerID)
@@ -131,6 +135,9 @@ func (v *birdOSPFVisitor) visitRouterEntry(ctx *parser.RouterEntryContext, area 
 }
 
 func (v *birdOSPFVisitor) visitNetwork(ctx *parser.NetworkContext, area *parse.Area) {
+	if ctx.Distance().Unreachable() != nil {
+		return
+	}
 	c, err := strconv.ParseUint(ctx.Distance().INT().GetText(), 10, 64)
 	if err != nil {
 		fmt.Printf("invalid distance %v", err)

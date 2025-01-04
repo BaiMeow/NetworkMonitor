@@ -19,18 +19,20 @@ routerEntry      : ('router' IP
                   | 'xrouter' IP )
                   ( Metric | Metric2 ) INT ( 'via' IP )?
                   ;
-distance         : Distance INT;
+distance         : Distance INT
+                  | Unreachable;
 
 // Lexer Rules
-DR      : 'dr';
-Distance: 'distance';
-Metric  : 'metric';
-Metric2 : 'metric2';
-Prefix  : IP '/' INT;
-VERSION : 'BIRD' WS+ INT '.' INT ('.' INT)? WS+ 'ready.' -> skip;
-IP      : [0-9]+ '.' [0-9]+ '.' [0-9]+ '.' [0-9]+;
-STRING  : '"' .*? '"'
-        | [a-zA-Z][a-zA-Z0-9_-]*
-        ;
-INT  : [0-9]+;
-WS      : [ \t\r\n]+ -> skip;
+DR          : 'dr';
+Distance    : 'distance';
+Unreachable : 'unreachable';
+Metric      : 'metric';
+Metric2     : 'metric2';
+Prefix      : IP '/' INT;
+VERSION     : 'BIRD' WS+ INT '.' INT ('.' INT)? WS+ 'ready.' -> skip;
+IP          : [0-9]+ '.' [0-9]+ '.' [0-9]+ '.' [0-9]+;
+STRING      : '"' .*? '"'
+            | [a-zA-Z][a-zA-Z0-9_-]*
+            ;
+INT         : [0-9]+;
+WS          : [ \t\r\n]+ -> skip;

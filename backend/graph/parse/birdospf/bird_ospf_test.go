@@ -9,23 +9,6 @@ import (
 	"github.com/BaiMeow/NetworkMonitor/graph/parse"
 )
 
-func TestBirdParser(t *testing.T) {
-	var p BirdOSPF
-	p.asn = 4242424242
-	p.Init([]byte(birdOutput))
-	var drawing parse.Drawing
-	drawing.OSPF = make(map[uint32]*parse.OSPF)
-	err := p.ParseAndMerge(&drawing)
-	if err != nil {
-		t.Error(err)
-		return
-	}
-	t.Log(drawing.OSPF[4242424242])
-}
-
-//go:embed testdata/birdospf.txt
-var birdOutput string
-
 func TestMUSTParse(t *testing.T) {
 	entries, err := os.ReadDir("testdata")
 	if err != nil {

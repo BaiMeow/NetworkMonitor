@@ -33,47 +33,49 @@ func birdospfParserInit() {
 	staticData := &BirdOSPFParserStaticData
 	staticData.LiteralNames = []string{
 		"", "'area'", "'router'", "'network'", "'stubnet'", "'xnetwork'", "'external'",
-		"'xrouter'", "'via'", "'dr'", "'distance'", "'metric'", "'metric2'",
+		"'xrouter'", "'via'", "'dr'", "'distance'", "'unreachable'", "'metric'",
+		"'metric2'",
 	}
 	staticData.SymbolicNames = []string{
-		"", "", "", "", "", "", "", "", "", "DR", "Distance", "Metric", "Metric2",
-		"Prefix", "VERSION", "IP", "STRING", "INT", "WS",
+		"", "", "", "", "", "", "", "", "", "DR", "Distance", "Unreachable",
+		"Metric", "Metric2", "Prefix", "VERSION", "IP", "STRING", "INT", "WS",
 	}
 	staticData.RuleNames = []string{
 		"state", "area", "router", "network", "routerEntry", "distance",
 	}
 	staticData.PredictionContextCache = antlr.NewPredictionContextCache()
 	staticData.serializedATN = []int32{
-		4, 1, 18, 73, 2, 0, 7, 0, 2, 1, 7, 1, 2, 2, 7, 2, 2, 3, 7, 3, 2, 4, 7,
+		4, 1, 19, 75, 2, 0, 7, 0, 2, 1, 7, 1, 2, 2, 7, 2, 2, 3, 7, 3, 2, 4, 7,
 		4, 2, 5, 7, 5, 1, 0, 4, 0, 14, 8, 0, 11, 0, 12, 0, 15, 1, 0, 1, 0, 1, 1,
 		1, 1, 1, 1, 1, 1, 5, 1, 24, 8, 1, 10, 1, 12, 1, 27, 9, 1, 1, 2, 1, 2, 1,
 		2, 1, 2, 5, 2, 33, 8, 2, 10, 2, 12, 2, 36, 9, 2, 1, 3, 1, 3, 1, 3, 1, 3,
 		1, 3, 1, 3, 1, 3, 5, 3, 45, 8, 3, 10, 3, 12, 3, 48, 9, 3, 1, 4, 1, 4, 1,
 		4, 1, 4, 1, 4, 1, 4, 1, 4, 1, 4, 1, 4, 1, 4, 1, 4, 1, 4, 3, 4, 62, 8, 4,
-		1, 4, 1, 4, 1, 4, 1, 4, 3, 4, 68, 8, 4, 1, 5, 1, 5, 1, 5, 1, 5, 0, 0, 6,
-		0, 2, 4, 6, 8, 10, 0, 1, 1, 0, 11, 12, 77, 0, 13, 1, 0, 0, 0, 2, 19, 1,
-		0, 0, 0, 4, 28, 1, 0, 0, 0, 6, 37, 1, 0, 0, 0, 8, 61, 1, 0, 0, 0, 10, 69,
-		1, 0, 0, 0, 12, 14, 3, 2, 1, 0, 13, 12, 1, 0, 0, 0, 14, 15, 1, 0, 0, 0,
-		15, 13, 1, 0, 0, 0, 15, 16, 1, 0, 0, 0, 16, 17, 1, 0, 0, 0, 17, 18, 5,
-		0, 0, 1, 18, 1, 1, 0, 0, 0, 19, 20, 5, 1, 0, 0, 20, 25, 5, 15, 0, 0, 21,
-		24, 3, 4, 2, 0, 22, 24, 3, 6, 3, 0, 23, 21, 1, 0, 0, 0, 23, 22, 1, 0, 0,
-		0, 24, 27, 1, 0, 0, 0, 25, 23, 1, 0, 0, 0, 25, 26, 1, 0, 0, 0, 26, 3, 1,
-		0, 0, 0, 27, 25, 1, 0, 0, 0, 28, 29, 5, 2, 0, 0, 29, 30, 5, 15, 0, 0, 30,
-		34, 3, 10, 5, 0, 31, 33, 3, 8, 4, 0, 32, 31, 1, 0, 0, 0, 33, 36, 1, 0,
-		0, 0, 34, 32, 1, 0, 0, 0, 34, 35, 1, 0, 0, 0, 35, 5, 1, 0, 0, 0, 36, 34,
-		1, 0, 0, 0, 37, 38, 5, 3, 0, 0, 38, 39, 5, 13, 0, 0, 39, 40, 5, 9, 0, 0,
-		40, 41, 5, 15, 0, 0, 41, 46, 3, 10, 5, 0, 42, 43, 5, 2, 0, 0, 43, 45, 5,
-		15, 0, 0, 44, 42, 1, 0, 0, 0, 45, 48, 1, 0, 0, 0, 46, 44, 1, 0, 0, 0, 46,
-		47, 1, 0, 0, 0, 47, 7, 1, 0, 0, 0, 48, 46, 1, 0, 0, 0, 49, 50, 5, 2, 0,
-		0, 50, 62, 5, 15, 0, 0, 51, 52, 5, 4, 0, 0, 52, 62, 5, 13, 0, 0, 53, 54,
-		5, 5, 0, 0, 54, 62, 5, 13, 0, 0, 55, 56, 5, 3, 0, 0, 56, 62, 5, 13, 0,
-		0, 57, 58, 5, 6, 0, 0, 58, 62, 5, 13, 0, 0, 59, 60, 5, 7, 0, 0, 60, 62,
-		5, 15, 0, 0, 61, 49, 1, 0, 0, 0, 61, 51, 1, 0, 0, 0, 61, 53, 1, 0, 0, 0,
-		61, 55, 1, 0, 0, 0, 61, 57, 1, 0, 0, 0, 61, 59, 1, 0, 0, 0, 62, 63, 1,
-		0, 0, 0, 63, 64, 7, 0, 0, 0, 64, 67, 5, 17, 0, 0, 65, 66, 5, 8, 0, 0, 66,
-		68, 5, 15, 0, 0, 67, 65, 1, 0, 0, 0, 67, 68, 1, 0, 0, 0, 68, 9, 1, 0, 0,
-		0, 69, 70, 5, 10, 0, 0, 70, 71, 5, 17, 0, 0, 71, 11, 1, 0, 0, 0, 7, 15,
-		23, 25, 34, 46, 61, 67,
+		1, 4, 1, 4, 1, 4, 1, 4, 3, 4, 68, 8, 4, 1, 5, 1, 5, 1, 5, 3, 5, 73, 8,
+		5, 1, 5, 0, 0, 6, 0, 2, 4, 6, 8, 10, 0, 1, 1, 0, 12, 13, 80, 0, 13, 1,
+		0, 0, 0, 2, 19, 1, 0, 0, 0, 4, 28, 1, 0, 0, 0, 6, 37, 1, 0, 0, 0, 8, 61,
+		1, 0, 0, 0, 10, 72, 1, 0, 0, 0, 12, 14, 3, 2, 1, 0, 13, 12, 1, 0, 0, 0,
+		14, 15, 1, 0, 0, 0, 15, 13, 1, 0, 0, 0, 15, 16, 1, 0, 0, 0, 16, 17, 1,
+		0, 0, 0, 17, 18, 5, 0, 0, 1, 18, 1, 1, 0, 0, 0, 19, 20, 5, 1, 0, 0, 20,
+		25, 5, 16, 0, 0, 21, 24, 3, 4, 2, 0, 22, 24, 3, 6, 3, 0, 23, 21, 1, 0,
+		0, 0, 23, 22, 1, 0, 0, 0, 24, 27, 1, 0, 0, 0, 25, 23, 1, 0, 0, 0, 25, 26,
+		1, 0, 0, 0, 26, 3, 1, 0, 0, 0, 27, 25, 1, 0, 0, 0, 28, 29, 5, 2, 0, 0,
+		29, 30, 5, 16, 0, 0, 30, 34, 3, 10, 5, 0, 31, 33, 3, 8, 4, 0, 32, 31, 1,
+		0, 0, 0, 33, 36, 1, 0, 0, 0, 34, 32, 1, 0, 0, 0, 34, 35, 1, 0, 0, 0, 35,
+		5, 1, 0, 0, 0, 36, 34, 1, 0, 0, 0, 37, 38, 5, 3, 0, 0, 38, 39, 5, 14, 0,
+		0, 39, 40, 5, 9, 0, 0, 40, 41, 5, 16, 0, 0, 41, 46, 3, 10, 5, 0, 42, 43,
+		5, 2, 0, 0, 43, 45, 5, 16, 0, 0, 44, 42, 1, 0, 0, 0, 45, 48, 1, 0, 0, 0,
+		46, 44, 1, 0, 0, 0, 46, 47, 1, 0, 0, 0, 47, 7, 1, 0, 0, 0, 48, 46, 1, 0,
+		0, 0, 49, 50, 5, 2, 0, 0, 50, 62, 5, 16, 0, 0, 51, 52, 5, 4, 0, 0, 52,
+		62, 5, 14, 0, 0, 53, 54, 5, 5, 0, 0, 54, 62, 5, 14, 0, 0, 55, 56, 5, 3,
+		0, 0, 56, 62, 5, 14, 0, 0, 57, 58, 5, 6, 0, 0, 58, 62, 5, 14, 0, 0, 59,
+		60, 5, 7, 0, 0, 60, 62, 5, 16, 0, 0, 61, 49, 1, 0, 0, 0, 61, 51, 1, 0,
+		0, 0, 61, 53, 1, 0, 0, 0, 61, 55, 1, 0, 0, 0, 61, 57, 1, 0, 0, 0, 61, 59,
+		1, 0, 0, 0, 62, 63, 1, 0, 0, 0, 63, 64, 7, 0, 0, 0, 64, 67, 5, 18, 0, 0,
+		65, 66, 5, 8, 0, 0, 66, 68, 5, 16, 0, 0, 67, 65, 1, 0, 0, 0, 67, 68, 1,
+		0, 0, 0, 68, 9, 1, 0, 0, 0, 69, 70, 5, 10, 0, 0, 70, 73, 5, 18, 0, 0, 71,
+		73, 5, 11, 0, 0, 72, 69, 1, 0, 0, 0, 72, 71, 1, 0, 0, 0, 73, 11, 1, 0,
+		0, 0, 8, 15, 23, 25, 34, 46, 61, 67, 72,
 	}
 	deserializer := antlr.NewATNDeserializer(nil)
 	staticData.atn = deserializer.Deserialize(staticData.serializedATN)
@@ -111,25 +113,26 @@ func NewBirdOSPFParser(input antlr.TokenStream) *BirdOSPFParser {
 
 // BirdOSPFParser tokens.
 const (
-	BirdOSPFParserEOF      = antlr.TokenEOF
-	BirdOSPFParserT__0     = 1
-	BirdOSPFParserT__1     = 2
-	BirdOSPFParserT__2     = 3
-	BirdOSPFParserT__3     = 4
-	BirdOSPFParserT__4     = 5
-	BirdOSPFParserT__5     = 6
-	BirdOSPFParserT__6     = 7
-	BirdOSPFParserT__7     = 8
-	BirdOSPFParserDR       = 9
-	BirdOSPFParserDistance = 10
-	BirdOSPFParserMetric   = 11
-	BirdOSPFParserMetric2  = 12
-	BirdOSPFParserPrefix   = 13
-	BirdOSPFParserVERSION  = 14
-	BirdOSPFParserIP       = 15
-	BirdOSPFParserSTRING   = 16
-	BirdOSPFParserINT      = 17
-	BirdOSPFParserWS       = 18
+	BirdOSPFParserEOF         = antlr.TokenEOF
+	BirdOSPFParserT__0        = 1
+	BirdOSPFParserT__1        = 2
+	BirdOSPFParserT__2        = 3
+	BirdOSPFParserT__3        = 4
+	BirdOSPFParserT__4        = 5
+	BirdOSPFParserT__5        = 6
+	BirdOSPFParserT__6        = 7
+	BirdOSPFParserT__7        = 8
+	BirdOSPFParserDR          = 9
+	BirdOSPFParserDistance    = 10
+	BirdOSPFParserUnreachable = 11
+	BirdOSPFParserMetric      = 12
+	BirdOSPFParserMetric2     = 13
+	BirdOSPFParserPrefix      = 14
+	BirdOSPFParserVERSION     = 15
+	BirdOSPFParserIP          = 16
+	BirdOSPFParserSTRING      = 17
+	BirdOSPFParserINT         = 18
+	BirdOSPFParserWS          = 19
 )
 
 // BirdOSPFParser rules.
@@ -1267,6 +1270,7 @@ type IDistanceContext interface {
 	// Getter signatures
 	Distance() antlr.TerminalNode
 	INT() antlr.TerminalNode
+	Unreachable() antlr.TerminalNode
 
 	// IsDistanceContext differentiates from other interfaces.
 	IsDistanceContext()
@@ -1312,6 +1316,10 @@ func (s *DistanceContext) INT() antlr.TerminalNode {
 	return s.GetToken(BirdOSPFParserINT, 0)
 }
 
+func (s *DistanceContext) Unreachable() antlr.TerminalNode {
+	return s.GetToken(BirdOSPFParserUnreachable, 0)
+}
+
 func (s *DistanceContext) GetRuleContext() antlr.RuleContext {
 	return s
 }
@@ -1345,22 +1353,46 @@ func (s *DistanceContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
 func (p *BirdOSPFParser) Distance() (localctx IDistanceContext) {
 	localctx = NewDistanceContext(p, p.GetParserRuleContext(), p.GetState())
 	p.EnterRule(localctx, 10, BirdOSPFParserRULE_distance)
-	p.EnterOuterAlt(localctx, 1)
-	{
-		p.SetState(69)
-		p.Match(BirdOSPFParserDistance)
-		if p.HasError() {
-			// Recognition error - abort rule
-			goto errorExit
-		}
+	p.SetState(72)
+	p.GetErrorHandler().Sync(p)
+	if p.HasError() {
+		goto errorExit
 	}
-	{
-		p.SetState(70)
-		p.Match(BirdOSPFParserINT)
-		if p.HasError() {
-			// Recognition error - abort rule
-			goto errorExit
+
+	switch p.GetTokenStream().LA(1) {
+	case BirdOSPFParserDistance:
+		p.EnterOuterAlt(localctx, 1)
+		{
+			p.SetState(69)
+			p.Match(BirdOSPFParserDistance)
+			if p.HasError() {
+				// Recognition error - abort rule
+				goto errorExit
+			}
 		}
+		{
+			p.SetState(70)
+			p.Match(BirdOSPFParserINT)
+			if p.HasError() {
+				// Recognition error - abort rule
+				goto errorExit
+			}
+		}
+
+	case BirdOSPFParserUnreachable:
+		p.EnterOuterAlt(localctx, 2)
+		{
+			p.SetState(71)
+			p.Match(BirdOSPFParserUnreachable)
+			if p.HasError() {
+				// Recognition error - abort rule
+				goto errorExit
+			}
+		}
+
+	default:
+		p.SetError(antlr.NewNoViableAltException(p, nil, nil, nil, nil, nil))
+		goto errorExit
 	}
 
 errorExit:

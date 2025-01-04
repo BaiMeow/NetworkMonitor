@@ -1,0 +1,12 @@
+BIRD 2.13 ready.
+
+area 0.0.0.0
+
+        router 172.16.4.6
+                unreachable
+                router 172.16.14.2 metric 80
+                stubnet 172.16.4.6/32 metric 10
+
+        router 172.16.14.2
+                distance 0
+                stubnet 172.16.14.0/24 metric 10
