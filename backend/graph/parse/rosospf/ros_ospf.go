@@ -1,18 +1,20 @@
-package parse
+package rosospf
 
 import (
 	"bytes"
 	"encoding/gob"
 	"fmt"
-	"github.com/go-routeros/routeros/proto"
 	"regexp"
 	"strconv"
+
+	"github.com/BaiMeow/NetworkMonitor/graph/parse"
+	"github.com/go-routeros/routeros/proto"
 )
 
 func init() {
 	gob.Register(&proto.Sentence{})
 
-	Register("ros-ospf", func(m map[string]any) (Parser, error) {
+	parse.Register("ros-ospf", func(m map[string]any) (parse.Parser, error) {
 		asn, ok := m["asn"].(int)
 		if !ok {
 			return nil, fmt.Errorf("asn is not int")
@@ -28,13 +30,13 @@ var (
 	ros7BodyPtpReg = regexp.MustCompile(`type=p2p id=((?:[0-9]{1,3}\.){3}[0-9]{1,3}) data=(?:[0-9]{1,3}\.){3}[0-9]{1,3} metric=(\d+)`)
 )
 
-var _ Parser = (*RosOSPF)(nil)
+var _ parse.Parser = (*RosOSPF)(nil)
 
 type RosOSPF struct {
 	asn uint32
 
 	raw   []byte
-	graph OSPF
+	graph parse.OSPF
 }
 
 func (p *RosOSPF) Init(input []byte) {
@@ -42,7 +44,7 @@ func (p *RosOSPF) Init(input []byte) {
 	p.graph = nil
 }
 
-func (p *RosOSPF) ParseAndMerge(drawing *Drawing) (err error) {
+func (p *RosOSPF) ParseAndMerge(drawing *parse.Drawing) (err error) {
 	defer func() {
 		if err != nil {
 			return

@@ -1,10 +1,12 @@
-package parse
+package rosospf
 
 import (
 	"encoding/base64"
 	"encoding/json"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/BaiMeow/NetworkMonitor/graph/parse"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestROSOSPF(t *testing.T) {
@@ -33,12 +35,12 @@ func TestROSOSPF(t *testing.T) {
 				asn: asn,
 			}
 			p.Init(gobOutput)
-			drawing := Drawing{
-				OSPF: make(map[uint32]*OSPF),
+			drawing := parse.Drawing{
+				OSPF: make(map[uint32]*parse.OSPF),
 			}
 			err = p.ParseAndMerge(&drawing)
 			assert.NoError(t, err)
-			o := &OSPF{}
+			o := &parse.OSPF{}
 			_ = json.Unmarshal([]byte(v.ospfData), o)
 			assert.Equal(t, o, drawing.OSPF[asn])
 		})
