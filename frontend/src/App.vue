@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { getList } from './api/list'
-import { ref, reactive, computed, ComputedRef, watch } from 'vue'
+import { ref, watch, computed, ComputedRef, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useASMeta } from './state/meta'
 
@@ -35,17 +35,14 @@ class bgp {
 
 class ospf {
   asn: number
-  name!: ComputedRef<string>
+  name: ComputedRef<string> = computed(
+    () => ASMeta.value?.metadata?.[this.asn + '']?.display || `AS ${this.asn}`,
+  )
   constructor(asn: number) {
     this.asn = asn
   }
-  async init() {
-    this.name = computed(
-      () => ASMeta.value?.metadata?.[this.asn + '']?.display || '',
-    )
-  }
   display() {
-    return this.name ? `${this.name} Network` : `AS ${this.asn}`
+    return this.name + ' Network'
   }
   path() {
     return `/ospf/${this.asn}`
@@ -57,47 +54,57 @@ interface graph {
   path(): string
 }
 
-const graph_list = reactive([] as Array<graph>)
-
-const sort_list = () =>
-  [...graph_list].sort((a, b) => {
-    if (a instanceof ospf && b instanceof bgp) return 1
-    if (b instanceof bgp && a instanceof ospf) return -1
-    return a.display().localeCompare(b.display())
-  })
-
-watch([graph_list], sort_list)
+const graph_list = ref([] as Array<graph>)
 
 async function load_list() {
   const list = await getList()
 
+  if (list.length === 0) {
+    alert('no data')
+    return
+  }
+
+  const local_list = [] as Array<graph>
   list.forEach((graph) => {
     switch (graph.type) {
       case 'bgp':
-        graph_list.push(new bgp())
+        local_list.push(new bgp())
         break
       case 'ospf': {
-        const gr = new ospf(graph.asn)
-        gr.init()
-        graph_list.push(gr)
+        local_list.push(new ospf(graph.asn))
         break
       }
     }
   })
 
-  sort_list()
+  local_list.sort((a, b) => {
+    if (a instanceof ospf && b instanceof bgp) return 1
+    if (a instanceof bgp && b instanceof ospf) return -1
+    return a.display().localeCompare(b.display())
+  })
 
+  graph_list.value = local_list
   if (router.currentRoute.value.path === '/') {
-    router.push(graph_list[0].path())
-  }
-
-  if (graph_list.length === 0) {
-    alert('no data')
+    router.push(local_list[0].path())
   }
   dataReady.value = true
 }
 
+watch(
+  () => ASMeta.value,
+  () =>
+    (graph_list.value = [...graph_list.value].sort((a, b) => {
+      if (a instanceof ospf && b instanceof bgp) return 1
+      if (a instanceof bgp && b instanceof ospf) return -1
+      return a.display().localeCompare(b.display())
+    })),
+)
+
 load_list()
+const refresh = setInterval(() => load_list(), 60 * 1000)
+onUnmounted(() => {
+  clearInterval(refresh)
+})
 </script>
 <template>
   <div class="aside">
@@ -119,7 +126,7 @@ load_list()
         <el-menu-item
           class="menu-item"
           v-for="graph in graph_list"
-          :key="graph.path"
+          :key="graph.path()"
           :index="graph.path()"
         >
           <span>{{ graph.display() }}</span>
