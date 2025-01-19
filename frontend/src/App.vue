@@ -60,7 +60,7 @@ interface graph {
 const graph_list = reactive([] as Array<graph>)
 
 const sort_list = () =>
-  graph_list.sort((a, b) => {
+  [...graph_list].sort((a, b) => {
     if (a instanceof ospf && b instanceof bgp) return 1
     if (b instanceof bgp && a instanceof ospf) return -1
     return a.display().localeCompare(b.display())
