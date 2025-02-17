@@ -1,13 +1,14 @@
-package fetch
+package cmd
 
 import (
 	"fmt"
+	"github.com/BaiMeow/NetworkMonitor/graph/fetch"
 	"os/exec"
 	"strings"
 )
 
 func init() {
-	Register("cmd", func(m map[string]any) (Fetcher, error) {
+	fetch.Register("cmd", func(m map[string]any) (fetch.Fetcher, error) {
 		cmd, ok := m["command"].(string)
 		if !ok {
 			return nil, fmt.Errorf("cmd is not string")
@@ -16,7 +17,7 @@ func init() {
 	})
 }
 
-var _ Fetcher = (*Command)(nil)
+var _ fetch.Fetcher = (*Command)(nil)
 
 type Command struct {
 	Command string

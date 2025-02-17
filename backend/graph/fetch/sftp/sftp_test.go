@@ -1,14 +1,15 @@
-package fetch
+package sftp
 
 import (
 	"encoding/base64"
+	"github.com/BaiMeow/NetworkMonitor/graph/fetch"
 	"golang.org/x/crypto/ssh"
 	"net"
 	"testing"
 )
 
 func TestSftpWithPassword_GetData(t *testing.T) {
-	fetcher, err := Spawn["sftp"](map[string]any{
+	fetcher, err := fetch.Spawn["sftp"](map[string]any{
 		"host":     "172.16.4.6",
 		"port":     22,
 		"user":     "ubuntu",

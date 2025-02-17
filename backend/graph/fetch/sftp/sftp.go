@@ -1,8 +1,9 @@
-package fetch
+package sftp
 
 import (
 	"encoding/base64"
 	"fmt"
+	"github.com/BaiMeow/NetworkMonitor/graph/fetch"
 	"github.com/BaiMeow/NetworkMonitor/template"
 	"github.com/pkg/sftp"
 	"golang.org/x/crypto/ssh"
@@ -14,7 +15,7 @@ import (
 )
 
 func init() {
-	Register("sftp", func(config map[string]any) (Fetcher, error) {
+	fetch.Register("sftp", func(config map[string]any) (fetch.Fetcher, error) {
 		host, ok := config["host"].(string)
 		if !ok {
 			return nil, fmt.Errorf("host is not string")
@@ -67,8 +68,6 @@ func init() {
 		return fetcher, nil
 	})
 }
-
-var _ Fetcher = (*SftpWithPassword)(nil)
 
 type SftpWithPassword struct {
 	Host      string

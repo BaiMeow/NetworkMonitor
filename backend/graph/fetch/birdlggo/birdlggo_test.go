@@ -1,12 +1,13 @@
-package fetch
+package birdlggo
 
 import (
 	"fmt"
+	"github.com/BaiMeow/NetworkMonitor/graph/fetch"
 	"testing"
 )
 
 func TestBirdLgGo_GetData(t *testing.T) {
-	fetcher, err := Spawn["bird-lg-go"](map[string]any{
+	fetcher, err := fetch.Spawn["bird-lg-go"](map[string]any{
 		"api":      "https://lg.internal.potat0.cc/api/",
 		"server":   "she",
 		"req-type": "bird",

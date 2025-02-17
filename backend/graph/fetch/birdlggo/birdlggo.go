@@ -1,16 +1,17 @@
-package fetch
+package birdlggo
 
 import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/BaiMeow/NetworkMonitor/graph/fetch"
 	"github.com/BaiMeow/NetworkMonitor/utils"
 	"io"
 	"net/http"
 )
 
 func init() {
-	Register("bird-lg-go", func(config map[string]any) (Fetcher, error) {
+	fetch.Register("bird-lg-go", func(config map[string]any) (fetch.Fetcher, error) {
 		api, ok := config["api"].(string)
 		if !ok {
 			return nil, fmt.Errorf("host is not string")
@@ -35,8 +36,6 @@ func init() {
 		}, nil
 	})
 }
-
-var _ Fetcher = (*BirdLgGo)(nil)
 
 type BirdLgGo struct {
 	API    string

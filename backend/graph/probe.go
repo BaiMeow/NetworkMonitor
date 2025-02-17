@@ -3,14 +3,14 @@ package graph
 import (
 	"fmt"
 	"github.com/BaiMeow/NetworkMonitor/conf"
-	"github.com/BaiMeow/NetworkMonitor/fetch"
-	parse2 "github.com/BaiMeow/NetworkMonitor/graph/parse"
+	"github.com/BaiMeow/NetworkMonitor/graph/fetch"
+	"github.com/BaiMeow/NetworkMonitor/graph/parse"
 )
 
 type Probe struct {
 	Name   string
 	Fetch  fetch.Fetcher
-	Parser parse2.Parser
+	Parser parse.Parser
 	Up     bool
 }
 
@@ -18,14 +18,14 @@ func NewProbe(p conf.Probe) (*Probe, error) {
 	if fetch.Spawn[p.Fetch.Type()] == nil {
 		return nil, fmt.Errorf("invalid fetch type:%v", p.Fetch.Type())
 	}
-	if parse2.Spawn[p.Parse.Type()] == nil {
+	if parse.Spawn[p.Parse.Type()] == nil {
 		return nil, fmt.Errorf("invalid parse type:%v", p.Parse.Type())
 	}
 	fetcher, err := fetch.Spawn[p.Fetch.Type()](p.Fetch)
 	if err != nil {
 		return nil, fmt.Errorf("spawn fetcher fail:%v", err)
 	}
-	parser, err := parse2.Spawn[p.Parse.Type()](p.Parse)
+	parser, err := parse.Spawn[p.Parse.Type()](p.Parse)
 	if err != nil {
 		return nil, fmt.Errorf("spawn parser fail:%v", err)
 	}
@@ -37,7 +37,7 @@ func NewProbe(p conf.Probe) (*Probe, error) {
 	}, nil
 }
 
-func (p *Probe) DrawAndMerge(drawing *parse2.Drawing) (err error) {
+func (p *Probe) DrawAndMerge(drawing *parse.Drawing) (err error) {
 	defer func() {
 		p.Up = err == nil
 	}()

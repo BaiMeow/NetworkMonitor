@@ -1,22 +1,23 @@
-package parse
+package mtrbgp
 
 import (
 	"bytes"
 	"encoding/binary"
 	"errors"
 	"fmt"
-	mrt "github.com/BaiMeow/go-mrt"
+	"github.com/BaiMeow/NetworkMonitor/graph/parse"
+	"github.com/BaiMeow/go-mrt"
 	"io"
 	"net/netip"
 )
 
 func init() {
-	Register("mrt-addpath", func(m map[string]any) (Parser, error) {
+	parse.Register("mrt-addpath", func(m map[string]any) (parse.Parser, error) {
 		return &MrtAddPath{}, nil
 	})
 }
 
-var _ Parser = (*MrtAddPath)(nil)
+var _ parse.Parser = (*MrtAddPath)(nil)
 
 type MrtAddPath struct {
 	reader io.Reader
@@ -26,8 +27,8 @@ func (p *MrtAddPath) Init(input []byte) {
 	p.reader = bytes.NewReader(input)
 }
 
-func (p *MrtAddPath) ParseAndMerge(drawing *Drawing) (err error) {
-	var bgp BGP
+func (p *MrtAddPath) ParseAndMerge(drawing *parse.Drawing) (err error) {
+	var bgp parse.BGP
 	defer func() {
 		if err != nil {
 			return

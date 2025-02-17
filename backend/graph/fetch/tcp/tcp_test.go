@@ -1,9 +1,12 @@
-package fetch
+package tcp
 
-import "testing"
+import (
+	"github.com/BaiMeow/NetworkMonitor/graph/fetch"
+	"testing"
+)
 
 func TestTcp_GetData(t *testing.T) {
-	fetcher, err := Spawn["tcp"](map[string]any{
+	fetcher, err := fetch.Spawn["tcp"](map[string]any{
 		"addr": "1.1.1.1:11111",
 	})
 	if err != nil {

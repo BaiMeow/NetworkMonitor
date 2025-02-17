@@ -1,7 +1,8 @@
-package fetch
+package tcp
 
 import (
 	"fmt"
+	"github.com/BaiMeow/NetworkMonitor/graph/fetch"
 	"io"
 	"net"
 	"strconv"
@@ -9,7 +10,7 @@ import (
 )
 
 func init() {
-	Register("tcp", func(config map[string]any) (Fetcher, error) {
+	fetch.Register("tcp", func(config map[string]any) (fetch.Fetcher, error) {
 		addr, ok := config["addr"].(string)
 		if !ok {
 			return nil, fmt.Errorf("addr is not string")
@@ -30,8 +31,6 @@ func init() {
 		}, nil
 	})
 }
-
-var _ Fetcher = (*Tcp)(nil)
 
 type Tcp struct {
 	host string

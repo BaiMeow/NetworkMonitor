@@ -1,8 +1,9 @@
-package fetch
+package ssh
 
 import (
 	"encoding/base64"
 	"fmt"
+	"github.com/BaiMeow/NetworkMonitor/graph/fetch"
 	"golang.org/x/crypto/ssh"
 	"log"
 	"net"
@@ -11,7 +12,7 @@ import (
 )
 
 func init() {
-	Register("ssh", func(config map[string]any) (Fetcher, error) {
+	fetch.Register("ssh", func(config map[string]any) (fetch.Fetcher, error) {
 		host, ok := config["host"].(string)
 		if !ok {
 			return nil, fmt.Errorf("host is not string")
@@ -58,8 +59,6 @@ func init() {
 		return fetcher, nil
 	})
 }
-
-var _ Fetcher = (*SshWithPassword)(nil)
 
 type SshWithPassword struct {
 	Host      string

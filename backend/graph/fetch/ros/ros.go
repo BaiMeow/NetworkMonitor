@@ -1,21 +1,20 @@
-package fetch
+package ros
 
 import (
 	"bytes"
 	"encoding/gob"
 	"fmt"
+	"github.com/BaiMeow/NetworkMonitor/graph/fetch"
 	"github.com/go-routeros/routeros"
 	"github.com/go-routeros/routeros/proto"
 	"net"
 	"time"
 )
 
-var _ Fetcher = (*ROS)(nil)
-
 func init() {
 	gob.Register(&proto.Sentence{})
 
-	Register("ros", func(config map[string]any) (Fetcher, error) {
+	fetch.Register("ros", func(config map[string]any) (fetch.Fetcher, error) {
 		addr, ok := config["address"].(string)
 		if !ok {
 			return nil, fmt.Errorf("host is not string")

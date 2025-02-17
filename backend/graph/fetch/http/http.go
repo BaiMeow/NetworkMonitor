@@ -1,6 +1,7 @@
-package fetch
+package http
 
 import (
+	"github.com/BaiMeow/NetworkMonitor/graph/fetch"
 	"github.com/BaiMeow/NetworkMonitor/template"
 	"github.com/pkg/errors"
 	"io"
@@ -9,7 +10,7 @@ import (
 )
 
 func init() {
-	Register("http", func(m map[string]any) (Fetcher, error) {
+	fetch.Register("http", func(m map[string]any) (fetch.Fetcher, error) {
 		url, err := template.ParseInterface(m["url"])
 		if err != nil {
 			return nil, errors.Wrap(err, "field url")
@@ -55,8 +56,6 @@ func init() {
 		return h, nil
 	})
 }
-
-var _ Fetcher = (*HTTP)(nil)
 
 type HTTP struct {
 	URL    *template.Template
