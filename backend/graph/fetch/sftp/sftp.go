@@ -70,6 +70,7 @@ func init() {
 }
 
 type SftpWithPassword struct {
+	fetch.Base
 	Host      string
 	Port      int
 	User      string

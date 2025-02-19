@@ -52,6 +52,9 @@ func Init() error {
 			}
 			tmp = append(tmp, p)
 		}
+		for _, probe := range probes {
+			go probe.Stop()
+		}
 		probes = tmp
 	}
 	return nil

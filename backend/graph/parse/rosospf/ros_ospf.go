@@ -35,6 +35,7 @@ var (
 var _ parse.Parser = (*RosOSPF)(nil)
 
 type RosOSPF struct {
+	parse.Base
 	asn uint32
 }
 

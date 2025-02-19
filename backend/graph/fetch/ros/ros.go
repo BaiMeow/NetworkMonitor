@@ -36,6 +36,7 @@ func init() {
 }
 
 type ROS struct {
+	fetch.Base
 	Address  string //<IP or domain name>:port
 	Username string
 	Password string

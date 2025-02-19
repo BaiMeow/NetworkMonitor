@@ -26,6 +26,7 @@ func init() {
 }
 
 type BGP struct {
+	parse.Base
 	leftShiftCount int
 }
 

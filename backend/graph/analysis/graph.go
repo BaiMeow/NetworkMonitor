@@ -82,7 +82,7 @@ func (g *Graph) SingleSourceShortestPaths(src *Node) []*Path {
 	}}
 
 	edgeQueue := pq.NewWith(func(a, b interface{}) int {
-		// If a edge in the edgeQueue, there must be a path to the edge's src node
+		// If an edge in the edgeQueue, there must be a path to the edge's src node
 		return paths[a.(*Edge).Src.Id][0].Length + a.(*Edge).Cost - (paths[b.(*Edge).Src.Id][0].Length + b.(*Edge).Cost)
 	})
 

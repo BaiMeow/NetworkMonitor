@@ -58,6 +58,7 @@ func init() {
 }
 
 type HTTP struct {
+	fetch.Base
 	URL    *template.Template
 	Body   *template.Template
 	Header *http.Header

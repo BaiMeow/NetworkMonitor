@@ -18,5 +18,5 @@ func TestTcp_GetData(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	t.Log(string(data))
+	t.Log(string(data.([]byte)))
 }

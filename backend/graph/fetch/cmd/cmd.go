@@ -20,6 +20,7 @@ func init() {
 var _ fetch.Fetcher = (*Command)(nil)
 
 type Command struct {
+	fetch.Base
 	Command string
 }
 

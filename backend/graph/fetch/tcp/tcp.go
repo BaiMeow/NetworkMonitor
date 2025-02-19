@@ -33,6 +33,7 @@ func init() {
 }
 
 type Tcp struct {
+	fetch.Base
 	host string
 	port int
 }

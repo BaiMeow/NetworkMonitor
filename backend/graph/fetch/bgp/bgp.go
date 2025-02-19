@@ -157,6 +157,7 @@ func init() {
 }
 
 type BGP struct {
+	fetch.Base
 	s *server.BgpServer
 }
 

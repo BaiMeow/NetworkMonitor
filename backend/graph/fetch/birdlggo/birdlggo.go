@@ -38,6 +38,7 @@ func init() {
 }
 
 type BirdLgGo struct {
+	fetch.Base
 	API    string
 	Server string
 	Type   string
@@ -100,4 +101,8 @@ func (b *BirdLgGo) GetData() (any, error) {
 	}
 
 	return []byte(data.Data), nil
+}
+
+func (b *BirdLgGo) Stop() error {
+	return nil
 }

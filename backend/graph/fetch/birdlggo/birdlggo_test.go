@@ -22,5 +22,5 @@ func TestBirdLgGo_GetData(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	fmt.Println(string(data))
+	fmt.Println(string(data.([]byte)))
 }

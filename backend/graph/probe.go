@@ -5,6 +5,7 @@ import (
 	"github.com/BaiMeow/NetworkMonitor/conf"
 	"github.com/BaiMeow/NetworkMonitor/graph/fetch"
 	"github.com/BaiMeow/NetworkMonitor/graph/parse"
+	"log"
 )
 
 type Probe struct {
@@ -50,4 +51,16 @@ func (p *Probe) DrawAndMerge(drawing *parse.Drawing) (err error) {
 		return fmt.Errorf("parse data from %s fail:%v", p.Name, err)
 	}
 	return
+}
+
+func (p *Probe) Stop() error {
+	err1 := p.Fetch.Stop()
+	if err1 != nil {
+		log.Printf("stop fetcher: %v", err1)
+	}
+	err2 := p.Parser.Stop()
+	if err2 != nil {
+		log.Printf("stop parser: %v", err1)
+	}
+	return nil
 }

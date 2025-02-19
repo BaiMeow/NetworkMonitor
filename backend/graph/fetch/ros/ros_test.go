@@ -15,7 +15,7 @@ func TestROS_GetData(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Log(base64.StdEncoding.EncodeToString(resp))
+	t.Log(base64.StdEncoding.EncodeToString(resp.([]byte)))
 
 	ros7 := &ROS{
 		Address:  "10.28.0.1:8728",
@@ -26,5 +26,5 @@ func TestROS_GetData(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Log(base64.StdEncoding.EncodeToString(resp))
+	t.Log(base64.StdEncoding.EncodeToString(resp.([]byte)))
 }

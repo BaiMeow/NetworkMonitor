@@ -22,6 +22,7 @@ func init() {
 var _ parse.Parser = (*MrtAddPath)(nil)
 
 type MrtAddPath struct {
+	parse.Base
 }
 
 func (p *MrtAddPath) ParseAndMerge(input any, drawing *parse.Drawing) (err error) {

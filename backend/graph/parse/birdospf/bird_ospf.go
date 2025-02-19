@@ -27,9 +27,7 @@ func init() {
 var _ parse.Parser = (*BirdOSPF)(nil)
 
 type BirdOSPF struct {
-	//lexer  *parser.BirdOSPFLexer
-	//parser *parser.BirdOSPFParser
-	//errL   *errorListener
+	parse.Base
 	asn uint32
 }
 

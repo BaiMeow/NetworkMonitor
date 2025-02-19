@@ -61,6 +61,7 @@ func init() {
 }
 
 type SshWithPassword struct {
+	fetch.Base
 	Host      string
 	Port      int
 	User      string
