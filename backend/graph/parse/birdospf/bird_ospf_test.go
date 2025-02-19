@@ -26,10 +26,9 @@ func TestMUSTParse(t *testing.T) {
 		str := string(data)
 		var p BirdOSPF
 		p.asn = 4242424242
-		p.Init([]byte(str))
 		var drawing parse.Drawing
 		drawing.OSPF = make(map[uint32]*parse.OSPF)
-		err = p.ParseAndMerge(&drawing)
+		err = p.ParseAndMerge(str, &drawing)
 		if err != nil {
 			t.Errorf("parse %s fail: %v", path, err)
 			return

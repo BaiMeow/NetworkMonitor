@@ -27,25 +27,22 @@ func init() {
 var _ parse.Parser = (*BirdOSPF)(nil)
 
 type BirdOSPF struct {
-	lexer  *parser.BirdOSPFLexer
-	parser *parser.BirdOSPFParser
-	errL   *errorListener
-	asn    uint32
+	//lexer  *parser.BirdOSPFLexer
+	//parser *parser.BirdOSPFParser
+	//errL   *errorListener
+	asn uint32
 }
 
-func (p *BirdOSPF) Init(input []byte) {
-	lexer := parser.NewBirdOSPFLexer(antlr.NewIoStream(bytes.NewReader(input)))
+func (p *BirdOSPF) ParseAndMerge(input any, drawing *parse.Drawing) (err error) {
+	data, ok := input.([]byte)
+	lexer := parser.NewBirdOSPFLexer(antlr.NewIoStream(bytes.NewReader(data)))
 	stream := antlr.NewCommonTokenStream(lexer, 0)
 	el := &errorListener{}
 
-	p.lexer = lexer
-	p.parser = parser.NewBirdOSPFParser(stream)
-	p.errL = el
-	p.parser.AddErrorListener(el)
-}
+	streamParser := parser.NewBirdOSPFParser(stream)
+	streamParser.AddErrorListener(el)
 
-func (p *BirdOSPF) ParseAndMerge(drawing *parse.Drawing) (err error) {
-	tree := p.parser.State()
+	tree := streamParser.State()
 	visitor := &birdOSPFVisitor{
 		graph: new(parse.OSPF),
 	}
@@ -59,9 +56,9 @@ func (p *BirdOSPF) ParseAndMerge(drawing *parse.Drawing) (err error) {
 	drawing.OSPF[p.asn] = visitor.graph
 	drawing.Unlock()
 
-	if len(p.errL.errs) != 0 {
+	if len(el.errs) != 0 {
 		err := fmt.Errorf("parse fail")
-		for _, e := range p.errL.errs {
+		for _, e := range el.errs {
 			err = fmt.Errorf("%w: %s at line %d, col %d", err, e.msg, e.line, e.col)
 		}
 		return err

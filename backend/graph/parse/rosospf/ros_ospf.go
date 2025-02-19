@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"encoding/gob"
 	"fmt"
+	"log"
+	"reflect"
 	"regexp"
 	"strconv"
 
@@ -34,17 +36,15 @@ var _ parse.Parser = (*RosOSPF)(nil)
 
 type RosOSPF struct {
 	asn uint32
-
-	raw   []byte
-	graph parse.OSPF
 }
 
-func (p *RosOSPF) Init(input []byte) {
-	p.raw = input
-	p.graph = nil
-}
+func (p *RosOSPF) ParseAndMerge(input any, drawing *parse.Drawing) (err error) {
+	raw, ok := input.([]byte)
+	if !ok {
+		log.Fatalf("invalid input data type: %s\n", reflect.TypeOf(input).Elem())
+	}
 
-func (p *RosOSPF) ParseAndMerge(drawing *parse.Drawing) (err error) {
+	var graph parse.OSPF
 	defer func() {
 		if err != nil {
 			return
@@ -52,14 +52,14 @@ func (p *RosOSPF) ParseAndMerge(drawing *parse.Drawing) (err error) {
 		drawing.Lock()
 		defer drawing.Unlock()
 		if ospf, ok := drawing.OSPF[p.asn]; !ok {
-			drawing.OSPF[p.asn] = &p.graph
+			drawing.OSPF[p.asn] = &graph
 		} else {
-			ospf.Merge(&p.graph)
+			ospf.Merge(&graph)
 		}
 	}()
 
 	var sentences []*proto.Sentence
-	gob.NewDecoder(bytes.NewReader(p.raw)).Decode(&sentences) // 这里本来应该在初始化就直接处理了，但是因为Init没有抛异常，所以这一步在这里做
+	gob.NewDecoder(bytes.NewReader(raw)).Decode(&sentences) // 这里本来应该在初始化就直接处理了，但是因为Init没有抛异常，所以这一步在这里做
 
 	for _, sentence := range sentences {
 		if sentence.Word == "!done" { // 这个判断可有可无 因为fetcher已经做了处理
@@ -68,7 +68,7 @@ func (p *RosOSPF) ParseAndMerge(drawing *parse.Drawing) (err error) {
 		if sentence.Map["type"] != "router" || sentence.Map["area"] == "" || sentence.Map["id"] == "" {
 			continue
 		}
-		p.graph.GetArea(sentence.Map["area"]).AddRouter(sentence.Map["id"])
+		graph.GetArea(sentence.Map["area"]).AddRouter(sentence.Map["id"])
 
 		ptp := ros6BodyPtpReg.FindAllStringSubmatch(sentence.Map["body"], -1)
 		for _, field := range ptp {
@@ -79,7 +79,7 @@ func (p *RosOSPF) ParseAndMerge(drawing *parse.Drawing) (err error) {
 			if err != nil {
 				continue
 			}
-			p.graph.AddLink(sentence.Map["area"], sentence.Map["id"], field[1], cost)
+			graph.AddLink(sentence.Map["area"], sentence.Map["id"], field[1], cost)
 		}
 		ptp = ros7BodyPtpReg.FindAllStringSubmatch(sentence.Map["body"], -1)
 		for _, field := range ptp {
@@ -90,7 +90,7 @@ func (p *RosOSPF) ParseAndMerge(drawing *parse.Drawing) (err error) {
 			if err != nil {
 				continue
 			}
-			p.graph.AddLink(sentence.Map["area"], sentence.Map["id"], field[1], cost)
+			graph.AddLink(sentence.Map["area"], sentence.Map["id"], field[1], cost)
 		}
 	}
 	return

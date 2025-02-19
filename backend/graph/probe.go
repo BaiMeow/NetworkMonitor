@@ -41,13 +41,11 @@ func (p *Probe) DrawAndMerge(drawing *parse.Drawing) (err error) {
 	defer func() {
 		p.Up = err == nil
 	}()
-	var data []byte
-	data, err = p.Fetch.GetData()
+	data, err := p.Fetch.GetData()
 	if err != nil {
 		return fmt.Errorf("fetch data from %s fail:%v", p.Name, err)
 	}
-	p.Parser.Init(data)
-	err = p.Parser.ParseAndMerge(drawing)
+	err = p.Parser.ParseAndMerge(data, drawing)
 	if err != nil {
 		return fmt.Errorf("parse data from %s fail:%v", p.Name, err)
 	}

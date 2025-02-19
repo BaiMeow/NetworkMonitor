@@ -5,13 +5,12 @@ import (
 	"fmt"
 	"github.com/BaiMeow/NetworkMonitor/graph/fetch"
 	apipb "github.com/osrg/gobgp/v3/api"
+	gobgplog "github.com/osrg/gobgp/v3/pkg/log"
 	"github.com/osrg/gobgp/v3/pkg/server"
 	"github.com/pkg/errors"
-	"google.golang.org/protobuf/types/known/anypb"
 	"log"
 	"math"
 	"net/netip"
-	"slices"
 	"time"
 )
 
@@ -56,13 +55,16 @@ func init() {
 			return nil, fmt.Errorf("invalid bgp fetcher mode: %s", mode)
 		}
 
-		bgpServer := server.NewBgpServer()
+		logger := gobgplog.NewDefaultLogger()
+		logger.SetLevel(gobgplog.ErrorLevel)
+		bgpServer := server.NewBgpServer(server.LoggerOption(logger))
 		go bgpServer.Serve()
 		if err := bgpServer.StartBgp(context.Background(), &apipb.StartBgpRequest{
 			Global: &apipb.Global{
-				Asn:        asn,
-				RouterId:   routerIdRaw,
-				ListenPort: int32(port),
+				Asn:              asn,
+				RouterId:         routerIdRaw,
+				ListenPort:       int32(port),
+				UseMultiplePaths: true,
 			},
 		}); err != nil {
 			return nil, err
@@ -76,8 +78,7 @@ func init() {
 						LocalAsn:      asn,
 					},
 					EbgpMultihop: &apipb.EbgpMultihop{
-						Enabled:     true,
-						MultihopTtl: 32,
+						Enabled: true,
 					},
 					AfiSafis: []*apipb.AfiSafi{{
 						Config: &apipb.AfiSafiConfig{
@@ -128,8 +129,7 @@ func init() {
 						NeighborAddress: neighborAddr,
 					},
 					EbgpMultihop: &apipb.EbgpMultihop{
-						Enabled:     true,
-						MultihopTtl: 32,
+						Enabled: true,
 					},
 					AfiSafis: []*apipb.AfiSafi{{
 						Config: &apipb.AfiSafiConfig{
@@ -160,7 +160,7 @@ type BGP struct {
 	s *server.BgpServer
 }
 
-func (f *BGP) GetData() ([]byte, error) {
+func (f *BGP) GetData() (any, error) {
 	// Wait ESTABLISHED
 	for i := 0; i < 10; i++ {
 		var established bool
@@ -168,10 +168,10 @@ func (f *BGP) GetData() ([]byte, error) {
 			if peer.State.SessionState == apipb.PeerState_ESTABLISHED {
 				established = true
 				if i != 0 {
-					fmt.Println("BGP Session State:", peer.State.SessionState)
+					log.Println("BGP Session State:", peer.State.SessionState)
 				}
 			} else {
-				fmt.Println("BGP Session State:", peer.State.SessionState)
+				log.Println("BGP Session State:", peer.State.SessionState)
 			}
 		})
 		if established {
@@ -184,33 +184,23 @@ func (f *BGP) GetData() ([]byte, error) {
 		return nil, errors.New("BGP session failed")
 	}
 
-	var paths [][]uint32
+	var destinations []*apipb.Destination
 	if err := f.s.ListPath(context.Background(), &apipb.ListPathRequest{
 		Family: &apipb.Family{
 			Afi:  apipb.Family_AFI_IP,
 			Safi: apipb.Family_SAFI_UNICAST,
 		},
+		EnableFiltered: true,
 	}, func(destination *apipb.Destination) {
-		for _, p := range destination.GetPaths() {
-			idx := slices.IndexFunc(p.Pattrs, func(a *anypb.Any) bool {
-				return a.GetTypeUrl() == "type.googleapis.com/apipb.AsPathAttribute"
-			})
-			if idx == -1 {
-				continue
-			}
-			asPathAttrPb := p.Pattrs[idx]
-			var asPathAttr apipb.AsPathAttribute
-			if err := asPathAttrPb.UnmarshalTo(&asPathAttr); err != nil {
-				log.Println("unmarshal ASPathAttr failed:", err)
-				continue
-			}
-			for _, se := range asPathAttr.Segments {
-				paths = append(paths, se.Numbers)
-			}
-		}
+		destinations = append(destinations, destination)
 	}); err != nil {
 		return nil, err
 	}
-	fmt.Println(len(paths))
-	return nil, nil
+	return destinations, nil
+}
+
+func (f *BGP) Stop() error {
+	f.s.StopBgp(context.Background(), nil)
+	f.s.Stop()
+	return nil
 }

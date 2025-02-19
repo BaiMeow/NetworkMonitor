@@ -1,7 +1,7 @@
 package fetch
 
 type Fetcher interface {
-	GetData() ([]byte, error)
+	GetData() (any, error)
 }
 
 var Spawn = make(map[string]func(map[string]any) (Fetcher, error))

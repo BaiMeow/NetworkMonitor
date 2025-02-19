@@ -34,11 +34,10 @@ func TestROSOSPF(t *testing.T) {
 			p := RosOSPF{
 				asn: asn,
 			}
-			p.Init(gobOutput)
 			drawing := parse.Drawing{
 				OSPF: make(map[uint32]*parse.OSPF),
 			}
-			err = p.ParseAndMerge(&drawing)
+			err = p.ParseAndMerge(gobOutput, &drawing)
 			assert.NoError(t, err)
 			o := &parse.OSPF{}
 			_ = json.Unmarshal([]byte(v.ospfData), o)

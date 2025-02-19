@@ -41,7 +41,7 @@ type ROS struct {
 	Password string
 }
 
-func (R *ROS) GetData() ([]byte, error) {
+func (R *ROS) GetData() (any, error) {
 	conn, err := net.DialTimeout("tcp", R.Address, time.Second*10)
 	if err != nil {
 		return nil, err

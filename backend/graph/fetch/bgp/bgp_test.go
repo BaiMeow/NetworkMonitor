@@ -3,6 +3,7 @@ package bgp
 import (
 	"fmt"
 	"github.com/BaiMeow/NetworkMonitor/graph/fetch"
+	apipb "github.com/osrg/gobgp/v3/api"
 	"testing"
 	"time"
 )
@@ -24,7 +25,7 @@ func TestBGPDial(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	fmt.Println(data)
+	fmt.Println(countPath(data.([]*apipb.Destination)))
 }
 
 func TestBGPListen(t *testing.T) {
@@ -43,5 +44,13 @@ func TestBGPListen(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	fmt.Println(data)
+	fmt.Println(countPath(data.([]*apipb.Destination)))
+}
+
+func countPath(dess []*apipb.Destination) int {
+	var sum int
+	for _, des := range dess {
+		sum += len(des.GetPaths())
+	}
+	return sum
 }

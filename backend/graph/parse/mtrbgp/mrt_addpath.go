@@ -8,7 +8,9 @@ import (
 	"github.com/BaiMeow/NetworkMonitor/graph/parse"
 	"github.com/BaiMeow/go-mrt"
 	"io"
+	"log"
 	"net/netip"
+	"reflect"
 )
 
 func init() {
@@ -20,14 +22,15 @@ func init() {
 var _ parse.Parser = (*MrtAddPath)(nil)
 
 type MrtAddPath struct {
-	reader io.Reader
 }
 
-func (p *MrtAddPath) Init(input []byte) {
-	p.reader = bytes.NewReader(input)
-}
+func (p *MrtAddPath) ParseAndMerge(input any, drawing *parse.Drawing) (err error) {
+	data, ok := input.([]byte)
+	if !ok {
+		log.Fatalf("invalid input data type: %s\n", reflect.TypeOf(input).Elem())
+	}
+	reader := bytes.NewReader(data)
 
-func (p *MrtAddPath) ParseAndMerge(drawing *parse.Drawing) (err error) {
 	var bgp parse.BGP
 	defer func() {
 		if err != nil {
@@ -38,7 +41,7 @@ func (p *MrtAddPath) ParseAndMerge(drawing *parse.Drawing) (err error) {
 		drawing.Unlock()
 	}()
 
-	rd := mrt.NewReader(p.reader)
+	rd := mrt.NewReader(reader)
 	for {
 		rec, err2 := rd.Next()
 		if err2 != nil {

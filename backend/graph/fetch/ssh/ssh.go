@@ -69,7 +69,7 @@ type SshWithPassword struct {
 	PublicKey ssh.PublicKey
 }
 
-func (s *SshWithPassword) GetData() ([]byte, error) {
+func (s *SshWithPassword) GetData() (any, error) {
 	cfg := &ssh.ClientConfig{
 		User: s.User,
 		Auth: []ssh.AuthMethod{

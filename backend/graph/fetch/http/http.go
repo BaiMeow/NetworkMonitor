@@ -64,7 +64,7 @@ type HTTP struct {
 	Method string
 }
 
-func (f *HTTP) GetData() ([]byte, error) {
+func (f *HTTP) GetData() (any, error) {
 	url, err := f.URL.ExecuteString()
 	if err != nil {
 		return nil, errors.Wrap(err, "generate url")

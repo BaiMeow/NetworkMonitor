@@ -60,7 +60,7 @@ type birdLgGoResult struct {
 	Data   string `json:"data"`
 }
 
-func (b *BirdLgGo) GetData() ([]byte, error) {
+func (b *BirdLgGo) GetData() (any, error) {
 	payload, err := json.Marshal(birdLgGoPayload{
 		Servers: []string{b.Server},
 		Type:    b.Type,

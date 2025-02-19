@@ -1,8 +1,7 @@
 package parse
 
 type Parser interface {
-	Init(input []byte)
-	ParseAndMerge(drawing *Drawing) error
+	ParseAndMerge(input any, drawing *Drawing) error
 }
 
 var Spawn = make(map[string]func(map[string]any) (Parser, error))

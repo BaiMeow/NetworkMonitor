@@ -37,7 +37,7 @@ type Tcp struct {
 	port int
 }
 
-func (t *Tcp) GetData() ([]byte, error) {
+func (t *Tcp) GetData() (any, error) {
 	conn, err := net.DialTimeout("tcp", net.JoinHostPort(t.host, strconv.Itoa(t.port)), time.Second*30)
 	if err != nil {
 		return nil, fmt.Errorf("fail to dial tcp: %v", err)

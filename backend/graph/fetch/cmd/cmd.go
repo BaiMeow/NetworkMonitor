@@ -23,7 +23,7 @@ type Command struct {
 	Command string
 }
 
-func (c *Command) GetData() ([]byte, error) {
+func (c *Command) GetData() (any, error) {
 	ss := strings.SplitN(c.Command, " ", 2)
 	var cmd, arg string
 	switch len(ss) {

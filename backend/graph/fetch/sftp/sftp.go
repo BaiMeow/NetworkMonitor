@@ -79,7 +79,7 @@ type SftpWithPassword struct {
 	filepath *template.Template
 }
 
-func (s *SftpWithPassword) GetData() ([]byte, error) {
+func (s *SftpWithPassword) GetData() (any, error) {
 	cfg := &ssh.ClientConfig{
 		User: s.User,
 		Auth: []ssh.AuthMethod{
