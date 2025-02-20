@@ -13,7 +13,7 @@ func GetOSPF(asn uint32) *entity.OSPF {
 func GetAllOSPF() map[uint32]*entity.OSPF {
 	fullLock.RLock()
 	defer fullLock.RUnlock()
-	var all map[uint32]*entity.OSPF
+	all := make(map[uint32]*entity.OSPF)
 	for k, v := range ospf {
 		all[k] = v.data
 	}
