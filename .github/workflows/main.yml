@@ -8,8 +8,8 @@ on:
 
 env:
   DEPLOY_NAME: 'network-monitor'
-  IMAGE_REPO: 'baimeow/network_monitor'
-  IMAGE_BASE: 'registry.cn-shanghai.aliyuncs.com'
+  IMAGE_REPO: 'baimeow/network-monitor'
+  IMAGE_BASE: 'ghcr.io'
 
 jobs:
   build:
