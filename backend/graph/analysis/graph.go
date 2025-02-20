@@ -1,7 +1,7 @@
 package analysis
 
 import (
-	"github.com/BaiMeow/NetworkMonitor/graph/parse"
+	"github.com/BaiMeow/NetworkMonitor/graph/entity"
 	pq "github.com/emirpasic/gods/queues/priorityqueue"
 	"slices"
 )
@@ -24,7 +24,7 @@ type Graph struct {
 	Nodes []*Node
 }
 
-func ConvertFromBGP(bgp *parse.BGP) *Graph {
+func ConvertFromBGP(bgp *entity.BGP) *Graph {
 	id := 0
 	g := &Graph{}
 	for _, as := range bgp.AS {

@@ -2,6 +2,7 @@ package bgp
 
 import (
 	"fmt"
+	"github.com/BaiMeow/NetworkMonitor/graph/entity"
 	"github.com/BaiMeow/NetworkMonitor/graph/parse"
 	apipb "github.com/osrg/gobgp/v3/api"
 	"google.golang.org/protobuf/types/known/anypb"
@@ -12,7 +13,7 @@ import (
 )
 
 func init() {
-	parse.Register("bgp", func(m map[string]any) (parse.Parser, error) {
+	parse.Register("bgp", func(m map[string]any) (parse.Parser[*entity.BGP], error) {
 		var bgp BGP
 		if m["left-shift"] != nil {
 			if leftShiftInt, ok := m["left-shift"].(int); ok {
@@ -26,24 +27,16 @@ func init() {
 }
 
 type BGP struct {
-	parse.Base
+	parse.Base[*entity.BGP]
 	leftShiftCount int
 }
 
-func (b *BGP) ParseAndMerge(input any, drawing *parse.Drawing) (err error) {
+func (b *BGP) Parse(input any) (*entity.BGP, error) {
 	destinations, ok := input.([]*apipb.Destination)
 	if !ok {
 		log.Fatalf("invalid data type for BGP parser: %s", reflect.TypeOf(input).Elem().Name())
 	}
-	var bgp parse.BGP
-	defer func() {
-		if err != nil {
-			return
-		}
-		drawing.Lock()
-		drawing.BGP.Merge(&bgp)
-		drawing.Unlock()
-	}()
+	var bgp entity.BGP
 
 	for _, des := range destinations {
 		for _, p := range des.Paths {
@@ -75,5 +68,5 @@ func (b *BGP) ParseAndMerge(input any, drawing *parse.Drawing) (err error) {
 		}
 	}
 
-	return nil
+	return &bgp, nil
 }

@@ -1,4 +1,4 @@
-package parse
+package entity
 
 import (
 	"github.com/BaiMeow/NetworkMonitor/utils"

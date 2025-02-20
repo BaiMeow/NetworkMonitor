@@ -1,12 +1,20 @@
 package parse
 
-type Parser interface {
-	ParseAndMerge(input any, drawing *Drawing) error
-	Stop() error
+import "github.com/BaiMeow/NetworkMonitor/graph/entity"
+
+type Parser[T entity.DrawType] interface {
+	Parse(input any) (T, error)
+	CleanUp() error
 }
 
-var Spawn = make(map[string]func(map[string]any) (Parser, error))
+type ParserSpawner[T entity.DrawType] = func(map[string]any) (Parser[T], error)
 
-func Register(name string, spawnFunc func(map[string]any) (Parser, error)) {
-	Spawn[name] = spawnFunc
+var registry = make(map[string]any)
+
+func Register[T entity.DrawType](name string, spawnFunc ParserSpawner[T]) {
+	registry[name] = spawnFunc
+}
+
+func GetSpawner[T entity.DrawType](name string) ParserSpawner[T] {
+	return registry[name].(ParserSpawner[T])
 }

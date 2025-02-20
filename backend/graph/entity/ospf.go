@@ -1,4 +1,4 @@
-package parse
+package entity
 
 type OSPF []Area
 

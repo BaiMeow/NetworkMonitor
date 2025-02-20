@@ -3,6 +3,8 @@ package birdospf
 import (
 	"bytes"
 	"fmt"
+	"github.com/BaiMeow/NetworkMonitor/graph/entity"
+	"log"
 	"strconv"
 
 	"github.com/BaiMeow/NetworkMonitor/graph/parse"
@@ -13,26 +15,22 @@ import (
 //go:generate antlr4 -Dlanguage=Go -visitor -package parser -o parser BirdOSPF.g4
 
 func init() {
-	parse.Register("bird-ospf", func(m map[string]any) (parse.Parser, error) {
-		asn, ok := m["asn"].(int)
-		if !ok {
-			return nil, fmt.Errorf("asn is not int")
-		}
-		return &BirdOSPF{
-			asn: uint32(asn),
-		}, nil
+	parse.Register("bird-ospf", func(m map[string]any) (parse.Parser[*entity.OSPF], error) {
+		return &BirdOSPF{}, nil
 	})
 }
 
-var _ parse.Parser = (*BirdOSPF)(nil)
+var _ parse.Parser[*entity.OSPF] = (*BirdOSPF)(nil)
 
 type BirdOSPF struct {
-	parse.Base
-	asn uint32
+	parse.Base[*entity.OSPF]
 }
 
-func (p *BirdOSPF) ParseAndMerge(input any, drawing *parse.Drawing) (err error) {
+func (p *BirdOSPF) Parse(input any) (*entity.OSPF, error) {
 	data, ok := input.([]byte)
+	if !ok {
+		return nil, fmt.Errorf("input of birdospf parser must be []byte")
+	}
 	lexer := parser.NewBirdOSPFLexer(antlr.NewIoStream(bytes.NewReader(data)))
 	stream := antlr.NewCommonTokenStream(lexer, 0)
 	el := &errorListener{}
@@ -42,30 +40,26 @@ func (p *BirdOSPF) ParseAndMerge(input any, drawing *parse.Drawing) (err error) 
 
 	tree := streamParser.State()
 	visitor := &birdOSPFVisitor{
-		graph: new(parse.OSPF),
+		graph: new(entity.OSPF),
 	}
 	state, ok := tree.(*parser.StateContext)
 	if !ok {
-		return fmt.Errorf("parse as bird ospf state failed")
+		return nil, fmt.Errorf("parse as bird ospf state failed")
 	}
 	visitor.visitState(state)
-
-	drawing.Lock()
-	drawing.OSPF[p.asn] = visitor.graph
-	drawing.Unlock()
 
 	if len(el.errs) != 0 {
 		err := fmt.Errorf("parse fail")
 		for _, e := range el.errs {
 			err = fmt.Errorf("%w: %s at line %d, col %d", err, e.msg, e.line, e.col)
 		}
-		return err
+		return nil, err
 	}
-	return nil
+	return visitor.graph, nil
 }
 
 type birdOSPFVisitor struct {
-	graph *parse.OSPF
+	graph *entity.OSPF
 }
 
 func (v *birdOSPFVisitor) visitState(ctx *parser.StateContext) {
@@ -86,7 +80,7 @@ func (v *birdOSPFVisitor) visitArea(ctx *parser.AreaContext) {
 	}
 }
 
-func (v *birdOSPFVisitor) visitRouter(ctx *parser.RouterContext, area *parse.Area) {
+func (v *birdOSPFVisitor) visitRouter(ctx *parser.RouterContext, area *entity.Area) {
 	if ctx.Distance().Unreachable() != nil {
 		return
 	}
@@ -99,12 +93,12 @@ func (v *birdOSPFVisitor) visitRouter(ctx *parser.RouterContext, area *parse.Are
 	}
 }
 
-func (v *birdOSPFVisitor) visitRouterEntry(ctx *parser.RouterEntryContext, area *parse.Area, routerID string, router *parse.Router) {
+func (v *birdOSPFVisitor) visitRouterEntry(ctx *parser.RouterEntryContext, area *entity.Area, routerID string, router *entity.Router) {
 	var cost int
 	if i := ctx.INT(); i != nil {
 		c, err := strconv.ParseUint(i.GetText(), 10, 64)
 		if err != nil {
-			fmt.Printf("invalid cost %v", i)
+			log.Printf("invalid cost %v", i)
 		}
 		cost = int(c)
 	}
@@ -129,13 +123,13 @@ func (v *birdOSPFVisitor) visitRouterEntry(ctx *parser.RouterEntryContext, area 
 	}
 }
 
-func (v *birdOSPFVisitor) visitNetwork(ctx *parser.NetworkContext, area *parse.Area) {
+func (v *birdOSPFVisitor) visitNetwork(ctx *parser.NetworkContext, area *entity.Area) {
 	if ctx.Distance().Unreachable() != nil {
 		return
 	}
 	c, err := strconv.ParseUint(ctx.Distance().INT().GetText(), 10, 64)
 	if err != nil {
-		fmt.Printf("invalid distance %v", err)
+		log.Printf("invalid distance %v", err)
 		return
 	}
 	allRouterNode := ctx.AllIP()[1:]

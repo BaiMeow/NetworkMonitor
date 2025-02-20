@@ -6,6 +6,7 @@ type Probe struct {
 	Name  string
 	Parse Parser
 	Fetch Fetcher
+	Draw  Drawer
 }
 
 type Parser map[string]any
@@ -17,6 +18,12 @@ func (p Parser) Type() string {
 type Fetcher map[string]any
 
 func (f Fetcher) Type() string {
+	return f["type"].(string)
+}
+
+type Drawer map[string]any
+
+func (f Drawer) Type() string {
 	return f["type"].(string)
 }
 

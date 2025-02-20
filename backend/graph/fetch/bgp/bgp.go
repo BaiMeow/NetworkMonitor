@@ -200,7 +200,7 @@ func (f *BGP) GetData() (any, error) {
 	return destinations, nil
 }
 
-func (f *BGP) Stop() error {
+func (f *BGP) CleanUp() error {
 	f.s.StopBgp(context.Background(), nil)
 	f.s.Stop()
 	return nil

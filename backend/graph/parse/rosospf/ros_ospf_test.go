@@ -3,9 +3,9 @@ package rosospf
 import (
 	"encoding/base64"
 	"encoding/json"
+	"github.com/BaiMeow/NetworkMonitor/graph/entity"
 	"testing"
 
-	"github.com/BaiMeow/NetworkMonitor/graph/parse"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -30,18 +30,12 @@ func TestROSOSPF(t *testing.T) {
 	for _, v := range testcases {
 		t.Run(v.name, func(t *testing.T) {
 			gobOutput, err := base64.StdEncoding.DecodeString(v.feterOutput)
-			asn := uint32(4242424242)
-			p := RosOSPF{
-				asn: asn,
-			}
-			drawing := parse.Drawing{
-				OSPF: make(map[uint32]*parse.OSPF),
-			}
-			err = p.ParseAndMerge(gobOutput, &drawing)
+			p := RosOSPF{}
+			res, err := p.Parse(gobOutput)
 			assert.NoError(t, err)
-			o := &parse.OSPF{}
+			o := &entity.OSPF{}
 			_ = json.Unmarshal([]byte(v.ospfData), o)
-			assert.Equal(t, o, drawing.OSPF[asn])
+			assert.Equal(t, o, res)
 		})
 	}
 

@@ -1,4 +1,4 @@
-package parse
+package entity
 
 type Link struct {
 	Src  string `json:"src,omitempty"`

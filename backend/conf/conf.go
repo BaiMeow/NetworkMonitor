@@ -65,20 +65,25 @@ func update() error {
 	for name, probe := range probes {
 		probe, ok := probe.(map[string]any)
 		if !ok {
-			return fmt.Errorf("parse config error:%v", probe)
+			return fmt.Errorf("parse config error: %v", probe)
 		}
 		parser, ok := probe["parse"].(map[string]any)
 		if !ok {
-			return fmt.Errorf("parse config error:invalid field parse")
+			return fmt.Errorf("parse config error: invalid field parse")
 		}
 		fetcher, ok := probe["fetch"].(map[string]any)
 		if !ok {
-			return fmt.Errorf("parse config error:invalid field fetch")
+			return fmt.Errorf("parse config error: invalid field fetch")
+		}
+		drawer, ok := probe["draw"].(map[string]any)
+		if !ok {
+			return fmt.Errorf("parse config error: invalid field draw")
 		}
 		tmp = append(tmp, Probe{
 			Name:  name,
 			Parse: parser,
 			Fetch: fetcher,
+			Draw:  drawer,
 		})
 	}
 	Probes = tmp

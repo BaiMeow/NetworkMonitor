@@ -1,4 +1,4 @@
-package parse
+package entity
 
 type ASLink struct {
 	Src uint32 `json:"src,omitempty"`

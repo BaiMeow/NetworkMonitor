@@ -7,7 +7,7 @@ func (b Base) GetData() (any, error) {
 	panic("implement me")
 }
 
-func (b Base) Stop() error {
+func (b Base) CleanUp() error {
 	return nil
 }
 

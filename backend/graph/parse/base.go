@@ -1,14 +1,18 @@
 package parse
 
-type Base struct {
+import (
+	"github.com/BaiMeow/NetworkMonitor/graph/entity"
+)
+
+type Base[T entity.DrawType] struct {
 }
 
-func (b *Base) Stop() error {
+func (b *Base[T]) CleanUp() error {
 	return nil
 }
 
-func (b *Base) ParseAndMerge(input any, drawing *Drawing) error {
+func (b *Base[T]) Parse(input any) (T, error) {
 	panic("implement me")
 }
 
-var _ Parser = (*Base)(nil)
+var _ Parser[*entity.BGP] = (*Base[*entity.BGP])(nil)

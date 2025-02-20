@@ -1,4 +1,4 @@
-package parse
+package entity
 
 type Area struct {
 	AreaId string   `json:"area_id,omitempty"`

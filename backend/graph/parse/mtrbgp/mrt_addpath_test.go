@@ -1,7 +1,6 @@
 package mtrbgp
 
 import (
-	"github.com/BaiMeow/NetworkMonitor/graph/parse"
 	"io"
 	"os"
 	"path/filepath"
@@ -27,17 +26,15 @@ func TestMrtAddPath(t *testing.T) {
 				t.Error(err)
 				return
 			}
-			var drawing parse.Drawing
-			drawing.BGP = new(parse.BGP)
-			err = mrt.ParseAndMerge(data, &drawing)
+			res, err := mrt.Parse(data)
 			if err != nil {
 				t.Error(err)
 				return
 			}
-			for _, v := range drawing.BGP.AS {
+			for _, v := range res.AS {
 				t.Log(*v)
 			}
-			t.Log(drawing.BGP.Link)
+			t.Log(res.Link)
 		})
 	}
 }

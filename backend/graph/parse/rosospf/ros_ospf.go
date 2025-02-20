@@ -3,7 +3,7 @@ package rosospf
 import (
 	"bytes"
 	"encoding/gob"
-	"fmt"
+	"github.com/BaiMeow/NetworkMonitor/graph/entity"
 	"log"
 	"reflect"
 	"regexp"
@@ -16,14 +16,8 @@ import (
 func init() {
 	gob.Register(&proto.Sentence{})
 
-	parse.Register("ros-ospf", func(m map[string]any) (parse.Parser, error) {
-		asn, ok := m["asn"].(int)
-		if !ok {
-			return nil, fmt.Errorf("asn is not int")
-		}
-		return &RosOSPF{
-			asn: uint32(asn),
-		}, nil
+	parse.Register("ros-ospf", func(m map[string]any) (parse.Parser[*entity.OSPF], error) {
+		return &RosOSPF{}, nil
 	})
 }
 
@@ -32,32 +26,19 @@ var (
 	ros7BodyPtpReg = regexp.MustCompile(`type=p2p id=((?:[0-9]{1,3}\.){3}[0-9]{1,3}) data=(?:[0-9]{1,3}\.){3}[0-9]{1,3} metric=(\d+)`)
 )
 
-var _ parse.Parser = (*RosOSPF)(nil)
+var _ parse.Parser[*entity.OSPF] = (*RosOSPF)(nil)
 
 type RosOSPF struct {
-	parse.Base
-	asn uint32
+	parse.Base[*entity.OSPF]
 }
 
-func (p *RosOSPF) ParseAndMerge(input any, drawing *parse.Drawing) (err error) {
+func (p *RosOSPF) Parse(input any) (*entity.OSPF, error) {
 	raw, ok := input.([]byte)
 	if !ok {
 		log.Fatalf("invalid input data type: %s\n", reflect.TypeOf(input).Elem())
 	}
 
-	var graph parse.OSPF
-	defer func() {
-		if err != nil {
-			return
-		}
-		drawing.Lock()
-		defer drawing.Unlock()
-		if ospf, ok := drawing.OSPF[p.asn]; !ok {
-			drawing.OSPF[p.asn] = &graph
-		} else {
-			ospf.Merge(&graph)
-		}
-	}()
+	var graph entity.OSPF
 
 	var sentences []*proto.Sentence
 	gob.NewDecoder(bytes.NewReader(raw)).Decode(&sentences) // 这里本来应该在初始化就直接处理了，但是因为Init没有抛异常，所以这一步在这里做
@@ -94,5 +75,5 @@ func (p *RosOSPF) ParseAndMerge(input any, drawing *parse.Drawing) (err error) {
 			graph.AddLink(sentence.Map["area"], sentence.Map["id"], field[1], cost)
 		}
 	}
-	return
+	return &graph, nil
 }

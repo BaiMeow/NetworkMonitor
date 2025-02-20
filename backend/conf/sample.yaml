@@ -30,6 +30,9 @@ probe:
       public-key: "public-key"
     parse:
       type: mrt-addpath
+    draw:
+      type: bgp
+      name: dn11
   # OSPF bird ssh
   AS1:
     fetch:
@@ -41,7 +44,9 @@ probe:
       command: "birdc show ospf state all"
     parse:
       type: bird-ospf
-      # if you don't have BGP ASN, use random number 
+      # if you don't have BGP ASN, use random number
+    draw:
+      type: ospf
       asn: 4222222222
   # OSPF bird bird-lg-go
   AS2:
@@ -53,6 +58,8 @@ probe:
       args: "show ospf state all op_ospf_0"
     parse:
       type: bird-ospf
+    draw:
+      type: ospf
       asn: 4222222223
   # OSPF bird http
   AS3:
@@ -62,6 +69,8 @@ probe:
       method: "GET"
     parse:
       type: bird-ospf
+    draw:
+      type: ospf
       asn: 4222222224
   # OSPF ros ros
   AS4:
@@ -72,6 +81,8 @@ probe:
       Password: "Password"
     parse:
       type: ros-ospf
+    draw:
+      type: ospf
       asn: 4222222225
   # OSPF bird cmd
   # not recommended
@@ -81,6 +92,8 @@ probe:
       command: "birdc show ospf state all"
     parse:
       type: bird-ospf
+    draw:
+      type: ospf
       asn: 4222222226
   # OSPF bird tcp
   AS6:
@@ -89,4 +102,6 @@ probe:
       addr: '123.123.123.123:12345'
     parse:
       type: bird-ospf
+    draw:
+      type: ospf
       asn: 4222222227

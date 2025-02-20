@@ -103,6 +103,6 @@ func (b *BirdLgGo) GetData() (any, error) {
 	return []byte(data.Data), nil
 }
 
-func (b *BirdLgGo) Stop() error {
+func (b *BirdLgGo) CleanUp() error {
 	return nil
 }

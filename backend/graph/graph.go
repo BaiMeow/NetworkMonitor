@@ -1,130 +1,128 @@
 package graph
 
 import (
-	"fmt"
 	"github.com/BaiMeow/NetworkMonitor/conf"
 	"github.com/BaiMeow/NetworkMonitor/graph/analysis"
-	"github.com/BaiMeow/NetworkMonitor/graph/parse"
+	"github.com/BaiMeow/NetworkMonitor/graph/entity"
 	"log"
 	"sync"
 	"time"
 )
 
 var (
-	ospf map[uint32]*parse.OSPF
-	bgp  *parse.BGP
-
-	bgpBetweenness map[uint32]float64
-	bgpCloseness   map[uint32]float64
-
-	currentLock sync.RWMutex
+	fullLock sync.RWMutex
+	ospf     map[uint32]*OSPF
+	bgp      map[string]*BGP
 )
-var probes []*Probe
-var probesLock sync.Mutex
 
-func Init() error {
-	for _, probe := range conf.Probes {
-		p, err := NewProbe(probe)
-		if err != nil {
-			return fmt.Errorf("contruct probe fail:%v", err)
-		}
-		probes = append(probes, p)
-	}
-	draw()
-	ticker := time.NewTicker(conf.Interval)
-	go func() {
-		for {
-			select {
-			case <-ticker.C:
-				draw()
-			}
-		}
-	}()
-	conf.UpdateCallBack = func() {
-		probesLock.Lock()
-		defer probesLock.Unlock()
-		ticker.Reset(conf.Interval)
-		var tmp []*Probe
-		for _, probe := range conf.Probes {
-			p, err := NewProbe(probe)
-			if err != nil {
-				log.Printf("contruct probe fail:%v\n", err)
-			}
-			tmp = append(tmp, p)
-		}
-		for _, probe := range probes {
-			go probe.Stop()
-		}
-		probes = tmp
-	}
-	return nil
+type Graph interface {
+	AddProbe(probe any)
+	Draw()
+	CleanUp()
 }
 
-func draw() {
-	var wg sync.WaitGroup
-	var drawing parse.Drawing
-	drawing.OSPF = make(map[uint32]*parse.OSPF)
-	drawing.BGP = &parse.BGP{}
+type baseGraph[T entity.DrawType] struct {
+	lock     sync.RWMutex
+	disabled bool
 
-	probesLock.Lock()
-	defer probesLock.Unlock()
-	for _, p := range probes {
-		wg.Add(1)
-		p := p
-		go func() {
-			defer wg.Done()
-			alert := time.AfterFunc(conf.ProbeTimeout, func() {
-				log.Printf("probe %s timeout but the goroutine is still running, a timeout should be added to the probe.\n", p.Name)
-			})
-			t := time.Now()
-			err := p.DrawAndMerge(&drawing)
-			alert.Stop()
-			dur := time.Since(t)
-			if dur > time.Second*5 {
-				log.Printf("probe %s slow draw: %v\n", p.Name, dur)
-			}
-			if err != nil {
-				log.Println(err)
-			}
-		}()
+	data      T
+	updatedAt time.Time
+
+	probes []*Probe[T]
+}
+
+func (g *baseGraph[T]) Draw() {
+	panic("implement me")
+}
+
+func (g *baseGraph[T]) CleanUp() {
+	g.disabled = true
+	g.lock.Lock()
+	g.lock.Unlock()
+	for _, p := range g.probes {
+		err := p.CleanUp()
+		if err != nil {
+			log.Printf("stop probe %s fail: %v", p.Name, err)
+			return
+		}
+	}
+}
+
+func (g *baseGraph[T]) AddProbe(probe any) {
+	g.probes = append(g.probes, probe.(*Probe[T]))
+}
+
+func (g *baseGraph[T]) GetData() T {
+	g.lock.RLock()
+	defer g.lock.RUnlock()
+	return g.data
+}
+
+type OSPF struct {
+	baseGraph[*entity.OSPF]
+	asn uint32
+}
+
+func (o *OSPF) Draw() {
+	if o.disabled {
+		return
+	}
+	data := new(entity.OSPF)
+	for _, p := range o.probes {
+		gr, err := p.Draw()
+		if err != nil {
+			log.Printf("probe %s error: %v", p.Name, err)
+			continue
+		}
+		data.Merge(gr)
+	}
+	o.lock.Lock()
+	defer o.lock.Unlock()
+	o.data = data
+	o.updatedAt = time.Now()
+}
+
+type BGP struct {
+	baseGraph[*entity.BGP]
+	name        string
+	betweenness map[uint32]float64
+	closeness   map[uint32]float64
+}
+
+func (b *BGP) Draw() {
+	if b.disabled {
+		return
 	}
 
-	select {
-	case <-time.After(conf.ProbeTimeout):
-	case <-func() <-chan struct{} {
-		done := make(chan struct{})
-		go func() {
-			wg.Wait()
-			close(done)
-		}()
-		return done
-	}():
+	data := new(entity.BGP)
+	for _, p := range b.probes {
+		e, err := p.Draw()
+		if err != nil {
+			log.Printf("probe %s fail: %v", p.Name, err)
+			continue
+		}
+		data.Merge(e)
 	}
 
-	var (
-		tempBetweenness = make(map[uint32]float64)
-		tempCloseness   = make(map[uint32]float64)
-	)
-	drawing.Lock()
-	defer drawing.Unlock()
+	bt := make(map[uint32]float64)
+	cl := make(map[uint32]float64)
 	if conf.Analysis {
 		t := time.Now()
-		if drawing.BGP != nil {
-			g := analysis.ConvertFromBGP(drawing.BGP)
-			for _, b := range g.Betweenness() {
-				tempBetweenness[b.Node.Tag["asn"].(uint32)] = b.Betweenness
-			}
-			for _, c := range g.Closeness() {
-				tempCloseness[c.Node.Tag["asn"].(uint32)] = c.Closeness
-			}
+		g := analysis.ConvertFromBGP(data)
+
+		for _, b := range g.Betweenness() {
+			bt[b.Node.Tag["asn"].(uint32)] = b.Betweenness
+		}
+		for _, c := range g.Closeness() {
+			cl[c.Node.Tag["asn"].(uint32)] = c.Closeness
 		}
 		log.Println("analysis time:", time.Since(t))
 	}
 
-	currentLock.Lock()
-	defer currentLock.Unlock()
-	ospf = drawing.OSPF
-	bgp = drawing.BGP
-	bgpBetweenness = tempBetweenness
-	bgpCloseness = tempCloseness
+	b.lock.Lock()
+	defer b.lock.Unlock()
+	b.betweenness = bt
+	b.closeness = cl
+	b.data = data
+	b.updatedAt = time.Now()
 }

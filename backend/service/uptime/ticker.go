@@ -29,6 +29,9 @@ func tickerInsertDB() {
 	for {
 		now := <-tk
 		gr := graph.GetBGP()
+		if gr == nil {
+			continue
+		}
 		mp := make(map[uint32]int, len(gr.AS))
 		for _, as := range gr.AS {
 			mp[as.ASN] = 0

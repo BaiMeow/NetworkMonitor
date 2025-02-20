@@ -1,4 +1,4 @@
-package parse
+package entity
 
 import (
 	"net/netip"
