@@ -6,6 +6,7 @@ import (
 	"github.com/BaiMeow/NetworkMonitor/graph/entity"
 	"github.com/BaiMeow/NetworkMonitor/utils"
 	"log"
+	"strconv"
 	"sync"
 	"time"
 )
@@ -108,6 +109,10 @@ func draw() {
 	for name, v := range bgp {
 		wg.Add(1)
 		go drawSingle(name, v)
+	}
+	for name, v := range ospf {
+		wg.Add(1)
+		go drawSingle(strconv.FormatUint(uint64(name), 10), v)
 	}
 
 	select {
