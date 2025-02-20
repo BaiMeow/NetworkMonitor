@@ -14,11 +14,14 @@ func GetOSPF(asn uint32) *entity.OSPF {
 }
 
 func GetBGP() *entity.BGP {
-	bgp := *graph.GetBGP()
+	bgp := graph.GetBGP()
+	if bgp == nil {
+		return nil
+	}
 	recordASNs, err := uptime.AllASNRecord()
 	if err != nil {
 		log.Println("read uptime fail:", err)
-		return &bgp
+		return bgp
 	}
 
 	currentASs := make([]*entity.AS, len(bgp.AS))
@@ -51,12 +54,12 @@ func GetBGP() *entity.BGP {
 	}
 
 	bgp.AS = append(currentASs, addon...)
-	return &bgp
+	return bgp
 }
 
 func ListAvailable() []map[string]any {
 	var ls []map[string]any
-	if len(graph.GetBGP().AS) != 0 {
+	if bgpGr := graph.GetBGP(); bgpGr != nil && len(bgpGr.AS) != 0 {
 		ls = append(ls, map[string]any{
 			"type": "bgp",
 		})
