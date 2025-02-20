@@ -7,6 +7,9 @@ import (
 func GetOSPF(asn uint32) *entity.OSPF {
 	fullLock.RLock()
 	defer fullLock.RUnlock()
+	if ospf[asn] == nil {
+		return nil
+	}
 	return ospf[asn].data
 }
 
