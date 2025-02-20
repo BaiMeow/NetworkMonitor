@@ -60,6 +60,7 @@ jobs:
         timeout-minutes: 3
         run: |
           # docker login --username ${{ secrets.DOCKER_USERNAME }} --password ${{ secrets.DOCKER_PASSWORD }} ${{ env.IMAGE_BASE }}
+          docker login --username BaiMeow --password ${{ secrets.GITHUB_TOKEN }} ${{ env.IMAGE_BASE }}
           docker push ${{ env.IMAGE_BASE }}/${{ env.IMAGE_REPO }}:${{ steps.gen-tag.outputs.tag }}
         
       - name: Checkout ArgoCD
