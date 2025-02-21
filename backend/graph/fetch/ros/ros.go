@@ -1,19 +1,14 @@
 package ros
 
 import (
-	"bytes"
-	"encoding/gob"
 	"fmt"
 	"github.com/BaiMeow/NetworkMonitor/graph/fetch"
 	"github.com/go-routeros/routeros"
-	"github.com/go-routeros/routeros/proto"
 	"net"
 	"time"
 )
 
 func init() {
-	gob.Register(&proto.Sentence{})
-
 	fetch.Register("ros", func(config map[string]any) (fetch.Fetcher, error) {
 		addr, ok := config["address"].(string)
 		if !ok {
@@ -57,8 +52,5 @@ func (R *ROS) GetData() (any, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	buf := &bytes.Buffer{}
-	gob.NewEncoder(buf).Encode(reply.Re)
-	return buf.Bytes(), nil
+	return reply.Re, nil
 }

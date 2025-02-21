@@ -1,9 +1,12 @@
 package rosospf
 
 import (
+	"bytes"
 	"encoding/base64"
+	"encoding/gob"
 	"encoding/json"
 	"github.com/BaiMeow/NetworkMonitor/graph/entity"
+	"github.com/go-routeros/routeros/proto"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -30,8 +33,10 @@ func TestROSOSPF(t *testing.T) {
 	for _, v := range testcases {
 		t.Run(v.name, func(t *testing.T) {
 			gobOutput, err := base64.StdEncoding.DecodeString(v.feterOutput)
+			var sentences []*proto.Sentence
+			gob.NewDecoder(bytes.NewReader(gobOutput)).Decode(&sentences)
 			p := RosOSPF{}
-			res, err := p.Parse(gobOutput)
+			res, err := p.Parse(sentences)
 			assert.NoError(t, err)
 			o := &entity.OSPF{}
 			_ = json.Unmarshal([]byte(v.ospfData), o)
