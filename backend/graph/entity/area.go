@@ -1,5 +1,9 @@
 package entity
 
+import (
+	"slices"
+)
+
 type Area struct {
 	AreaId string   `json:"area_id,omitempty"`
 	Router []Router `json:"router,omitempty"`
@@ -39,7 +43,18 @@ func (a *Area) Merge(ar *Area) error {
 		a.AddRouter(v.RouterId)
 	}
 
+	var toAdd []Link
 	for _, newLink := range ar.Links {
+		// ospf always has full graph, merge func is for split ospf
+		// if any link existed between the same src and dst, there are all links, so skip.
+		if slices.IndexFunc(a.Links, func(link Link) bool {
+			return link.Src == newLink.Src && link.Dst == newLink.Dst || link.Dst == newLink.Src && link.Src == newLink.Dst
+		}) == -1 {
+			toAdd = append(toAdd, newLink)
+		}
+	}
+
+	for _, newLink := range toAdd {
 		a.AddLink(newLink.Src, newLink.Dst, newLink.Cost)
 	}
 	return nil
