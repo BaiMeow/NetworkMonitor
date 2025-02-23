@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { getList } from './api/list'
-import { ref, watch, computed, ComputedRef, onUnmounted } from 'vue'
+import { ref, watch, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useASMeta } from './state/meta'
 
@@ -35,14 +35,12 @@ class bgp {
 
 class ospf {
   asn: number
-  name: ComputedRef<string> = computed(
-    () => ASMeta.value?.metadata?.[this.asn + '']?.display || `AS ${this.asn}`,
-  )
   constructor(asn: number) {
     this.asn = asn
   }
   display() {
-    return this.name + ' Network'
+    const display = ASMeta.value?.metadata?.[this.asn+'']?.display;
+    return display? `${display} Network`: `AS ${this.asn}`
   }
   path() {
     return `/ospf/${this.asn}`

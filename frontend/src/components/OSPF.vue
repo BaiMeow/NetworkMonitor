@@ -55,13 +55,13 @@ option.title = {
   text: computed(() =>
     ASMeta.value?.metadata?.[asn.value]?.display
       ? `${ASMeta.value.metadata[asn.value].display} Network`
-      : `AS ${asn}`,
+      : `AS ${asn.value}`,
   ),
   textStyle: {
     color: computed(() => (isDark.value ? '#E5EAF3' : 'black')),
   },
   subtext: computed(
-    () => `Nodes: ${nodes.value?.length}  Peers: ${peers.value}`,
+    () => `Nodes: ${nodes.value?.length || 0}  Peers: ${peers.value || 0}`,
   ),
 }
 option.tooltip = {
