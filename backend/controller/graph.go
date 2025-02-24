@@ -16,7 +16,7 @@ func OSPF(c *gin.Context) {
 		})
 		return
 	}
-	gh := graph.GetOSPF(uint32(parseUint))
+	gh, _ := graph.GetOSPF(uint32(parseUint))
 	c.JSON(200, Resp{
 		Code: 0,
 		Msg:  "ok",
@@ -25,11 +25,15 @@ func OSPF(c *gin.Context) {
 }
 
 func BGP(c *gin.Context) {
-	gh := graph.GetBGP()
+	gh, t := graph.GetBGP()
 	c.JSON(200, Resp{
 		Code: 0,
 		Msg:  "ok",
-		Data: gh,
+		Data: gin.H{
+			"as":        gh.AS,
+			"link":      gh.Link,
+			"updatedAt": t,
+		},
 	})
 }
 

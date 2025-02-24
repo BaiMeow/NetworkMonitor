@@ -32,16 +32,20 @@ func tickerInsertDB() {
 		if gr == nil {
 			continue
 		}
-		mp := make(map[uint32]int, len(gr.AS))
-		for _, as := range gr.AS {
+		data, t := gr.GetData()
+		if t.Add(2 * conf.Interval).Before(now) {
+			continue
+		}
+		mp := make(map[uint32]int, len(data.AS))
+		for _, as := range data.AS {
 			mp[as.ASN] = 0
 		}
-		for _, lk := range gr.Link {
+		for _, lk := range data.Link {
 			mp[lk.Src]++
 			mp[lk.Dst]++
 		}
-		err := db.BatchRecordASUp(mp, now)
-		log.Printf("record as %d links %d at %v", len(mp), len(gr.Link), now)
+		err := db.BatchRecordASUp(mp, t)
+		log.Printf("record as %d links %d at %v", len(mp), len(data.Link), now)
 		if err != nil {
 			log.Println(fmt.Errorf("record as up fail:%v", err))
 		}

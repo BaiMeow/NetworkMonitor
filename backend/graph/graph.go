@@ -52,10 +52,10 @@ func (g *baseGraph[T]) AddProbe(probe any) {
 	g.probes = append(g.probes, probe.(*Probe[T]))
 }
 
-func (g *baseGraph[T]) GetData() T {
+func (g *baseGraph[T]) GetData() (T, time.Time) {
 	g.lock.RLock()
 	defer g.lock.RUnlock()
-	return g.data
+	return g.data, g.updatedAt
 }
 
 type OSPF struct {

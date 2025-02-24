@@ -4,24 +4,27 @@ import (
 	"github.com/BaiMeow/NetworkMonitor/graph"
 	"github.com/BaiMeow/NetworkMonitor/graph/entity"
 	"github.com/BaiMeow/NetworkMonitor/service/uptime"
+	"github.com/BaiMeow/NetworkMonitor/utils"
 	"log"
 	"net/netip"
 	"slices"
+	"time"
 )
 
-func GetOSPF(asn uint32) *entity.OSPF {
-	return graph.GetOSPF(asn)
+func GetOSPF(asn uint32) (*entity.OSPF, time.Time) {
+	gr := graph.GetOSPF(asn)
+	return gr.GetData()
 }
 
-func GetBGP() *entity.BGP {
-	bgp := graph.GetBGP()
+func GetBGP() (*entity.BGP, time.Time) {
+	bgp, updatedAt := graph.GetBGP().GetData()
 	if bgp == nil {
-		return nil
+		return nil, utils.Zero[time.Time]()
 	}
 	recordASNs, err := uptime.AllASNRecord()
 	if err != nil {
 		log.Println("read uptime fail:", err)
-		return bgp
+		return bgp, updatedAt
 	}
 
 	currentASs := make([]*entity.AS, len(bgp.AS))
@@ -54,12 +57,12 @@ func GetBGP() *entity.BGP {
 	}
 
 	bgp.AS = append(currentASs, addon...)
-	return bgp
+	return bgp, updatedAt
 }
 
 func ListAvailable() []map[string]any {
 	var ls []map[string]any
-	if bgpGr := graph.GetBGP(); bgpGr != nil && len(bgpGr.AS) != 0 {
+	if bgpGr := graph.GetBGP(); bgpGr != nil {
 		ls = append(ls, map[string]any{
 			"type": "bgp",
 		})
