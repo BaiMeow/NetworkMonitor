@@ -12,7 +12,7 @@ type Probe struct {
 	Draw  Drawer
 }
 
-func (p *Probe) Compare(p2 *Probe) bool {
+func (p *Probe) Equal(p2 *Probe) bool {
 	if p == nil && p2 != nil || p != nil && p2 == nil {
 		return false
 	}

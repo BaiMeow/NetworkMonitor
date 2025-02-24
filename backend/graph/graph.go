@@ -51,7 +51,7 @@ func (g *baseGraph[T]) setProbe(probe conf.Probe) error {
 	idx := slices.IndexFunc(g.probes, func(p *Probe[T]) bool {
 		return p.Name == probe.Name
 	})
-	if idx != -1 && g.probes[idx].conf.Compare(&probe) {
+	if idx != -1 && g.probes[idx].conf.Equal(&probe) {
 		return nil
 	}
 
@@ -189,9 +189,12 @@ func (o *OSPF) Draw(ctx context.Context) {
 	o.dataLock.Lock()
 	defer o.dataLock.Unlock()
 	if success > 0 {
+		equal := o.data.Equal(data)
 		o.data = data
 		o.updatedAt = time.Now()
-		notifyEventUpdate("ospf", o.name)
+		if !equal {
+			notifyEventUpdate("ospf", o.name)
+		}
 	}
 }
 
@@ -259,8 +262,11 @@ func (b *BGP) Draw(ctx context.Context) {
 	if success > 0 {
 		b.betweenness = bt
 		b.closeness = cl
+		equal := b.data.Equal(data)
 		b.data = data
 		b.updatedAt = time.Now()
-		notifyEventUpdate("bgp", b.name)
+		if !equal {
+			notifyEventUpdate("bgp", b.name)
+		}
 	}
 }
