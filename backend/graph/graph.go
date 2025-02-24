@@ -155,6 +155,8 @@ func (o *OSPF) Draw(ctx context.Context) {
 	if o.disabled {
 		return
 	}
+
+	var success int
 	data := new(entity.OSPF)
 
 	func() {
@@ -166,14 +168,17 @@ func (o *OSPF) Draw(ctx context.Context) {
 				log.Printf("probe %s error: %v", p.Name, err)
 				continue
 			}
+			success++
 			data.Merge(gr)
 		}
 	}()
 
 	o.dataLock.Lock()
 	defer o.dataLock.Unlock()
-	o.data = data
-	o.updatedAt = time.Now()
+	if success > 0 {
+		o.data = data
+		o.updatedAt = time.Now()
+	}
 }
 
 type BGP struct {
@@ -194,11 +199,11 @@ func (b *BGP) Draw(ctx context.Context) {
 		return
 	}
 
+	var success int
 	data := &entity.BGP{
 		AS:   make([]*entity.AS, 0),
 		Link: make([]entity.ASLink, 0),
 	}
-
 	func() {
 		b.probesLock.Lock()
 		defer b.probesLock.Unlock()
@@ -208,6 +213,7 @@ func (b *BGP) Draw(ctx context.Context) {
 				log.Printf("probe %s fail: %v", p.Name, err)
 				continue
 			}
+			success++
 			data.Merge(e)
 		}
 	}()
@@ -229,8 +235,10 @@ func (b *BGP) Draw(ctx context.Context) {
 
 	b.dataLock.Lock()
 	defer b.dataLock.Unlock()
-	b.betweenness = bt
-	b.closeness = cl
-	b.data = data
-	b.updatedAt = time.Now()
+	if success > 0 {
+		b.betweenness = bt
+		b.closeness = cl
+		b.data = data
+		b.updatedAt = time.Now()
+	}
 }
