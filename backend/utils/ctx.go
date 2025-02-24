@@ -30,7 +30,6 @@ func CtxCheckDone(ctx context.Context) bool {
 func CtxReadAll(ctx context.Context, r io.Reader) ([]byte, error) {
 	b := make([]byte, 0, 512)
 	err := CtxWarp(ctx, func() error {
-		b := make([]byte, 0, 512)
 		for {
 			n, err := r.Read(b[len(b):cap(b)])
 			if CtxCheckDone(ctx) {
