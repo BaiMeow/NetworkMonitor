@@ -1,9 +1,10 @@
 package ros
 
 import (
+	"context"
 	"fmt"
 	"github.com/BaiMeow/NetworkMonitor/graph/fetch"
-	"github.com/go-routeros/routeros"
+	"github.com/go-routeros/routeros/v3"
 	"net"
 	"time"
 )
@@ -37,18 +38,24 @@ type ROS struct {
 	Password string
 }
 
-func (R *ROS) GetData() (any, error) {
-	conn, err := net.DialTimeout("tcp", R.Address, time.Second*10)
+func (R *ROS) GetData(ctx context.Context) (any, error) {
+	dialer := &net.Dialer{
+		Timeout: time.Second * 10,
+	}
+	conn, err := dialer.DialContext(ctx, "tcp", R.Address)
 	if err != nil {
 		return nil, err
 	}
+	defer conn.Close()
+
 	client, _ := routeros.NewClient(conn)
 	defer client.Close()
-	err = client.Login(R.Username, R.Password)
+
+	err = client.LoginContext(ctx, R.Username, R.Password)
 	if err != nil {
 		return nil, err
 	}
-	reply, err := client.Run("/routing/ospf/lsa/print", "detail", "?type=router")
+	reply, err := client.RunContext(ctx, "/routing/ospf/lsa/print", "detail", "?type=router")
 	if err != nil {
 		return nil, err
 	}

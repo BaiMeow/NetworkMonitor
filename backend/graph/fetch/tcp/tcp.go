@@ -1,12 +1,12 @@
 package tcp
 
 import (
+	"context"
 	"fmt"
 	"github.com/BaiMeow/NetworkMonitor/graph/fetch"
-	"io"
+	"github.com/BaiMeow/NetworkMonitor/utils"
 	"net"
 	"strconv"
-	"time"
 )
 
 func init() {
@@ -38,11 +38,12 @@ type Tcp struct {
 	port int
 }
 
-func (t *Tcp) GetData() (any, error) {
-	conn, err := net.DialTimeout("tcp", net.JoinHostPort(t.host, strconv.Itoa(t.port)), time.Second*30)
+func (t *Tcp) GetData(ctx context.Context) (any, error) {
+	dialer := &net.Dialer{}
+	conn, err := dialer.DialContext(ctx, "tcp", net.JoinHostPort(t.host, strconv.Itoa(t.port)))
 	if err != nil {
 		return nil, fmt.Errorf("fail to dial tcp: %v", err)
 	}
 	defer conn.Close()
-	return io.ReadAll(conn)
+	return utils.CtxReadAll(ctx, conn)
 }

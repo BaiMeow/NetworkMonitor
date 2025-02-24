@@ -1,9 +1,12 @@
 package parse
 
-import "github.com/BaiMeow/NetworkMonitor/graph/entity"
+import (
+	"context"
+	"github.com/BaiMeow/NetworkMonitor/graph/entity"
+)
 
 type Parser[T entity.DrawType] interface {
-	Parse(input any) (T, error)
+	Parse(ctx context.Context, input any) (T, error)
 	CleanUp() error
 }
 

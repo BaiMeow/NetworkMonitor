@@ -1,6 +1,7 @@
 package graph
 
 import (
+	"context"
 	"fmt"
 	"github.com/BaiMeow/NetworkMonitor/conf"
 	"github.com/BaiMeow/NetworkMonitor/graph/entity"
@@ -39,12 +40,12 @@ func NewProbe[T entity.DrawType](p conf.Probe) (*Probe[T], error) {
 	}, nil
 }
 
-func (p *Probe[T]) Draw() (T, error) {
-	data, err := p.Fetch.GetData()
+func (p *Probe[T]) Draw(ctx context.Context) (T, error) {
+	data, err := p.Fetch.GetData(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("fetch data from %s fail:%v", p.Name, err)
 	}
-	res, err := p.Parser.Parse(data)
+	res, err := p.Parser.Parse(ctx,data)
 	if err != nil {
 		return nil, fmt.Errorf("parse data from %s fail:%v", p.Name, err)
 	}

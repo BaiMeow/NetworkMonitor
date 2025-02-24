@@ -1,9 +1,11 @@
 package fetch
 
+import "context"
+
 type Base struct {
 }
 
-func (b Base) GetData() (any, error) {
+func (b Base) GetData(ctx context.Context) (any, error) {
 	panic("implement me")
 }
 

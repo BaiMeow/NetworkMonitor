@@ -1,7 +1,9 @@
 package fetch
 
+import "context"
+
 type Fetcher interface {
-	GetData() (any, error)
+	GetData(ctx context.Context) (any, error)
 	CleanUp() error
 }
 

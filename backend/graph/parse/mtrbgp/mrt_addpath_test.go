@@ -1,6 +1,7 @@
 package mtrbgp
 
 import (
+	"context"
 	"io"
 	"os"
 	"path/filepath"
@@ -26,7 +27,7 @@ func TestMrtAddPath(t *testing.T) {
 				t.Error(err)
 				return
 			}
-			res, err := mrt.Parse(data)
+			res, err := mrt.Parse(context.Background(),data)
 			if err != nil {
 				t.Error(err)
 				return

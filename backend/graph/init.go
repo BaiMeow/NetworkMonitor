@@ -5,26 +5,12 @@ import (
 	"github.com/BaiMeow/NetworkMonitor/utils"
 	"log"
 	"maps"
-	"time"
 )
 
 func Init() error {
 	// update graph
 	patchGraphList()
-	draw()
-
-	ticker := time.NewTicker(conf.Interval)
-	go func() {
-		for {
-			<-ticker.C
-			draw()
-		}
-	}()
-
-	conf.UpdateCallBack = func() {
-		patchGraphList()
-		ticker.Reset(conf.Interval)
-	}
+	conf.UpdateCallBack = patchGraphList
 	return nil
 }
 
@@ -71,23 +57,31 @@ func patchGraphList() {
 		return false
 	})
 	for k, v := range ospfNew {
-		if ospf[k] == nil {
-			ospf[k] = &OSPF{asn: k}
+		isNewProbe := ospf[k] == nil
+		if isNewProbe {
+			ospf[k] = newOSPFGraph(k)
 		}
 		err := ospf[k].UpdateProbes(v)
 		if err != nil {
 			log.Printf("config ospf graph %d fail: %v", k, err)
 			continue
 		}
+		if isNewProbe {
+			go ospf[k].StartDrawDaemon()
+		}
 	}
 	for k, v := range bgpNew {
-		if bgp[k] == nil {
-			bgp[k] = &BGP{name: k}
+		isNewProbe := bgp[k] == nil
+		if isNewProbe {
+			bgp[k] = newBGPGraph(k)
 		}
 		err := bgp[k].UpdateProbes(v)
 		if err != nil {
 			log.Printf("config bgp graph %s fail: %v", k, err)
 			continue
+		}
+		if isNewProbe {
+			go bgp[k].StartDrawDaemon()
 		}
 	}
 	log.Println("update probes done")

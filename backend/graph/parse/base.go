@@ -1,6 +1,7 @@
 package parse
 
 import (
+	"context"
 	"github.com/BaiMeow/NetworkMonitor/graph/entity"
 )
 
@@ -11,7 +12,7 @@ func (b *Base[T]) CleanUp() error {
 	return nil
 }
 
-func (b *Base[T]) Parse(input any) (T, error) {
+func (b *Base[T]) Parse(ctx context.Context, input any) (T, error) {
 	panic("implement me")
 }
 

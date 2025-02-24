@@ -191,11 +191,11 @@ type BGP struct {
 	cancel context.CancelFunc
 }
 
-func (f *BGP) GetData() (any, error) {
+func (f *BGP) GetData(ctx context.Context) (any, error) {
 	// Wait ESTABLISHED
 	for i := 0; i < 10; i++ {
 		var established bool
-		f.s.ListPeer(context.Background(), &apipb.ListPeerRequest{}, func(peer *apipb.Peer) {
+		if err := f.s.ListPeer(ctx, &apipb.ListPeerRequest{}, func(peer *apipb.Peer) {
 			if peer.State.SessionState == apipb.PeerState_ESTABLISHED {
 				established = true
 				if i != 0 {
@@ -204,19 +204,25 @@ func (f *BGP) GetData() (any, error) {
 			} else {
 				log.Println("BGP Session State:", peer.State.SessionState)
 			}
-		})
+		}); err != nil {
+			return nil, fmt.Errorf("list bgp peer: %v", err)
+		}
 		if established {
 			break
 		}
 		if i != 9 {
-			time.Sleep(time.Second * 3)
-			continue
+			select {
+			case <-time.NewTimer(time.Second * 3).C:
+				continue
+			case <-ctx.Done():
+				return nil, fmt.Errorf("context timeout")
+			}
 		}
 		return nil, errors.New("BGP session failed")
 	}
 
 	var destinations []*apipb.Destination
-	if err := f.s.ListPath(context.Background(), &apipb.ListPathRequest{
+	if err := f.s.ListPath(ctx, &apipb.ListPathRequest{
 		Family: &apipb.Family{
 			Afi:  apipb.Family_AFI_IP,
 			Safi: apipb.Family_SAFI_UNICAST,

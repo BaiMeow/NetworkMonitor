@@ -1,6 +1,7 @@
 package bgp
 
 import (
+	"context"
 	"fmt"
 	"github.com/BaiMeow/NetworkMonitor/graph/fetch"
 	apipb "github.com/osrg/gobgp/v3/api"
@@ -20,7 +21,7 @@ func TestBGPDial(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	data, err := bgp.GetData()
+	data, err := bgp.GetData(context.Background())
 	if err != nil {
 		t.Error(err)
 		return
@@ -39,7 +40,7 @@ func TestBGPListen(t *testing.T) {
 		return
 	}
 	time.Sleep(time.Second * 10)
-	data, err := bgp.GetData()
+	data, err := bgp.GetData(context.Background())
 	if err != nil {
 		t.Error(err)
 		return

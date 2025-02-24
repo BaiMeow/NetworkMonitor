@@ -2,11 +2,11 @@ package birdlggo
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/BaiMeow/NetworkMonitor/graph/fetch"
 	"github.com/BaiMeow/NetworkMonitor/utils"
-	"io"
 	"net/http"
 )
 
@@ -61,7 +61,7 @@ type birdLgGoResult struct {
 	Data   string `json:"data"`
 }
 
-func (b *BirdLgGo) GetData() (any, error) {
+func (b *BirdLgGo) GetData(ctx context.Context) (any, error) {
 	payload, err := json.Marshal(birdLgGoPayload{
 		Servers: []string{b.Server},
 		Type:    b.Type,
@@ -71,12 +71,18 @@ func (b *BirdLgGo) GetData() (any, error) {
 		return nil, fmt.Errorf("fail to marshal payload:%v", err)
 	}
 
-	resp, err := http.Post(b.API, "application/json", bytes.NewReader(payload))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, b.API, bytes.NewReader(payload))
+	if err != nil {
+		return nil, fmt.Errorf("new request: %v", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("fail to post request:%v", err)
 	}
+	defer resp.Body.Close()
 
-	rbody, err := io.ReadAll(resp.Body)
+	rbody, err := utils.CtxReadAll(ctx, resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("fail to read body:%v", err)
 	}

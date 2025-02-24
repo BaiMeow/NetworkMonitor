@@ -1,6 +1,7 @@
 package sftp
 
 import (
+	"context"
 	"encoding/base64"
 	"github.com/BaiMeow/NetworkMonitor/graph/fetch"
 	"golang.org/x/crypto/ssh"
@@ -20,7 +21,7 @@ func TestSftpWithPassword_GetData(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	data, err := fetcher.GetData()
+	data, err := fetcher.GetData(context.Background())
 	if err != nil {
 		t.Error(err)
 		return

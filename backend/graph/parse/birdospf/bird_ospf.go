@@ -2,6 +2,7 @@ package birdospf
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"github.com/BaiMeow/NetworkMonitor/graph/entity"
 	"log"
@@ -26,7 +27,7 @@ type BirdOSPF struct {
 	parse.Base[*entity.OSPF]
 }
 
-func (p *BirdOSPF) Parse(input any) (*entity.OSPF, error) {
+func (p *BirdOSPF) Parse(ctx context.Context, input any) (*entity.OSPF, error) {
 	data, ok := input.([]byte)
 	if !ok {
 		return nil, fmt.Errorf("input of birdospf parser must be []byte")

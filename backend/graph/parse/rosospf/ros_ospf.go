@@ -1,6 +1,7 @@
 package rosospf
 
 import (
+	"context"
 	"encoding/gob"
 	"github.com/BaiMeow/NetworkMonitor/graph/entity"
 	"log"
@@ -9,7 +10,7 @@ import (
 	"strconv"
 
 	"github.com/BaiMeow/NetworkMonitor/graph/parse"
-	"github.com/go-routeros/routeros/proto"
+	"github.com/go-routeros/routeros/v3/proto"
 )
 
 func init() {
@@ -38,7 +39,7 @@ type network struct {
 	routers []string
 }
 
-func (p *RosOSPF) Parse(input any) (*entity.OSPF, error) {
+func (p *RosOSPF) Parse(ctx context.Context, input any) (*entity.OSPF, error) {
 	sentences, ok := input.([]*proto.Sentence)
 	if !ok {
 		log.Fatalf("invalid input data type: %s\n", reflect.TypeOf(input).Elem())

@@ -7,6 +7,7 @@ import (
 	"github.com/BaiMeow/NetworkMonitor/utils"
 	"log"
 	"net/netip"
+	"slices"
 	"time"
 )
 
@@ -59,4 +60,3 @@ func GetBGP(name string) (*entity.BGP, time.Time) {
 	bgp.AS = append(currentASs, addon...)
 	return bgp, updatedAt
 }
-

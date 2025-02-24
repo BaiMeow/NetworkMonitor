@@ -1,6 +1,7 @@
 package http
 
 import (
+	"context"
 	"github.com/BaiMeow/NetworkMonitor/graph/fetch"
 	"github.com/BaiMeow/NetworkMonitor/template"
 	"github.com/pkg/errors"
@@ -65,7 +66,7 @@ type HTTP struct {
 	Method string
 }
 
-func (f *HTTP) GetData() (any, error) {
+func (f *HTTP) GetData(ctx context.Context) (any, error) {
 	url, err := f.URL.ExecuteString()
 	if err != nil {
 		return nil, errors.Wrap(err, "generate url")
@@ -81,7 +82,7 @@ func (f *HTTP) GetData() (any, error) {
 		body = bodyReader
 	}
 
-	req, err := http.NewRequest(f.Method, url, body)
+	req, err := http.NewRequestWithContext(ctx, f.Method, url, body)
 	if err != nil {
 		return nil, errors.Wrap(err, "fail to new http.Request")
 	}
@@ -94,8 +95,10 @@ func (f *HTTP) GetData() (any, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "fail to do http")
 	}
+	defer res.Body.Close()
 
 	data, err := io.ReadAll(res.Body)
+
 	if err != nil {
 		return nil, errors.Wrap(err, "fail to read http body")
 	}

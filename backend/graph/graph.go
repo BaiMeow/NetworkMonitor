@@ -19,35 +19,34 @@ var (
 )
 
 type baseGraph[T entity.DrawType] struct {
-	lock     sync.RWMutex
 	disabled bool
+	name     string
 
 	data      T
+	dataLock  sync.RWMutex
 	updatedAt time.Time
 
-	probes []*Probe[T]
+	probes     []*Probe[T]
+	probesLock sync.Mutex
 
-	Draw func(ctx context.Context)
+	Draw         func(ctx context.Context)
+	daemonCancel context.CancelFunc
 }
-
-//func (g *baseGraph[T]) Draw() {
-//	panic("implement me")
-//}
 
 func (g *baseGraph[T]) CleanUp() {
 	g.disabled = true
-	g.lock.Lock()
-	g.lock.Unlock()
+	g.daemonCancel()
+
 	for _, p := range g.probes {
 		err := p.CleanUp()
 		if err != nil {
 			log.Printf("stop probe %s fail: %v", p.Name, err)
-			return
 		}
 	}
 }
 
-func (g *baseGraph[T]) SetProbe(probe conf.Probe) error {
+// setProbe must be called under probeLock
+func (g *baseGraph[T]) setProbe(probe conf.Probe) error {
 	idx := slices.IndexFunc(g.probes, func(p *Probe[T]) bool {
 		return p.Name == probe.Name
 	})
@@ -75,14 +74,14 @@ func (g *baseGraph[T]) SetProbe(probe conf.Probe) error {
 }
 
 func (g *baseGraph[T]) GetData() (T, time.Time) {
-	g.lock.RLock()
-	defer g.lock.RUnlock()
+	g.dataLock.RLock()
+	defer g.dataLock.RUnlock()
 	return g.data, g.updatedAt
 }
 
 func (g *baseGraph[T]) UpdateProbes(confs []conf.Probe) error {
-	g.lock.Lock()
-	defer g.lock.Unlock()
+	g.probesLock.Lock()
+	defer g.probesLock.Unlock()
 
 	var errs []error
 
@@ -102,7 +101,7 @@ func (g *baseGraph[T]) UpdateProbes(confs []conf.Probe) error {
 	})
 
 	for _, c := range confs {
-		err := g.SetProbe(c)
+		err := g.setProbe(c)
 		if err != nil {
 			errs = append(errs, err)
 		}
@@ -115,38 +114,82 @@ func (g *baseGraph[T]) UpdateProbes(confs []conf.Probe) error {
 	return nil
 }
 
+func (g *baseGraph[T]) StartDrawDaemon() {
+	ctx, cancel := context.WithCancel(context.Background())
+	g.daemonCancel = cancel
+	Timer := time.NewTimer(conf.Interval)
+	go func() {
+		for {
+			<-Timer.C
+			ctx, cancel := context.WithCancel(ctx)
+			alert := time.AfterFunc(conf.ProbeTimeout, func() {
+				log.Printf("probe %s timeout, cancelled", g.name)
+				cancel()
+			})
+			g.Draw(ctx)
+			t := time.Now()
+			alert.Stop()
+			dur := time.Since(t)
+			if dur > conf.ProbeTimeout/2 {
+				log.Printf("probe %s slow draw: %v\n", g.name, dur)
+			}
+			Timer.Reset(conf.Interval)
+		}
+	}()
+}
+
 type OSPF struct {
 	baseGraph[*entity.OSPF]
 	asn uint32
 }
 
-func (o *OSPF) Draw() {
+func newOSPFGraph(asn uint32) *OSPF {
+	gr := &OSPF{}
+	gr.asn = asn
+	gr.baseGraph.Draw = gr.Draw
+	gr.baseGraph.name = fmt.Sprintf("AS%d", asn)
+	return gr
+}
+
+func (o *OSPF) Draw(ctx context.Context) {
 	if o.disabled {
 		return
 	}
 	data := new(entity.OSPF)
-	for _, p := range o.probes {
-		gr, err := p.Draw()
-		if err != nil {
-			log.Printf("probe %s error: %v", p.Name, err)
-			continue
+
+	func() {
+		o.probesLock.Lock()
+		defer o.probesLock.Unlock()
+		for _, p := range o.probes {
+			gr, err := p.Draw(ctx)
+			if err != nil {
+				log.Printf("probe %s error: %v", p.Name, err)
+				continue
+			}
+			data.Merge(gr)
 		}
-		data.Merge(gr)
-	}
-	o.lock.Lock()
-	defer o.lock.Unlock()
+	}()
+
+	o.dataLock.Lock()
+	defer o.dataLock.Unlock()
 	o.data = data
 	o.updatedAt = time.Now()
 }
 
 type BGP struct {
 	baseGraph[*entity.BGP]
-	name        string
 	betweenness map[uint32]float64
 	closeness   map[uint32]float64
 }
 
-func (b *BGP) Draw() {
+func newBGPGraph(name string) *BGP {
+	gr := &BGP{}
+	gr.baseGraph.Draw = gr.Draw
+	gr.baseGraph.name = name
+	return gr
+}
+
+func (b *BGP) Draw(ctx context.Context) {
 	if b.disabled {
 		return
 	}
@@ -155,14 +198,19 @@ func (b *BGP) Draw() {
 		AS:   make([]*entity.AS, 0),
 		Link: make([]entity.ASLink, 0),
 	}
-	for _, p := range b.probes {
-		e, err := p.Draw()
-		if err != nil {
-			log.Printf("probe %s fail: %v", p.Name, err)
-			continue
+
+	func() {
+		b.probesLock.Lock()
+		defer b.probesLock.Unlock()
+		for _, p := range b.probes {
+			e, err := p.Draw(ctx)
+			if err != nil {
+				log.Printf("probe %s fail: %v", p.Name, err)
+				continue
+			}
+			data.Merge(e)
 		}
-		data.Merge(e)
-	}
+	}()
 
 	bt := make(map[uint32]float64)
 	cl := make(map[uint32]float64)
@@ -179,8 +227,8 @@ func (b *BGP) Draw() {
 		log.Println("analysis time:", time.Since(t))
 	}
 
-	b.lock.Lock()
-	defer b.lock.Unlock()
+	b.dataLock.Lock()
+	defer b.dataLock.Unlock()
 	b.betweenness = bt
 	b.closeness = cl
 	b.data = data

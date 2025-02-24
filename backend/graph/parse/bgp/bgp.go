@@ -1,6 +1,7 @@
 package bgp
 
 import (
+	"context"
 	"fmt"
 	"github.com/BaiMeow/NetworkMonitor/graph/entity"
 	"github.com/BaiMeow/NetworkMonitor/graph/parse"
@@ -31,7 +32,7 @@ type BGP struct {
 	leftShiftCount int
 }
 
-func (b *BGP) Parse(input any) (*entity.BGP, error) {
+func (b *BGP) Parse(ctx context.Context, input any) (*entity.BGP, error) {
 	destinations, ok := input.([]*apipb.Destination)
 	if !ok {
 		log.Fatalf("invalid data type for BGP parser: %s", reflect.TypeOf(input).Elem().Name())

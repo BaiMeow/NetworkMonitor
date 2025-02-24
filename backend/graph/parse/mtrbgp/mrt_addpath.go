@@ -2,6 +2,7 @@ package mtrbgp
 
 import (
 	"bytes"
+	"context"
 	"encoding/binary"
 	"errors"
 	"fmt"
@@ -26,7 +27,7 @@ type MrtAddPath struct {
 	parse.Base[*entity.BGP]
 }
 
-func (p *MrtAddPath) Parse(input any) (*entity.BGP, error) {
+func (p *MrtAddPath) Parse(ctx context.Context, input any) (*entity.BGP, error) {
 	data, ok := input.([]byte)
 	if !ok {
 		log.Fatalf("invalid input data type: %s\n", reflect.TypeOf(input).Elem())

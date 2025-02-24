@@ -1,6 +1,7 @@
 package birdlggo
 
 import (
+	"context"
 	"fmt"
 	"github.com/BaiMeow/NetworkMonitor/graph/fetch"
 	"testing"
@@ -17,7 +18,7 @@ func TestBirdLgGo_GetData(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	data, err := fetcher.GetData()
+	data, err := fetcher.GetData(context.Background())
 	if err != nil {
 		t.Error(err)
 		return

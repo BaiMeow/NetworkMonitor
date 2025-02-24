@@ -1,10 +1,12 @@
 package sftp
 
 import (
+	"context"
 	"encoding/base64"
 	"fmt"
 	"github.com/BaiMeow/NetworkMonitor/graph/fetch"
 	"github.com/BaiMeow/NetworkMonitor/template"
+	"github.com/BaiMeow/NetworkMonitor/utils"
 	"github.com/pkg/sftp"
 	"golang.org/x/crypto/ssh"
 	"io"
@@ -41,7 +43,7 @@ func init() {
 			return nil, fmt.Errorf("fail to parse filepath as template:%v", err)
 		}
 
-		fetcher := &SftpWithPassword{
+		fetcher := &WithPassword{
 			Host:     host,
 			Port:     port,
 			User:     user,
@@ -69,7 +71,7 @@ func init() {
 	})
 }
 
-type SftpWithPassword struct {
+type WithPassword struct {
 	fetch.Base
 	Host      string
 	Port      int
@@ -80,7 +82,7 @@ type SftpWithPassword struct {
 	filepath *template.Template
 }
 
-func (s *SftpWithPassword) GetData() (any, error) {
+func (s *WithPassword) GetData(ctx context.Context) (any, error) {
 	cfg := &ssh.ClientConfig{
 		User: s.User,
 		Auth: []ssh.AuthMethod{
@@ -94,32 +96,52 @@ func (s *SftpWithPassword) GetData() (any, error) {
 		cfg.HostKeyCallback = ssh.InsecureIgnoreHostKey()
 	}
 
-	c, err := ssh.Dial("tcp", net.JoinHostPort(s.Host, strconv.Itoa(s.Port)), cfg)
-	if err != nil {
-		return nil, fmt.Errorf("fail to dial ssh: %v", err)
-	}
-	defer c.Close()
+	var content []byte
 
-	sftpc, err := sftp.NewClient(c)
-	if err != nil {
-		return nil, fmt.Errorf("fail to dial sftp: %v", err)
-	}
-	defer sftpc.Close()
+	if err := utils.CtxWarp(ctx, func() error {
+		c, err := ssh.Dial("tcp", net.JoinHostPort(s.Host, strconv.Itoa(s.Port)), cfg)
+		if err != nil {
+			return fmt.Errorf("fail to dial ssh: %v", err)
+		}
+		defer c.Close()
+		if utils.CtxCheckDone(ctx) {
+			return context.Cause(ctx)
+		}
 
-	fp, err := s.filepath.ExecuteString()
-	if err != nil {
-		return nil, fmt.Errorf("fail to get filepath: %v", err)
-	}
+		sftpc, err := sftp.NewClient(c)
+		if err != nil {
+			return fmt.Errorf("fail to dial sftp: %v", err)
+		}
+		defer sftpc.Close()
+		if utils.CtxCheckDone(ctx) {
+			return context.Cause(ctx)
+		}
 
-	file, err := sftpc.Open(fp)
-	if err != nil {
-		return nil, fmt.Errorf("fail to open file from sftp: %v", err)
-	}
-	defer file.Close()
+		fp, err := s.filepath.ExecuteString()
+		if err != nil {
+			return fmt.Errorf("fail to get filepath: %v", err)
+		}
+		if utils.CtxCheckDone(ctx) {
+			return context.Cause(ctx)
+		}
 
-	content, err := io.ReadAll(file)
-	if err != nil {
-		return nil, fmt.Errorf("fail to read file from sftp: %v", err)
+		file, err := sftpc.Open(fp)
+		if err != nil {
+			return fmt.Errorf("fail to open file from sftp: %v", err)
+		}
+		defer file.Close()
+		if utils.CtxCheckDone(ctx) {
+			return context.Cause(ctx)
+		}
+
+		content, err = io.ReadAll(file)
+		if err != nil {
+			return fmt.Errorf("fail to read file from sftp: %v", err)
+		}
+
+		return nil
+	}); err != nil {
+		return err, nil
 	}
 
 	return content, nil

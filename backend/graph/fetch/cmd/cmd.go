@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"github.com/BaiMeow/NetworkMonitor/graph/fetch"
 	"os/exec"
@@ -24,7 +25,7 @@ type Command struct {
 	Command string
 }
 
-func (c *Command) GetData() (any, error) {
+func (c *Command) GetData(ctx context.Context) (any, error) {
 	ss := strings.SplitN(c.Command, " ", 2)
 	var cmd, arg string
 	switch len(ss) {
@@ -35,7 +36,7 @@ func (c *Command) GetData() (any, error) {
 	case 2:
 		cmd, arg = ss[0], ss[1]
 	}
-	output, err := exec.Command(cmd, arg).Output()
+	output, err := exec.CommandContext(ctx, cmd, arg).Output()
 	if err != nil {
 		return nil, err
 	}

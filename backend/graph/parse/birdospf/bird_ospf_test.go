@@ -1,6 +1,7 @@
 package birdospf
 
 import (
+	"context"
 	_ "embed"
 	"os"
 	"path/filepath"
@@ -23,7 +24,7 @@ func TestMUSTParse(t *testing.T) {
 				return
 			}
 			var p BirdOSPF
-			gr, err := p.Parse(data)
+			gr, err := p.Parse(context.Background(), data)
 			if err != nil {
 				t.Errorf("parse %s fail: %v", path, err)
 				return
