@@ -57,6 +57,11 @@ const { option, selectList, loading: graphLoading } = useGraph()
 const route = useRoute()
 const name = computed<string>(() => route.params.name as string)
 
+import { updatedData } from '@/state/event'
+watch(updatedData, (data) => {
+  if (data?.type === 'bgp' && data.key === name.value) loadData(name.value)
+})
+
 graphLoading.value = true
 
 option.title = {
