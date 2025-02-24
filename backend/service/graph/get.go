@@ -7,7 +7,6 @@ import (
 	"github.com/BaiMeow/NetworkMonitor/utils"
 	"log"
 	"net/netip"
-	"slices"
 	"time"
 )
 
@@ -16,11 +15,12 @@ func GetOSPF(asn uint32) (*entity.OSPF, time.Time) {
 	return gr.GetData()
 }
 
-func GetBGP() (*entity.BGP, time.Time) {
-	bgp, updatedAt := graph.GetBGP().GetData()
-	if bgp == nil {
+func GetBGP(name string) (*entity.BGP, time.Time) {
+	gr := graph.GetBGP(name)
+	if gr == nil {
 		return nil, utils.Zero[time.Time]()
 	}
+	bgp, updatedAt := gr.GetData()
 	recordASNs, err := uptime.AllASNRecord()
 	if err != nil {
 		log.Println("read uptime fail:", err)
@@ -60,20 +60,3 @@ func GetBGP() (*entity.BGP, time.Time) {
 	return bgp, updatedAt
 }
 
-func ListAvailable() []map[string]any {
-	var ls []map[string]any
-	if bgpGr := graph.GetBGP(); bgpGr != nil {
-		ls = append(ls, map[string]any{
-			"type": "bgp",
-		})
-	}
-
-	for asn := range graph.GetAllOSPF() {
-		ls = append(ls, map[string]any{
-			"type": "ospf",
-			"asn":  asn,
-		})
-	}
-
-	return ls
-}

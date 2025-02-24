@@ -5,11 +5,11 @@ import OSPF from './components/OSPF.vue'
 
 const routes = [
   {
-    path: '/bgp/:asn',
+    path: '/bgp/:name/:asn',
     component: BGP,
   },
   {
-    path: '/bgp',
+    path: '/bgp/:name',
     component: BGP,
   },
   {

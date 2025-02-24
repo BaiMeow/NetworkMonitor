@@ -1,29 +1,34 @@
 import axios from 'axios'
 import { Resp, ApiHost } from './consts'
 
-interface Router {
+export interface Router {
   router_id: string
   subnet: string[]
   metadata?: object
 }
 
-interface Link {
+export interface Link {
   src: string
   dst: string
   cost: number
 }
 
-interface Area {
+export interface Area{
   area_id: string
   router: Router[]
   links: Link[]
 }
 
+export interface OSPF {
+  graph: Area[]
+  updated_at: Date
+}
+
 export async function getOSPF(asn: number) {
-  const res = await axios.get(`${ApiHost}/api/ospf/${asn}`)
-  const data = res.data as Resp<Array<Area>>
+  const { data } = await axios.get<Resp<OSPF>>(`${ApiHost}/api/ospf/${asn}`)
   if (data.code !== 0) {
     throw new Error(data.msg)
   }
+  data.data.updated_at = new Date(data.data.updated_at)
   return data.data
 }

@@ -16,23 +16,31 @@ func OSPF(c *gin.Context) {
 		})
 		return
 	}
-	gh, _ := graph.GetOSPF(uint32(parseUint))
-	c.JSON(200, Resp{
-		Code: 0,
-		Msg:  "ok",
-		Data: gh,
-	})
-}
-
-func BGP(c *gin.Context) {
-	gh, t := graph.GetBGP()
+	gh, t := graph.GetOSPF(uint32(parseUint))
 	c.JSON(200, Resp{
 		Code: 0,
 		Msg:  "ok",
 		Data: gin.H{
-			"as":        gh.AS,
-			"link":      gh.Link,
-			"updatedAt": t,
+			"updated_at": t,
+			"graph":      gh,
+		},
+	})
+}
+
+func BGP(c *gin.Context) {
+	name := c.Param("name")
+	gh, t := graph.GetBGP(name)
+	if gh == nil {
+		c.JSON(404, RespErrBGPGraphNotFound)
+		return
+	}
+	c.JSON(200, Resp{
+		Code: 0,
+		Msg:  "ok",
+		Data: gin.H{
+			"as":         gh.AS,
+			"link":       gh.Link,
+			"updated_at": t,
 		},
 	})
 }

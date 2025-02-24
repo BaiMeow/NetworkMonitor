@@ -1,52 +1,52 @@
+<!-- eslint-disable vue/multi-word-component-names -->
 <script setup lang="ts">
 import { useDark, useToggle } from '@vueuse/core'
 
 const isDark = useDark()
 const toggleDark = useToggle(isDark)
 
-const toggleTheme = (event: any) => {
-  const x = event.clientX;
-  const y = event.clientY;
+const toggleTheme = (event: MouseEvent) => {
+  const x = event.clientX
+  const y = event.clientY
   const endRadius = Math.hypot(
     Math.max(x, innerWidth - x),
-    Math.max(y, innerHeight - y)
-  );
+    Math.max(y, innerHeight - y),
+  )
 
   // 兼容性处理
   if (!document.startViewTransition) {
-    toggleDark();
-    return;
+    toggleDark()
+    return
   }
   const transition = document.startViewTransition(async () => {
-    toggleDark();
-  });
+    toggleDark()
+  })
 
   transition.ready.then(() => {
     const clipPath = [
       `circle(0px at ${x}px ${y}px)`,
       `circle(${endRadius}px at ${x}px ${y}px)`,
-    ];
+    ]
     document.documentElement.animate(
       {
         clipPath: isDark.value ? [...clipPath].reverse() : clipPath,
       },
       {
         duration: 400,
-        easing: "ease-in",
+        easing: 'ease-in',
         pseudoElement: isDark.value
-          ? "::view-transition-old(root)"
-          : "::view-transition-new(root)",
-      }
-    );
-  });
-};
+          ? '::view-transition-old(root)'
+          : '::view-transition-new(root)',
+      },
+    )
+  })
+}
 </script>
 
 <template>
-  <el-icon class='icon' @click="toggleTheme"
+  <el-icon class="icon" @click="toggleTheme"
     ><i-ep-moon v-if="isDark" /> <i-ep-sunny v-else
   /></el-icon>
 </template>
 
-<style scoped>
-</style>
+<style scoped></style>

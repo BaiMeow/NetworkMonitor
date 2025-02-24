@@ -12,6 +12,7 @@ import {
 import { use } from 'echarts/core'
 import { parseDuration } from '@/utils/time'
 import { useDark } from '@vueuse/core'
+import { fontColor } from '@/state/font'
 const { asn, time } = defineProps<{
   asn: number
   time: string
@@ -30,7 +31,7 @@ const option: any = reactive({
   title: {
     text: 'Peer AS Count',
     textStyle: {
-      color: computed(() => (isDark.value ? '#E5EAF3' : 'black')),
+      color: fontColor,
     },
   },
   tooltip: {

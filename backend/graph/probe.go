@@ -9,10 +9,6 @@ import (
 	"log"
 )
 
-type Drawable interface {
-	Draw()
-}
-
 type Probe[T entity.DrawType] struct {
 	Name   string
 	Fetch  fetch.Fetcher

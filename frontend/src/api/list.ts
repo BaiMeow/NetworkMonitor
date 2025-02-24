@@ -10,6 +10,7 @@ type OSPFGraph = {
 
 type BGPGraph = {
   type: 'bgp'
+  name: string
 }
 
 export async function getList() {

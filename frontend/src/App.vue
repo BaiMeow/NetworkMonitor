@@ -3,6 +3,7 @@ import { getList } from './api/list'
 import { ref, watch, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useASMeta } from './state/meta'
+import TimeStamp from './components/TimeStamp.vue'
 
 const router = useRouter()
 const menu_rotate = ref('rotate-closed-margin')
@@ -25,11 +26,15 @@ const click_fold = () => {
 const ASMeta = useASMeta()
 
 class bgp {
+  name: string
+  constructor(name: string) {
+    this.name = name
+  }
   display() {
-    return 'BGP FULL GRAPH'
+    return this.name
   }
   path() {
-    return '/bgp'
+    return `/bgp/${this.name}`
   }
 }
 
@@ -39,8 +44,8 @@ class ospf {
     this.asn = asn
   }
   display() {
-    const display = ASMeta.value?.metadata?.[this.asn+'']?.display;
-    return display? `${display} Network`: `AS ${this.asn}`
+    const display = ASMeta.value?.metadata?.[this.asn + '']?.display
+    return display ? `${display} Network` : `AS ${this.asn}`
   }
   path() {
     return `/ospf/${this.asn}`
@@ -66,7 +71,7 @@ async function load_list() {
   list.forEach((graph) => {
     switch (graph.type) {
       case 'bgp':
-        local_list.push(new bgp())
+        local_list.push(new bgp(graph.name))
         break
       case 'ospf': {
         local_list.push(new ospf(graph.asn))
@@ -134,6 +139,7 @@ onUnmounted(() => {
   </div>
   <Graph />
   <router-view v-if="dataReady" />
+  <TimeStamp></TimeStamp>
 </template>
 
 <style scoped>

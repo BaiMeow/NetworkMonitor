@@ -8,7 +8,8 @@ import (
 
 func BGPAnalysisBetweenness(c *gin.Context) {
 	asn := c.Query("asn")
-	betweenness := graph.GetBgpBetweenness()
+	name := c.Param("name")
+	betweenness := graph.GetBgpBetweenness(name)
 	if asn == "" {
 		c.JSON(200, Resp{
 			Code: 0,
@@ -34,8 +35,9 @@ func BGPAnalysisBetweenness(c *gin.Context) {
 }
 
 func BGPAnalysisCloseness(c *gin.Context) {
+	name := c.Param("name")
 	asn := c.Query("asn")
-	closeness := graph.GetBgpCloseness()
+	closeness := graph.GetBgpCloseness(name)
 	if asn == "" {
 		c.JSON(200, Resp{
 			Code: 0,
@@ -59,5 +61,4 @@ func BGPAnalysisCloseness(c *gin.Context) {
 	} else {
 		c.JSON(404, RespErrASNNotFound)
 	}
-
 }

@@ -58,19 +58,20 @@ func main() {
 	log.Println("run web")
 	r := gin.Default()
 	r.Use(middleware.Cors())
+	// ospf
 	r.GET("/api/ospf/:asn", controller.OSPF)
 	r.GET("/api/ospf/uptime/:routerId/recent", controller.OSPFRecentUptime)
-	r.GET("/api/bgp", controller.BGP)
 
-	up := r.Group("/api/bgp/uptime", func(c *gin.Context) {
+	// bgp
+	r.GET("/api/bgp/:name", controller.BGP)
+	up := r.Group("/api/bgp/:name/uptime", func(c *gin.Context) {
 		if conf.Influxdb.Addr == "" {
 			c.AbortWithStatusJSON(403, controller.RespErrNotEnabled)
 		}
 	})
 	up.GET("/:asn/recent", controller.BGPRecentUptime)
 	up.GET("/:asn/links", controller.BGPLinks)
-
-	ana := r.Group("/api/bgp/analysis", func(c *gin.Context) {
+	ana := r.Group("/api/bgp/:name/analysis", func(c *gin.Context) {
 		if !conf.Analysis {
 			c.AbortWithStatusJSON(403, controller.RespErrNotEnabled)
 		}
@@ -78,7 +79,11 @@ func main() {
 	ana.GET("/betweenness", controller.BGPAnalysisBetweenness)
 	ana.GET("/closeness", controller.BGPAnalysisCloseness)
 
+	// others
 	r.GET("/api/list", controller.List)
+	r.GET("/api/config", controller.Config)
+
+	// static
 	r.StaticFS("/assets/", &staticRouter{"/static/assets"})
 	r.StaticFileFS("/avatar.png", "/static/avatar.png", http.FS(FS))
 	r.StaticFileFS("/", "/", &staticRouter{"/static"})

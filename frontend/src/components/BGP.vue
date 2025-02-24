@@ -1,3 +1,4 @@
+<!-- eslint-disable @typescript-eslint/no-explicit-any -->
 <script lang="ts" setup>
 import { use } from 'echarts/core'
 import { CanvasRenderer } from 'echarts/renderers'
@@ -13,9 +14,11 @@ import BGPUptime from './uptime/BGPUptime.vue'
 import { useDark } from '@vueuse/core'
 import { mergeObjects } from '../utils/obj'
 import { useGraph, useGraphEvent } from '@/state/graph'
-import { onBeforeRouteLeave } from 'vue-router'
+import { useRoute, onBeforeRouteLeave } from 'vue-router'
 import { dispatchEchartAction } from '@/state/graph'
 import { useASMeta } from '@/state/meta'
+import { fontColor } from '@/state/font'
+import { setUpdatedTime } from '@/state/updated_time'
 
 const isDark = useDark()
 
@@ -49,15 +52,17 @@ interface Params<T> {
 }
 
 use([CanvasRenderer, GraphChart, TooltipComponent, TitleComponent])
-
 const { option, selectList, loading: graphLoading } = useGraph()
+
+const route = useRoute()
+const name = computed<string>(() => route.params.name as string)
 
 graphLoading.value = true
 
 option.title = {
   text: 'DN11 & Vidar Network',
   textStyle: {
-    color: computed(() => (isDark.value ? '#E5EAF3' : 'black')),
+    color: fontColor,
   },
   subtext: computed(
     () =>
@@ -353,6 +358,7 @@ watch([nodes, edges], async () => {
 
   option.series[0].force.edgeLength[1] = nodes.value.length * 3.5
   option.series[0].force.friction = 0.15
+  if (bgpData.value?.updated_at) setUpdatedTime(bgpData.value?.updated_at)
   graphLoading.value = false
 })
 
@@ -388,14 +394,17 @@ watch([nodes, ASMeta], () => {
   })
 })
 
-async function loadData() {
-  bgpData.value = await getBGP()
-  closeness.value = await getCloseness()
-  betweenness.value = await getBetweenness()
+async function loadData(name: string) {
+  bgpData.value = await getBGP(name)
+  closeness.value = await getCloseness(name)
+  betweenness.value = await getBetweenness(name)
 }
-loadData()
+watch(name, loadData, {
+  immediate: true,
+})
+
 const interval = setInterval(() => {
-  loadData()
+  loadData(name.value)
 }, 60 * 1000)
 
 let timer: ReturnType<typeof setTimeout>

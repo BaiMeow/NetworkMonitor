@@ -6,6 +6,7 @@ import (
 	"github.com/BaiMeow/NetworkMonitor/db"
 	"github.com/BaiMeow/NetworkMonitor/graph"
 	"log"
+	"maps"
 	"time"
 )
 
@@ -28,26 +29,26 @@ func tickerInsertDB() {
 	}()
 	for {
 		now := <-tk
-		gr := graph.GetBGP()
-		if gr == nil {
-			continue
-		}
-		data, t := gr.GetData()
-		if t.Add(2 * conf.Interval).Before(now) {
-			continue
-		}
-		mp := make(map[uint32]int, len(data.AS))
-		for _, as := range data.AS {
-			mp[as.ASN] = 0
-		}
-		for _, lk := range data.Link {
-			mp[lk.Src]++
-			mp[lk.Dst]++
-		}
-		err := db.BatchRecordASUp(mp, t)
-		log.Printf("record as %d links %d at %v", len(mp), len(data.Link), now)
-		if err != nil {
-			log.Println(fmt.Errorf("record as up fail:%v", err))
+		grs:= graph.GetAllBGP()
+		for gr :=range maps.Values(grs){
+			data, t := gr.GetData()
+			if t.Add(2 * conf.Interval).Before(now) {
+				continue
+			}
+			mp := make(map[uint32]int, len(data.AS))
+			for _, as := range data.AS {
+				mp[as.ASN] = 0
+			}
+			for _, lk := range data.Link {
+				mp[lk.Src]++
+				mp[lk.Dst]++
+			}
+			//TODO: fix for multi bgp graph
+			err := db.BatchRecordASUp(mp, t)
+			log.Printf("record as %d links %d at %v", len(mp), len(data.Link), now)
+			if err != nil {
+				log.Println(fmt.Errorf("record as up fail:%v", err))
+			}
 		}
 	}
 }

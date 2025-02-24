@@ -1,3 +1,4 @@
+<!-- eslint-disable @typescript-eslint/no-explicit-any -->
 <script lang="ts" setup>
 import { watch, computed, ref } from 'vue'
 
@@ -5,15 +6,16 @@ import { use } from 'echarts/core'
 import { CanvasRenderer } from 'echarts/renderers'
 import { GraphChart } from 'echarts/charts'
 import { TooltipComponent, TitleComponent } from 'echarts/components'
-import { ECElementEvent } from 'echarts'
 
-import { getOSPF } from '../api/ospf'
+import { getOSPF, Router } from '../api/ospf'
 import { ElementOf, useDark } from '@vueuse/core'
 import { onBeforeRouteLeave, useRoute } from 'vue-router'
 import { useGraph, useGraphEvent } from '@/state/graph'
 
 import { dispatchEchartAction } from '@/state/graph'
 import { useASMeta } from '@/state/meta'
+import { fontColor } from '@/state/font'
+import { setUpdatedTime } from '@/state/updated_time'
 
 const route = useRoute()
 use([CanvasRenderer, GraphChart, TooltipComponent, TitleComponent])
@@ -58,7 +60,7 @@ option.title = {
       : `AS ${asn.value}`,
   ),
   textStyle: {
-    color: computed(() => (isDark.value ? '#E5EAF3' : 'black')),
+    color: fontColor,
   },
   subtext: computed(
     () => `Nodes: ${nodes.value?.length || 0}  Peers: ${peers.value || 0}`,
@@ -135,7 +137,7 @@ option.series = [
       show: true,
       formatter: (params: any) => params.data.cost,
       padding: 0,
-      color: computed(() => (isDark.value ? '#E5EAF3' : 'black')),
+      color: fontColor,
     },
     data: [],
     links: [],
@@ -178,13 +180,13 @@ onBeforeRouteLeave(() => {
 })
 
 const all_links = computed(() =>
-  ospfData.value
-    ?.flatMap((area) => area.links)
+  ospfData.value?.graph
+    .flatMap((area) => area.links)
     .filter((link) => link !== undefined),
 )
 
 const all_routers = computed(() =>
-  ospfData.value?.reduce(
+  ospfData.value?.graph.reduce<Array<Router>>(
     (routers, cur) => {
       cur.router.forEach((r) => {
         if (
@@ -199,7 +201,7 @@ const all_routers = computed(() =>
 )
 
 const nodes = computed(() =>
-  ospfData.value?.reduce((nodes, cur) => {
+  ospfData.value?.graph.reduce((nodes, cur) => {
     cur.router.forEach((router) => {
       let index = nodes.findIndex((r) => r.name == router.router_id)
       if (index !== -1) {
@@ -257,7 +259,7 @@ const edges = computed(() =>
             lk.src === cur.dst && lk.dst === cur.src && lk.cost === cur.cost,
         )
         if (pair_idx !== -1) {
-          links.splice(pair_idx, 1)[0]
+          links.splice(pair_idx, 1)
           lines.push(cur)
         } else {
           arrows.push(cur)
@@ -346,6 +348,7 @@ const renderData = async () => {
   option.series[0].force.repulsion = 200
   option.series[0].data = nodes
   option.series[0].links = edges
+  if (ospfData.value) setUpdatedTime(ospfData.value?.updated_at)
 }
 
 watch([nodes], () => {
@@ -375,10 +378,10 @@ watch(
   { immediate: true },
 )
 
-let timer: NodeJS.Timeout | null = null
+let timer: ReturnType<typeof setTimeout> | null = null
 
 const { handleMouseUp, handleMouseDown } = useGraphEvent()
-handleMouseDown.value = (_: ECElementEvent) => {
+handleMouseDown.value = () => {
   if (timer) {
     clearTimeout(timer)
   }
@@ -386,7 +389,7 @@ handleMouseDown.value = (_: ECElementEvent) => {
   option.series[0].force.layoutAnimation = true
 }
 
-handleMouseUp.value = (_: ECElementEvent) => {
+handleMouseUp.value = () => {
   timer = setTimeout(() => {
     option.series[0].force.layoutAnimation = false
   }, 6000)
@@ -399,5 +402,7 @@ onBeforeRouteLeave(() => {
 })
 </script>
 
-<template></template>
+<template>
+  <div></div>
+</template>
 <style scoped></style>

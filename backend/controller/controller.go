@@ -30,3 +30,8 @@ var RespErrNotEnabled = Resp{
 	Code: -5,
 	Msg:  "api not enabled",
 }
+
+var RespErrBGPGraphNotFound = Resp{
+	Code: -6,
+	Msg: "specified bgp graph not found",
+}

@@ -1,6 +1,7 @@
 package graph
 
 import (
+	"context"
 	"fmt"
 	"github.com/BaiMeow/NetworkMonitor/conf"
 	"github.com/BaiMeow/NetworkMonitor/graph/analysis"
@@ -25,11 +26,13 @@ type baseGraph[T entity.DrawType] struct {
 	updatedAt time.Time
 
 	probes []*Probe[T]
+
+	Draw func(ctx context.Context)
 }
 
-func (g *baseGraph[T]) Draw() {
-	panic("implement me")
-}
+//func (g *baseGraph[T]) Draw() {
+//	panic("implement me")
+//}
 
 func (g *baseGraph[T]) CleanUp() {
 	g.disabled = true
@@ -63,7 +66,7 @@ func (g *baseGraph[T]) SetProbe(probe conf.Probe) error {
 		go func(oldp *Probe[T]) {
 			err := oldp.CleanUp()
 			if err != nil {
-				log.Printf("clean up %s: %v", probe.Name, err)
+				log.Printf("clean up %s: %v", oldp.Name, err)
 			}
 		}(g.probes[idx])
 		g.probes[idx] = p
@@ -84,9 +87,18 @@ func (g *baseGraph[T]) UpdateProbes(confs []conf.Probe) error {
 	var errs []error
 
 	g.probes = slices.DeleteFunc(g.probes, func(p *Probe[T]) bool {
-		return slices.IndexFunc(confs, func(probe conf.Probe) bool {
+		if slices.IndexFunc(confs, func(probe conf.Probe) bool {
 			return probe.Name == p.Name
-		}) == -1
+		}) == -1 {
+			go func(oldp *Probe[T]) {
+				err := oldp.CleanUp()
+				if err != nil {
+					log.Printf("clean up %s: %v", oldp.Name, err)
+				}
+			}(p)
+			return true
+		}
+		return false
 	})
 
 	for _, c := range confs {
@@ -139,7 +151,10 @@ func (b *BGP) Draw() {
 		return
 	}
 
-	data := new(entity.BGP)
+	data := &entity.BGP{
+		AS:   make([]*entity.AS, 0),
+		Link: make([]entity.ASLink, 0),
+	}
 	for _, p := range b.probes {
 		e, err := p.Draw()
 		if err != nil {

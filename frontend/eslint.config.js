@@ -8,7 +8,7 @@ import pluginVue from "eslint-plugin-vue";
 export default [
   {
     files: ["**/*.{js,mjs,cjs,ts,vue}"],
-    rules: { "@typescript-eslint/no-explicit-any": "info" }
+    rules: { "@typescript-eslint/no-explicit-any": "off" }
   },
   { languageOptions: { globals: globals.browser } },
   pluginJs.configs.recommended,
