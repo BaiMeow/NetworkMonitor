@@ -1,28 +1,18 @@
 package graph
 
 import (
-	"fmt"
 	"github.com/BaiMeow/NetworkMonitor/conf"
-	"github.com/BaiMeow/NetworkMonitor/graph/entity"
 	"github.com/BaiMeow/NetworkMonitor/utils"
 	"log"
+	"maps"
 	"strconv"
 	"sync"
 	"time"
 )
 
-func newAndAddProbe[T entity.DrawType](graph Graph, probe conf.Probe) error {
-	p, err := NewProbe[T](probe)
-	if err != nil {
-		return fmt.Errorf("contruct probe fail: %v\n", err)
-	}
-	graph.AddProbe(p)
-	return nil
-}
-
-func recreateGraph() {
-	ospfNew := make(map[uint32]*OSPF)
-	bgpNew := make(map[string]*BGP)
+func patchGraphList() {
+	ospfNew := make(map[uint32][]conf.Probe)
+	bgpNew := make(map[string][]conf.Probe)
 
 	for _, probe := range conf.Probes {
 		switch probe.Draw.Type() {
@@ -32,40 +22,54 @@ func recreateGraph() {
 				log.Printf("parse drawer failed: %v\n", err)
 				continue
 			}
-			if _, ok := ospfNew[asn]; !ok {
-				ospfNew[asn] = &OSPF{asn: asn}
-			}
-			if err := newAndAddProbe[*entity.OSPF](ospfNew[asn], probe); err != nil {
-				log.Printf("add probe %s: %v", probe.Name, err)
-				continue
-			}
+			ospfNew[asn] = append(ospfNew[asn], probe)
 		case "bgp":
 			name, ok := probe.Draw["name"].(string)
 			if !ok {
 				log.Printf("bgp graph name field not found")
 				continue
 			}
-			if _, ok := bgpNew[name]; !ok {
-				bgpNew[name] = &BGP{name: name}
-			}
-			if err := newAndAddProbe[*entity.BGP](bgpNew[name], probe); err != nil {
-				log.Printf("add probe %s: %v", probe.Name, err)
-				continue
-			}
+			bgpNew[name] = append(bgpNew[name], probe)
 		default:
 			log.Printf("unknown draw type %s", probe.Draw.Type())
 		}
 	}
 
+	log.Println("start updating probes, service paused")
 	fullLock.Lock()
-	bgp = bgpNew
-	ospf = ospfNew
-	fullLock.Unlock()
+	defer fullLock.Unlock()
+	maps.DeleteFunc(ospf, func(k uint32, v *OSPF) bool {
+		return ospfNew[k] == nil
+	})
+	maps.DeleteFunc(bgp, func(k string, v *BGP) bool {
+		return bgpNew[k] == nil
+	})
+	for k, v := range ospfNew {
+		if ospf[k] == nil {
+			ospf[k] = &OSPF{asn: k}
+		}
+		err := ospf[k].UpdateProbes(v)
+		if err != nil {
+			log.Printf("config ospf graph %d fail: %v", k, err)
+			continue
+		}
+	}
+	for k, v := range bgpNew {
+		if bgp[k] == nil {
+			bgp[k] = &BGP{name: k}
+		}
+		err := bgp[k].UpdateProbes(v)
+		if err != nil {
+			log.Printf("config bgp graph %s fail: %v", k, err)
+			continue
+		}
+	}
+	log.Println("update probes done")
 }
 
 func Init() error {
 	// update graph
-	recreateGraph()
+	patchGraphList()
 	draw()
 
 	ticker := time.NewTicker(conf.Interval)
@@ -84,7 +88,7 @@ func Init() error {
 		for _, gr := range bgp {
 			go gr.CleanUp()
 		}
-		recreateGraph()
+		patchGraphList()
 	}
 	return nil
 }

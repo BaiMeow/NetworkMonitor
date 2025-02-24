@@ -1,25 +1,21 @@
 package graph
 
 import (
+	"fmt"
 	"github.com/BaiMeow/NetworkMonitor/conf"
 	"github.com/BaiMeow/NetworkMonitor/graph/analysis"
 	"github.com/BaiMeow/NetworkMonitor/graph/entity"
 	"log"
+	"slices"
 	"sync"
 	"time"
 )
 
 var (
 	fullLock sync.RWMutex
-	ospf     map[uint32]*OSPF
-	bgp      map[string]*BGP
+	ospf     = make(map[uint32]*OSPF)
+	bgp      = make(map[string]*BGP)
 )
-
-type Graph interface {
-	AddProbe(probe any)
-	Draw()
-	CleanUp()
-}
 
 type baseGraph[T entity.DrawType] struct {
 	lock     sync.RWMutex
@@ -48,14 +44,63 @@ func (g *baseGraph[T]) CleanUp() {
 	}
 }
 
-func (g *baseGraph[T]) AddProbe(probe any) {
-	g.probes = append(g.probes, probe.(*Probe[T]))
+func (g *baseGraph[T]) SetProbe(probe conf.Probe) error {
+	idx := slices.IndexFunc(g.probes, func(p *Probe[T]) bool {
+		return p.Name == probe.Name
+	})
+	if idx != -1 && g.probes[idx].conf.Compare(&probe) {
+		return nil
+	}
+
+	p, err := NewProbe[T](probe)
+	if err != nil {
+		return fmt.Errorf("contruct probe fail: %v\n", err)
+	}
+
+	if idx == -1 {
+		g.probes = append(g.probes, p)
+	} else {
+		go func(oldp *Probe[T]) {
+			err := oldp.CleanUp()
+			if err != nil {
+				log.Printf("clean up %s: %v", probe.Name, err)
+			}
+		}(g.probes[idx])
+		g.probes[idx] = p
+	}
+	return nil
 }
 
 func (g *baseGraph[T]) GetData() (T, time.Time) {
 	g.lock.RLock()
 	defer g.lock.RUnlock()
 	return g.data, g.updatedAt
+}
+
+func (g *baseGraph[T]) UpdateProbes(confs []conf.Probe) error {
+	g.lock.Lock()
+	defer g.lock.Unlock()
+
+	var errs []error
+
+	g.probes = slices.DeleteFunc(g.probes, func(p *Probe[T]) bool {
+		return slices.IndexFunc(confs, func(probe conf.Probe) bool {
+			return probe.Name == p.Name
+		}) == -1
+	})
+
+	for _, c := range confs {
+		err := g.SetProbe(c)
+		if err != nil {
+			errs = append(errs, err)
+		}
+	}
+
+	if errs != nil {
+		return fmt.Errorf("update probes: %v", errs)
+	}
+
+	return nil
 }
 
 type OSPF struct {

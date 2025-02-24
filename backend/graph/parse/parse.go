@@ -16,5 +16,10 @@ func Register[T entity.DrawType](name string, spawnFunc ParserSpawner[T]) {
 }
 
 func GetSpawner[T entity.DrawType](name string) ParserSpawner[T] {
+	defer func() {
+		if r := recover(); r != nil {
+			return
+		}
+	}()
 	return registry[name].(ParserSpawner[T])
 }

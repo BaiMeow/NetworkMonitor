@@ -1,12 +1,28 @@
 package conf
 
-import "time"
+import (
+	"maps"
+	"time"
+)
 
 type Probe struct {
 	Name  string
 	Parse Parser
 	Fetch Fetcher
 	Draw  Drawer
+}
+
+func (p *Probe) Compare(p2 *Probe) bool {
+	if p == nil && p2 != nil || p != nil && p2 == nil {
+		return false
+	}
+	if p == nil {
+		return true
+	}
+	return p.Name == p2.Name &&
+		maps.Equal(p.Parse, p2.Parse) &&
+		maps.Equal(p.Fetch, p2.Fetch) &&
+		maps.Equal(p.Draw, p2.Draw)
 }
 
 type Parser map[string]any

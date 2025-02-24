@@ -17,9 +17,10 @@ type Probe[T entity.DrawType] struct {
 	Name   string
 	Fetch  fetch.Fetcher
 	Parser parse.Parser[T]
+	conf   conf.Probe
 }
 
-func NewProbe[T entity.DrawType](p conf.Probe) (any, error) {
+func NewProbe[T entity.DrawType](p conf.Probe) (*Probe[T], error) {
 	if fetch.Spawn[p.Fetch.Type()] == nil {
 		return nil, fmt.Errorf("invalid fetch type:%v", p.Fetch.Type())
 	}
@@ -35,6 +36,7 @@ func NewProbe[T entity.DrawType](p conf.Probe) (any, error) {
 		return nil, fmt.Errorf("spawn parser fail:%v", err)
 	}
 	return &Probe[T]{
+		conf:   p,
 		Name:   p.Name,
 		Fetch:  fetcher,
 		Parser: parser,
