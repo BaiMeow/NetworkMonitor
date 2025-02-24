@@ -13,7 +13,7 @@ export interface Link {
   cost: number
 }
 
-export interface Area{
+export interface Area {
   area_id: string
   router: Router[]
   links: Link[]
@@ -21,7 +21,7 @@ export interface Area{
 
 export interface OSPF {
   graph: Area[]
-  updated_at: Date
+  updated_at: Date | null
 }
 
 export async function getOSPF(asn: number) {
@@ -29,6 +29,7 @@ export async function getOSPF(asn: number) {
   if (data.code !== 0) {
     throw new Error(data.msg)
   }
-  data.data.updated_at = new Date(data.data.updated_at)
+  if (data.data.updated_at)
+    data.data.updated_at = new Date(data.data.updated_at)
   return data.data
 }

@@ -8,6 +8,7 @@ import (
 	"github.com/BaiMeow/NetworkMonitor/graph/entity"
 	"log"
 	"slices"
+	"strconv"
 	"sync"
 	"time"
 )
@@ -118,9 +119,12 @@ func (g *baseGraph[T]) StartDrawDaemon() {
 	ctx, cancel := context.WithCancel(context.Background())
 	g.daemonCancel = cancel
 	Timer := time.NewTimer(conf.Interval)
+	waitFirstLoad := make(chan struct{})
 	go func() {
+		once := sync.OnceFunc(func() {
+			close(waitFirstLoad)
+		})
 		for {
-			<-Timer.C
 			ctx, cancel := context.WithCancel(ctx)
 			alert := time.AfterFunc(conf.ProbeTimeout, func() {
 				log.Printf("probe %s timeout, cancelled", g.name)
@@ -133,9 +137,12 @@ func (g *baseGraph[T]) StartDrawDaemon() {
 			if dur > conf.ProbeTimeout/2 {
 				log.Printf("probe %s slow draw: %v\n", g.name, dur)
 			}
+			once()
 			Timer.Reset(conf.Interval)
+			<-Timer.C
 		}
 	}()
+	<-waitFirstLoad
 }
 
 type OSPF struct {
@@ -144,10 +151,16 @@ type OSPF struct {
 }
 
 func newOSPFGraph(asn uint32) *OSPF {
-	gr := &OSPF{}
+	gr := &OSPF{
+		baseGraph: baseGraph[*entity.OSPF]{
+			name: strconv.FormatUint(uint64(asn), 10),
+			data: &entity.OSPF{},
+		},
+		asn: asn,
+	}
 	gr.asn = asn
 	gr.baseGraph.Draw = gr.Draw
-	gr.baseGraph.name = fmt.Sprintf("AS%d", asn)
+	gr.baseGraph.name = strconv.FormatUint(uint64(asn), 10)
 	return gr
 }
 
@@ -178,6 +191,7 @@ func (o *OSPF) Draw(ctx context.Context) {
 	if success > 0 {
 		o.data = data
 		o.updatedAt = time.Now()
+		notifyEventUpdate("ospf", o.name)
 	}
 }
 
@@ -188,9 +202,16 @@ type BGP struct {
 }
 
 func newBGPGraph(name string) *BGP {
-	gr := &BGP{}
+	gr := &BGP{
+		baseGraph: baseGraph[*entity.BGP]{
+			name: name,
+			data: &entity.BGP{
+				AS:   make([]*entity.AS, 0),
+				Link: make([]entity.ASLink, 0),
+			},
+		},
+	}
 	gr.baseGraph.Draw = gr.Draw
-	gr.baseGraph.name = name
 	return gr
 }
 
@@ -240,5 +261,6 @@ func (b *BGP) Draw(ctx context.Context) {
 		b.closeness = cl
 		b.data = data
 		b.updatedAt = time.Now()
+		notifyEventUpdate("bgp", b.name)
 	}
 }

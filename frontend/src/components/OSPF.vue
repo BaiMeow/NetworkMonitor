@@ -53,6 +53,11 @@ const ASMeta = useASMeta()
 
 const asn = computed<string>(() => route.params.asn as string)
 
+import { updatedData } from '@/state/event'
+watch(updatedData, (data) => {
+  if (data?.type === 'ospf' && data.key === asn.value + '') loadData()
+})
+
 option.title = {
   text: computed(() =>
     ASMeta.value?.metadata?.[asn.value]?.display

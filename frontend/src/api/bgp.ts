@@ -4,7 +4,7 @@ import { Resp, ApiHost } from './consts'
 export interface BGP {
   as: AS[]
   link: Link[]
-  updated_at: Date
+  updated_at: Date | null
 }
 
 export interface AS {
@@ -23,7 +23,8 @@ export async function getBGP(name: string) {
   if (data.code !== 0) {
     throw new Error(data.msg)
   }
-  data.data.updated_at = new Date(data.data.updated_at)
+  if (data.data.updated_at)
+    data.data.updated_at = new Date(data.data.updated_at)
   return data.data
 }
 

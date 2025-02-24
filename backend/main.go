@@ -55,6 +55,8 @@ func main() {
 		uptime.Init()
 	}
 
+	controller.Init()
+
 	log.Println("run web")
 	r := gin.Default()
 	r.Use(middleware.Cors())
@@ -82,6 +84,9 @@ func main() {
 	// others
 	r.GET("/api/list", controller.List)
 	r.GET("/api/config", controller.Config)
+
+	// sse
+	r.GET("/api/update", controller.HeadersMiddleware(), controller.Stream.ServeHTTP(), controller.UpdateEvent)
 
 	// static
 	r.StaticFS("/assets/", &staticRouter{"/static/assets"})

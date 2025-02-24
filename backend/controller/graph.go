@@ -2,8 +2,10 @@ package controller
 
 import (
 	"github.com/BaiMeow/NetworkMonitor/service/graph"
+	"github.com/BaiMeow/NetworkMonitor/utils"
 	"github.com/gin-gonic/gin"
 	"strconv"
+	"time"
 )
 
 func OSPF(c *gin.Context) {
@@ -21,7 +23,7 @@ func OSPF(c *gin.Context) {
 		Code: 0,
 		Msg:  "ok",
 		Data: gin.H{
-			"updated_at": t,
+			"updated_at": ZeroTimeAsNull(t),
 			"graph":      gh,
 		},
 	})
@@ -40,7 +42,7 @@ func BGP(c *gin.Context) {
 		Data: gin.H{
 			"as":         gh.AS,
 			"link":       gh.Link,
-			"updated_at": t,
+			"updated_at": ZeroTimeAsNull(t),
 		},
 	})
 }
@@ -52,4 +54,11 @@ func List(c *gin.Context) {
 		Msg:  "ok",
 		Data: ls,
 	})
+}
+
+func ZeroTimeAsNull(t time.Time) *time.Time {
+	if t == utils.Zero[time.Time]() {
+		return nil
+	}
+	return &t
 }
