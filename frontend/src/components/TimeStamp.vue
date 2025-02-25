@@ -7,7 +7,7 @@ const updated_time = useUpdatedTime()
 <template>
   <div
     v-if="updated_time"
-    :class="new Date() - updated_time > 1000 * 60 ? 'old-alert' : ''"
+    :class="new Date().valueOf() - updated_time.valueOf() > 1000 * 60 ? 'old-alert' : ''"
     class="time-stamp"
   >
     <i-ep:refresh class="time-stamp-icon" /><span class="time-stamp-text">{{
