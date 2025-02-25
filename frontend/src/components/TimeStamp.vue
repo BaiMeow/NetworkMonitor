@@ -5,7 +5,11 @@ const updated_time = useUpdatedTime()
 </script>
 
 <template>
-  <div v-if="updated_time" class="time-stamp">
+  <div
+    v-if="updated_time"
+    :class="new Date() - updated_time > 1000 * 60 ? 'old-alert' : ''"
+    class="time-stamp"
+  >
     <i-ep:refresh class="time-stamp-icon" /><span class="time-stamp-text">{{
       updated_time.toLocaleTimeString()
     }}</span>
@@ -14,6 +18,7 @@ const updated_time = useUpdatedTime()
 
 <style lang="css" scoped>
 .time-stamp {
+  color: whitesmoke;
   font-weight: 600;
   background-color: rgb(255, 157, 87);
   padding: 2px 4px;
@@ -29,5 +34,13 @@ const updated_time = useUpdatedTime()
 
 .dark .time-stamp {
   background-color: chocolate;
+}
+
+.old-alert {
+  background-color: rgb(227, 38, 38);
+}
+
+.dark .old-alert {
+  background-color: rgb(188, 18, 18);
 }
 </style>
