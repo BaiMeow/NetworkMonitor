@@ -128,14 +128,14 @@ func (g *baseGraph[T]) StartDrawDaemon() {
 			ctx, cancel := context.WithCancel(ctx)
 			t := time.Now()
 			alert := time.AfterFunc(conf.ProbeTimeout, func() {
-				log.Printf("probe %s timeout, cancelled", g.name)
+				log.Printf("graph %s timeout, cancelled", g.name)
 				cancel()
 			})
 			g.Draw(ctx)
 			alert.Stop()
 			dur := time.Since(t)
 			if dur > conf.ProbeTimeout/2 {
-				log.Printf("probe %s slow draw: %v\n", g.name, dur)
+				log.Printf("graph %s slow draw: %v\n", g.name, dur)
 			}
 			once()
 			Timer.Reset(conf.Interval)
@@ -171,19 +171,28 @@ func (o *OSPF) Draw(ctx context.Context) {
 
 	var success int
 	data := new(entity.OSPF)
+	var drawLock sync.Mutex
 
 	func() {
 		o.probesLock.Lock()
 		defer o.probesLock.Unlock()
+		var wg sync.WaitGroup
 		for _, p := range o.probes {
-			gr, err := p.Draw(ctx)
-			if err != nil {
-				log.Printf("probe %s error: %v", p.Name, err)
-				continue
-			}
-			success++
-			data.Merge(gr)
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
+				gr, err := p.Draw(ctx)
+				if err != nil {
+					log.Printf("probe %s error: %v", p.Name, err)
+					return
+				}
+				success++
+				drawLock.Lock()
+				defer drawLock.Unlock()
+				data.Merge(gr)
+			}()
 		}
+		wg.Wait()
 	}()
 
 	o.dataLock.Lock()
@@ -224,22 +233,32 @@ func (b *BGP) Draw(ctx context.Context) {
 	}
 
 	var success int
+	var drawLock sync.Mutex
 	data := &entity.BGP{
 		AS:   make([]*entity.AS, 0),
 		Link: make([]entity.ASLink, 0),
 	}
+
 	func() {
 		b.probesLock.Lock()
 		defer b.probesLock.Unlock()
+		var wg sync.WaitGroup
 		for _, p := range b.probes {
-			e, err := p.Draw(ctx)
-			if err != nil {
-				log.Printf("probe %s fail: %v", p.Name, err)
-				continue
-			}
-			success++
-			data.Merge(e)
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
+				e, err := p.Draw(ctx)
+				if err != nil {
+					log.Printf("probe %s fail: %v", p.Name, err)
+					return
+				}
+				success++
+				drawLock.Lock()
+				defer drawLock.Unlock()
+				data.Merge(e)
+			}()
 		}
+		wg.Wait()
 	}()
 
 	bt := make(map[uint32]float64)

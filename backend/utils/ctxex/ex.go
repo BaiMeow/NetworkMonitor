@@ -1,11 +1,11 @@
-package utils
+package ctxex
 
 import (
 	"context"
 	"io"
 )
 
-func CtxWarp(ctx context.Context, f func() error) error {
+func Warp(ctx context.Context, f func() error) error {
 	err := make(chan error)
 	go func() {
 		err <- f()
@@ -18,7 +18,7 @@ func CtxWarp(ctx context.Context, f func() error) error {
 	}
 }
 
-func CtxCheckDone(ctx context.Context) bool {
+func CheckDone(ctx context.Context) bool {
 	select {
 	case <-ctx.Done():
 		return true
@@ -27,12 +27,12 @@ func CtxCheckDone(ctx context.Context) bool {
 	}
 }
 
-func CtxReadAll(ctx context.Context, r io.Reader) ([]byte, error) {
+func IoReadAll(ctx context.Context, r io.Reader) ([]byte, error) {
 	b := make([]byte, 0, 512)
-	err := CtxWarp(ctx, func() error {
+	err := Warp(ctx, func() error {
 		for {
 			n, err := r.Read(b[len(b):cap(b)])
-			if CtxCheckDone(ctx) {
+			if CheckDone(ctx) {
 				return context.Cause(ctx)
 			}
 			b = b[:len(b)+n]

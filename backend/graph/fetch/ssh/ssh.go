@@ -5,7 +5,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"github.com/BaiMeow/NetworkMonitor/graph/fetch"
-	"github.com/BaiMeow/NetworkMonitor/utils"
+	"github.com/BaiMeow/NetworkMonitor/utils/ctxex"
 	"golang.org/x/crypto/ssh"
 	"log"
 	"net"
@@ -88,21 +88,21 @@ func (s *SshWithPassword) GetData(ctx context.Context) (any, error) {
 
 	var output []byte
 
-	if err := utils.CtxWarp(ctx, func() error {
+	if err := ctxex.Warp(ctx, func() error {
 		c, err := ssh.Dial("tcp", net.JoinHostPort(s.Host, strconv.Itoa(s.Port)), cfg)
 		if err != nil {
 			return fmt.Errorf("fail to dial ssh: %v", err)
 		}
 		defer c.Close()
 
-		utils.CtxCheckDone(ctx)
+		ctxex.CheckDone(ctx)
 
 		ss, err := c.NewSession()
 		if err != nil {
 			return fmt.Errorf("fail to dial ssh: %v", err)
 		}
 		defer ss.Close()
-		utils.CtxCheckDone(ctx)
+		ctxex.CheckDone(ctx)
 
 		output, err = ss.CombinedOutput(s.Command)
 		if err != nil {

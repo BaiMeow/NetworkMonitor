@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/BaiMeow/NetworkMonitor/graph/fetch"
 	"github.com/BaiMeow/NetworkMonitor/utils"
+	"github.com/BaiMeow/NetworkMonitor/utils/ctxex"
 	"net/http"
 )
 
@@ -82,7 +83,7 @@ func (b *BirdLgGo) GetData(ctx context.Context) (any, error) {
 	}
 	defer resp.Body.Close()
 
-	rbody, err := utils.CtxReadAll(ctx, resp.Body)
+	rbody, err := ctxex.IoReadAll(ctx, resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("fail to read body:%v", err)
 	}

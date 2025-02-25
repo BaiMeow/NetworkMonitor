@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"github.com/BaiMeow/NetworkMonitor/graph/fetch"
 	"github.com/BaiMeow/NetworkMonitor/template"
-	"github.com/BaiMeow/NetworkMonitor/utils"
+	"github.com/BaiMeow/NetworkMonitor/utils/ctxex"
 	"github.com/pkg/sftp"
 	"golang.org/x/crypto/ssh"
 	"io"
@@ -98,13 +98,13 @@ func (s *WithPassword) GetData(ctx context.Context) (any, error) {
 
 	var content []byte
 
-	if err := utils.CtxWarp(ctx, func() error {
+	if err := ctxex.Warp(ctx, func() error {
 		c, err := ssh.Dial("tcp", net.JoinHostPort(s.Host, strconv.Itoa(s.Port)), cfg)
 		if err != nil {
 			return fmt.Errorf("fail to dial ssh: %v", err)
 		}
 		defer c.Close()
-		if utils.CtxCheckDone(ctx) {
+		if ctxex.CheckDone(ctx) {
 			return context.Cause(ctx)
 		}
 
@@ -113,7 +113,7 @@ func (s *WithPassword) GetData(ctx context.Context) (any, error) {
 			return fmt.Errorf("fail to dial sftp: %v", err)
 		}
 		defer sftpc.Close()
-		if utils.CtxCheckDone(ctx) {
+		if ctxex.CheckDone(ctx) {
 			return context.Cause(ctx)
 		}
 
@@ -121,7 +121,7 @@ func (s *WithPassword) GetData(ctx context.Context) (any, error) {
 		if err != nil {
 			return fmt.Errorf("fail to get filepath: %v", err)
 		}
-		if utils.CtxCheckDone(ctx) {
+		if ctxex.CheckDone(ctx) {
 			return context.Cause(ctx)
 		}
 
@@ -130,7 +130,7 @@ func (s *WithPassword) GetData(ctx context.Context) (any, error) {
 			return fmt.Errorf("fail to open file from sftp: %v", err)
 		}
 		defer file.Close()
-		if utils.CtxCheckDone(ctx) {
+		if ctxex.CheckDone(ctx) {
 			return context.Cause(ctx)
 		}
 

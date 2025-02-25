@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/BaiMeow/NetworkMonitor/graph/fetch"
-	"github.com/BaiMeow/NetworkMonitor/utils"
+	"github.com/BaiMeow/NetworkMonitor/utils/ctxex"
 	"net"
 	"strconv"
 )
@@ -45,5 +45,5 @@ func (t *Tcp) GetData(ctx context.Context) (any, error) {
 		return nil, fmt.Errorf("fail to dial tcp: %v", err)
 	}
 	defer conn.Close()
-	return utils.CtxReadAll(ctx, conn)
+	return ctxex.IoReadAll(ctx, conn)
 }
