@@ -126,12 +126,12 @@ func (g *baseGraph[T]) StartDrawDaemon() {
 		})
 		for {
 			ctx, cancel := context.WithCancel(ctx)
+			t := time.Now()
 			alert := time.AfterFunc(conf.ProbeTimeout, func() {
 				log.Printf("probe %s timeout, cancelled", g.name)
 				cancel()
 			})
 			g.Draw(ctx)
-			t := time.Now()
 			alert.Stop()
 			dur := time.Since(t)
 			if dur > conf.ProbeTimeout/2 {
