@@ -457,7 +457,12 @@ onBeforeRouteLeave(() => {
 
 <template>
   <Transition name="fade" appear>
-    <BGPUptime class="uptime" v-if="uptime_asn !== 0" :asn="uptime_asn" />
+    <BGPUptime
+      class="uptime"
+      v-if="uptime_asn !== 0"
+      :asn="uptime_asn"
+      :grName="name"
+    />
   </Transition>
 </template>
 

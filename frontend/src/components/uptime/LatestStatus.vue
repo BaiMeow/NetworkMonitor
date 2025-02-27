@@ -10,7 +10,8 @@ const props = defineProps<{
 <template>
   <div class="squares">
     <div
-      v-for="d in props.data"
+      v-for="(d, index) in props.data"
+      :key="index"
       class="square"
       :style="{
         backgroundColor: d ? upColor : downColor,

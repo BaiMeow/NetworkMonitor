@@ -1,3 +1,4 @@
+<!-- eslint-disable @typescript-eslint/no-explicit-any -->
 <script setup lang="ts">
 import { getUptimeLinks, UptimeLinks } from '@/api/uptime'
 import { ref, reactive, onUnmounted, computed, watch } from 'vue'
@@ -13,7 +14,8 @@ import { use } from 'echarts/core'
 import { parseDuration } from '@/utils/time'
 import { useDark } from '@vueuse/core'
 import { fontColor } from '@/state/font'
-const { asn, time } = defineProps<{
+const { grName, asn, time } = defineProps<{
+  grName: string
   asn: number
   time: string
 }>()
@@ -103,7 +105,7 @@ const option: any = reactive({
 })
 
 const refreshData = async () => {
-  data.value = await getUptimeLinks(asn, time, window.value)
+  data.value = await getUptimeLinks(grName, asn, time, window.value)
   option.series[0].data = data.value.map((d) => d.links)
   option.xAxis.data = data.value.map(
     (d) =>

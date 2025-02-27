@@ -2,7 +2,8 @@
 import { ref, onUnmounted } from 'vue'
 import { getUptimeRecent } from '@/api/uptime'
 
-const { asn } = defineProps<{
+const { grName, asn } = defineProps<{
+  grName: string
   asn: number
 }>()
 
@@ -20,7 +21,7 @@ const uptime10 = ref([
 ])
 
 const update = async () => {
-  const uptimes = await getUptimeRecent(asn)
+  const uptimes = await getUptimeRecent(grName, asn)
   uptime10.value = uptimes.slice(0, 10)
 }
 update()

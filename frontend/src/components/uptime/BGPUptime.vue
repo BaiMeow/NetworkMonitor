@@ -1,12 +1,13 @@
 <script setup lang="ts">
-import { useASMeta } from '@/state/meta';
+import { useASMeta } from '@/state/meta'
 import { ref } from 'vue'
 
-const { asn } = defineProps<{
+const { grName, asn } = defineProps<{
+  grName: string
   asn: number
 }>()
 
-const ASMeta = useASMeta();
+const ASMeta = useASMeta()
 
 const graph_mode = ref('24h')
 </script>
@@ -21,7 +22,7 @@ const graph_mode = ref('24h')
             : `AS ${asn}`
         }}
       </div>
-      <BGPLatestStatus class="status-bar" :asn="asn" />
+      <BGPLatestStatus :grName="grName" class="status-bar" :asn="asn" />
     </div>
     <div class="uptime-body">
       <div class="wrap-graph">
@@ -29,7 +30,12 @@ const graph_mode = ref('24h')
           <el-option value="24h" label="1 day" />
           <el-option value="168h" label="7 days" />
         </el-select>
-        <LinksHistory class="links-graph" :asn="asn" :time="graph_mode" />
+        <LinksHistory
+          class="links-graph"
+          :grName="grName"
+          :asn="asn"
+          :time="graph_mode"
+        />
       </div>
     </div>
   </div>

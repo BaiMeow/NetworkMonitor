@@ -13,8 +13,10 @@ interface UptimeLinksResp {
   links: number
 }
 
-export async function getUptimeRecent(asn: number) {
-  const res = await axios.get(`${ApiHost}/api/bgp/uptime/${asn}/recent`)
+export async function getUptimeRecent(grName: string, asn: number) {
+  const res = await axios.get(
+    `${ApiHost}/api/bgp/${grName}/uptime/${asn}/recent`,
+  )
   const data = res.data as Resp<UptimeRecent>
   if (data.code !== 0) {
     throw new Error(data.msg)
@@ -22,13 +24,21 @@ export async function getUptimeRecent(asn: number) {
   return data.data
 }
 
-export async function getUptimeLinks(asn: number,time: string,window: string) {
-  const res = await axios.get(`${ApiHost}/api/bgp/uptime/${asn}/links`,{
-    params: {
-      time,
-      window
-    }
-  })
+export async function getUptimeLinks(
+  grName: string,
+  asn: number,
+  time: string,
+  window: string,
+) {
+  const res = await axios.get(
+    `${ApiHost}/api/bgp/${grName}/uptime/${asn}/links`,
+    {
+      params: {
+        time,
+        window,
+      },
+    },
+  )
   const data = res.data as Resp<Array<UptimeLinksResp>>
   if (data.code !== 0) {
     throw new Error(data.msg)
@@ -36,7 +46,7 @@ export async function getUptimeLinks(asn: number,time: string,window: string) {
   return data.data.map((item) => {
     return {
       time: new Date(item.time),
-      links: item.links
+      links: item.links,
     }
   })
 }
