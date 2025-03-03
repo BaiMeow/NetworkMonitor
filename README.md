@@ -1,6 +1,6 @@
 # NetworkMonitor
 
-监测你的 Network 状态并绘制图表
+监测你的 Network 状态并绘制拓扑图
 
 monitor your network status with graph
 
@@ -23,6 +23,7 @@ monitor your network status with graph
 - [x] SFTP (模板式语法)
 - [x] RouterOS API
 - [x] HTTP
+- [x] BGP
 - [ ] Telnet
 - [ ] OSPF Broadcast
 
@@ -31,6 +32,7 @@ monitor your network status with graph
 - [x] Bird
 - [x] MRT
 - [x] RouterOS
+- [x] BGP
 - [ ] Quagga
 - [ ] OSPF Broadcast
 
@@ -99,7 +101,7 @@ OSPF graph don't support custom node style, so only display field applied in met
 
    cd to backend directory, run `go build`
 
-## 运行 run
+## 运行 launch
 
 将`config.yaml` 和构建好的二进制文件放在同一目录下，执行程序即可
 
@@ -114,3 +116,11 @@ influxdb uptime 功能还在试验中，不建议开启。
 custom title and icon is not supported in config, you should edit fronted code by yourself and compile them.
 
 influxdb uptime is under experiment, not recommanded.
+
+## Project DN11
+
+这个项目是去中心化网络 DN11 的一部分。
+
+This repo now included in Project DN11, a decentralized network.
+
+![image](https://github.com/user-attachments/assets/9d1b46b3-41d3-4bdb-8f89-ddf911531f37)
