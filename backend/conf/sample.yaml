@@ -16,8 +16,8 @@ uptime:
 metadataRedirect: ""
 
 probe:
-  # bgp mtr sftp
-  bgp-all:
+  # bgp mrt sftp
+  bgp1:
     fetch:
       type: sftp
       host: "1.1.1.1"
@@ -32,7 +32,34 @@ probe:
       type: mrt-addpath
     draw:
       type: bgp
-      name: dn11
+      name: bgp1
+  # bgp listen port 179
+  bgp2:
+    fetch: 
+      type: bgp
+      mode: listen
+      asn: 1
+      router-id: 1.1.1.1
+    parse:
+      type: bgp
+    draw:
+      type: bgp
+      name: bgp2
+  # bgp dial to collector
+  bgp3:
+    fetch: 
+      type: bgp
+      mode: dial
+      asn: 1
+      peer-asn: 2
+      router-id: 1.1.1.1
+      neighbor-addr: 172.16.0.1
+    parse:
+      type: bgp
+      left-shift: 1
+    draw:
+      type: bgp
+      name: bgp3
   # OSPF bird ssh
   AS1:
     fetch:
