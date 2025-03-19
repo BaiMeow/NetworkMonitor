@@ -1,11 +1,15 @@
 package controller
 
 import (
+	"fmt"
 	"github.com/BaiMeow/NetworkMonitor/service/uptime"
 	"github.com/gin-gonic/gin"
+	"regexp"
 	"strconv"
 	"time"
 )
+
+var bgpNameRegex = regexp.MustCompile("^[a-zA-Z0-9]+$")
 
 func BGPRecentUptime(c *gin.Context) {
 	u64asn, err := strconv.ParseUint(c.Param("asn"), 10, 32)
@@ -14,7 +18,12 @@ func BGPRecentUptime(c *gin.Context) {
 		return
 	}
 	asn := uint32(u64asn)
-	ups, err := uptime.Last10TickerRecord(asn)
+	bgpName := c.Param("name")
+	if !bgpNameRegex.MatchString(fmt.Sprintf("bgp-%s", bgpNameRegex)) {
+		c.JSON(400, RespErrParamInvalid)
+		return
+	}
+	ups, err := uptime.Last10TickerRecord(bgpName, asn)
 	if err != nil {
 		c.JSON(500, RespInternalError)
 		return
@@ -42,7 +51,12 @@ func BGPLinks(c *gin.Context) {
 		c.JSON(400, RespErrParamInvalid)
 		return
 	}
-	links, err := uptime.Links(uint32(u64asn), window, t)
+	bgpName := c.Param("name")
+	if !bgpNameRegex.MatchString(bgpName) {
+		c.JSON(400, RespErrParamInvalid)
+		return
+	}
+	links, err := uptime.Links(bgpName, uint32(u64asn), window, t)
 	if err != nil {
 		c.JSON(500, RespInternalError)
 		return

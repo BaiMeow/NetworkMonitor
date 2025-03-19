@@ -13,15 +13,15 @@ import (
 )
 
 var (
-	bgpWrite api.WriteAPIBlocking
-	bgpQuery api.QueryAPI
-	Enabled  = false
+	dbWrite api.WriteAPIBlocking
+	dbQuery api.QueryAPI
+	Enabled = false
 )
 
 var ErrDatabaseDisabled = fmt.Errorf("database not enabled")
 var ErrInvalidInput = fmt.Errorf("input parameter invalid")
 
-const bucketBGPUptime = "bgp-uptime"
+const bucketNetwork = "network"
 
 func Init() error {
 	if conf.Influxdb.Addr == "" {
@@ -35,22 +35,22 @@ func Init() error {
 	}
 
 	if slices.IndexFunc(*buckets, func(bucket domain.Bucket) bool {
-		return bucket.Name == bucketBGPUptime
+		return bucket.Name == bucketNetwork
 	}) == -1 {
-		log.Printf("create bucket %s\n", bucketBGPUptime)
+		log.Printf("create bucket %s\n", bucketNetwork)
 		org, err := c.OrganizationsAPI().FindOrganizationByName(context.Background(), conf.Influxdb.Org)
 		if err != nil {
 			return fmt.Errorf("org %s not existed:%v\n", conf.Influxdb.Org, err)
 		}
-		if _, err := c.BucketsAPI().CreateBucketWithName(context.Background(), org, bucketBGPUptime, domain.RetentionRule{
+		if _, err := c.BucketsAPI().CreateBucketWithName(context.Background(), org, bucketNetwork, domain.RetentionRule{
 			EverySeconds: int64(conf.Uptime.StoreDuration / time.Second),
 		}); err != nil {
 			return fmt.Errorf("create bucket fail:%v", err)
 		}
 	}
 
-	bgpWrite = c.WriteAPIBlocking(conf.Influxdb.Org, bucketBGPUptime)
-	bgpQuery = c.QueryAPI(conf.Influxdb.Org)
+	dbWrite = c.WriteAPIBlocking(conf.Influxdb.Org, bucketNetwork)
+	dbQuery = c.QueryAPI(conf.Influxdb.Org)
 
 	Enabled = true
 

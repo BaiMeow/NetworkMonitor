@@ -1,5 +1,5 @@
-interval: 60
-probeTimeout: 60
+interval: 10
+probeTimeout: 8
 port: 8787
 analysis: true
 # begin uptime
@@ -10,6 +10,7 @@ influxdb:
   token: 'token'
 uptime:
   store-duration: '168h'
+  interval: 10
 # end uptime
 
 # redirect metadata to another url

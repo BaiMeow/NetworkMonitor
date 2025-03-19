@@ -6,43 +6,32 @@ import (
 	"github.com/BaiMeow/NetworkMonitor/consts"
 	"github.com/BaiMeow/NetworkMonitor/db"
 	"github.com/BaiMeow/NetworkMonitor/utils"
-	"log"
 	"time"
 )
 
-func AllASNRecord() ([]uint32, error) {
+func AllASNRecord(bgpName string) ([]uint32, error) {
 	if !db.Enabled {
 		return nil, nil
 	}
-	ASNs, err := db.AllASRecordAfter(time.Now().Add(-conf.Uptime.StoreDuration))
+	ASNs, err := db.AllASRecordAfter(fmt.Sprintf("bgp-%s", bgpName), time.Now().Add(-conf.Uptime.StoreDuration))
 	if err != nil {
 		return nil, fmt.Errorf("get all recorded as fail:%v", err)
 	}
 	return ASNs, nil
 }
 
-func Last10TickerRecord(asn uint32) ([]bool, error) {
+func Last10TickerRecord(bgpName string, asn uint32) ([]bool, error) {
 	if !db.Enabled {
 		return nil, nil
 	}
-	last := utils.LastUptimeTick()
-	records, err := db.BGPASNLast10Tickers(asn, last)
+	records, err := db.BGPASNLast10Tickers(fmt.Sprintf("bgp-%s", bgpName), asn)
 	if err != nil {
 		return nil, fmt.Errorf("get last 10 tickers fail:%v", err)
 	}
-	up := make([]bool, 10)
-	for _, record := range records {
-		offset := int(last.Sub(record) / conf.Uptime.Interval)
-		if offset >= 10 || offset < 0 {
-			log.Printf("record time wrong:%v, last:%v, offset:%v asn:%v", record, last, offset, asn)
-			continue
-		}
-		up[offset] = true
-	}
-	return up, nil
+	return records, nil
 }
 
-func Links(asn uint32, window, t time.Duration) ([]consts.LinkTime, error) {
+func Links(bgpName string, asn uint32, window, t time.Duration) ([]consts.LinkTime, error) {
 	if !db.Enabled {
 		return nil, nil
 	}
@@ -54,7 +43,7 @@ func Links(asn uint32, window, t time.Duration) ([]consts.LinkTime, error) {
 	}
 	stopTime := utils.LastUptimeTick()
 	startTime := stopTime.Add(-t)
-	links, err := db.BGPLinks(asn, startTime, stopTime, window)
+	links, err := db.BGPLinks(fmt.Sprintf("bgp-%s", bgpName), asn, startTime, stopTime, window)
 	if err != nil {
 		return links, fmt.Errorf("get links fail:%v", err)
 	}

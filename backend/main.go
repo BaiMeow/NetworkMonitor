@@ -40,6 +40,9 @@ func main() {
 			log.Fatalf("init db fail:%v", err)
 		}
 	}
+	if !db.Enabled {
+		skipUptime = true
+	}
 
 	if os.Getenv("SKIP_UPTIME") == "true" {
 		skipUptime = true

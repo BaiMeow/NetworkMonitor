@@ -22,7 +22,7 @@ func GetBGP(name string) (*entity.BGP, time.Time) {
 		return nil, utils.Zero[time.Time]()
 	}
 	bgp, updatedAt := gr.GetData()
-	recordASNs, err := uptime.AllASNRecord()
+	recordASNs, err := uptime.AllASNRecord(name)
 	if err != nil {
 		log.Println("read uptime fail:", err)
 		return bgp, updatedAt

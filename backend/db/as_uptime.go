@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/BaiMeow/NetworkMonitor/consts"
-	"github.com/BaiMeow/NetworkMonitor/utils"
+	"github.com/BaiMeow/NetworkMonitor/graph/entity"
 	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
 	"github.com/influxdata/influxdb-client-go/v2/api/write"
 	"log"
@@ -12,44 +12,67 @@ import (
 	"time"
 )
 
-func BatchRecordASUp(ASNs map[uint32]int, t time.Time) error {
+func BatchRecordBGP(name string, bgp *entity.BGP, t time.Time) error {
 	if !Enabled {
 		return ErrDatabaseDisabled
 	}
 	var points []*write.Point
-	for asn, links := range ASNs {
-		points = append(points, influxdb2.NewPointWithMeasurement("bgp").
+	for _, link := range bgp.Link {
+		points = append(points, influxdb2.NewPointWithMeasurement(fmt.Sprintf("bgp-%s", name)).
 			AddField("up", 1).
-			AddField("links", links).
-			AddTag("asn", strconv.FormatUint(uint64(asn), 10)).
+			AddTag("src", strconv.FormatUint(uint64(link.Src), 10)).
+			AddTag("dst", strconv.FormatUint(uint64(link.Dst), 10)).
 			SetTime(t))
 	}
-	if err := bgpWrite.WritePoint(context.Background(), points...); err != nil {
+	if err := dbWrite.WritePoint(context.Background(), points...); err != nil {
 		log.Printf("write record fail:%v", err)
 		return ErrDatabase
 	}
 	return nil
 }
 
-func AllASRecordAfter(after time.Time) ([]uint32, error) {
+func BatchRecordOSPF(asn uint32, ospf *entity.OSPF, t time.Time) error {
+	if !Enabled {
+		return ErrDatabaseDisabled
+	}
+	var points []*write.Point
+	for _, area := range *ospf {
+		for _, link := range area.Links {
+			points = append(points, influxdb2.NewPointWithMeasurement(fmt.Sprintf("ospf-%d", asn)).
+				AddField("up", 1).
+				AddTag("src", link.Src).
+				AddTag("dst", link.Dst).
+				SetTime(t))
+		}
+	}
+	if err := dbWrite.WritePoint(context.Background(), points...); err != nil {
+		log.Printf("write record fail:%v", err)
+		return ErrDatabase
+	}
+	return nil
+}
+
+func AllASRecordAfter(bgpName string, after time.Time) ([]uint32, error) {
 	if !Enabled {
 		return nil, ErrDatabaseDisabled
 	}
 	var asns []uint32
-	res, err := bgpQuery.Query(context.Background(),
-		fmt.Sprintf(`from(bucket: "bgp-uptime")
+	res, err := dbQuery.Query(context.Background(),
+		fmt.Sprintf(`from(bucket: "network")
 	|> range(start: %d)    
-	|> filter(fn: (r) => r["_measurement"] == "bgp" and r["_field"] == "up")
-	|> unique(column: "asn")`, after.Unix()))
+	|> filter(fn: (r) => r["_measurement"] == "%s")
+  	|> group(columns: ["src"])
+  	|> unique(column: "src")
+  	|> keep(columns: ["src"])`, after.Unix(), bgpName))
 	if err != nil {
 		log.Printf("query fail:%v", err)
 		return asns, ErrDatabase
 	}
 
 	for res.Next() {
-		asn, ok := res.Record().ValueByKey("asn").(string)
+		asn, ok := res.Record().ValueByKey("src").(string)
 		if !ok {
-			log.Printf("convert fail:%v", res.Record().ValueByKey("asn"))
+			log.Printf("convert fail:%v", res.Record().ValueByKey("src"))
 			return asns, ErrDatabase
 		}
 		asnNum, err := strconv.ParseUint(asn, 10, 32)
@@ -64,29 +87,34 @@ func AllASRecordAfter(after time.Time) ([]uint32, error) {
 	return asns, nil
 }
 
-func BGPASNLast10Tickers(asn uint32, last time.Time) ([]time.Time, error) {
+func BGPASNLast10Tickers(bgpName string, asn uint32) ([]bool, error) {
 	if !Enabled {
 		return nil, ErrDatabaseDisabled
 	}
-	var t []time.Time
-	res, err := bgpQuery.Query(context.Background(),
-		fmt.Sprintf(`from(bucket: "bgp-uptime")
-  |> range(start: %d, stop: %d)
-  |> filter(fn: (r) => r["_measurement"] == "bgp" and r["_field"] == "up" and r["asn"] == "%d" )`,
-			utils.TickOffset(last, -10).Add(time.Second*30).Unix(), last.Add(time.Second*30).Unix(), asn))
+	res, err := dbQuery.Query(context.Background(),
+		fmt.Sprintf(`from(bucket: "network")
+  |> range(start: -10m, stop: now())
+  |> filter(fn: (r) => r["_measurement"] == "%s" and r["_field"] == "up" and r.src == "%d")
+  |> drop(columns: ["dst","src"])
+  |> aggregateWindow(every: 1m, fn: max, createEmpty: true)`, bgpName, asn))
 	if err != nil {
 		log.Printf("query fail:%v", err)
+		return nil, ErrDatabase
+	}
+	var t []bool
+	for res.Next() {
+		t = append(t, res.Record().Value() != nil)
+	}
+	if len(t) < 10 {
+		log.Printf("parse query fail:%v", err)
 		return t, ErrDatabase
 	}
-	for res.Next() {
-		t = append(t, res.Record().Time())
-	}
-	return t, nil
+	return t[:10], nil
 }
 
 // BGPLinks query the number of links for given ASN, startTime and window.
 // param window should be either time.Minute or time.Hour
-func BGPLinks(asn uint32, startTime, stopTime time.Time, window time.Duration) ([]consts.LinkTime, error) {
+func BGPLinks(bgpName string, asn uint32, startTime, stopTime time.Time, window time.Duration) ([]consts.LinkTime, error) {
 	if !Enabled {
 		return nil, ErrDatabaseDisabled
 	}
@@ -102,11 +130,14 @@ func BGPLinks(asn uint32, startTime, stopTime time.Time, window time.Duration) (
 	}
 
 	var points []consts.LinkTime
-	res, err := bgpQuery.Query(context.Background(), fmt.Sprintf(`from(bucket: "bgp-uptime")
-  |> range(start: %d,stop: %d)
-  |> filter(fn: (r) => r["_measurement"] == "bgp" and r["_field"] == "links" and r["asn"] == "%d")
+	res, err := dbQuery.Query(context.Background(), fmt.Sprintf(`from(bucket: "network")
+  |> range(start: %d, stop: %d)
+  |> filter(fn: (r) => r["_measurement"] == "%s" and r.src == "%d")
+  |> group(columns: ["src","_time"])
+  |> count(column: "_value")
+  |> group(columns: ["src"])
   |> aggregateWindow(every: %s, fn: max, createEmpty: true)
-  |> yield(name: "max")`, startTime.Unix(), stopTime.Unix(), asn, every))
+  |> yield(name: "max")`, startTime.Unix(), stopTime.Unix(), bgpName, asn, every))
 	if err != nil {
 		log.Printf("query fail:%v", err)
 		return nil, ErrDatabase

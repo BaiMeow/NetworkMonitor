@@ -99,6 +99,9 @@ func update() error {
 	}
 	Uptime.StoreDuration = dur
 
+	uptimeInterval := time.Duration(viper.GetInt("uptime.interval")) * time.Second
+	Uptime.Interval = uptimeInterval
+
 	if UpdateCallBack != nil {
 		UpdateCallBack()
 	}

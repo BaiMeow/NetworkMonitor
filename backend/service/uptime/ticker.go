@@ -6,7 +6,6 @@ import (
 	"github.com/BaiMeow/NetworkMonitor/db"
 	"github.com/BaiMeow/NetworkMonitor/graph"
 	"log"
-	"maps"
 	"time"
 )
 
@@ -29,25 +28,30 @@ func tickerInsertDB() {
 	}()
 	for {
 		now := <-tk
-		grs:= graph.GetAllBGP()
-		for gr :=range maps.Values(grs){
+		bgps := graph.GetAllBGP()
+		for k, gr := range bgps {
 			data, t := gr.GetData()
-			if t.Add(2 * conf.Interval).Before(now) {
+			// if data too old, skip
+			if t.Add(conf.Interval).Before(now) {
 				continue
 			}
-			mp := make(map[uint32]int, len(data.AS))
-			for _, as := range data.AS {
-				mp[as.ASN] = 0
-			}
-			for _, lk := range data.Link {
-				mp[lk.Src]++
-				mp[lk.Dst]++
-			}
-			//TODO: fix for multi bgp graph
-			err := db.BatchRecordASUp(mp, t)
-			log.Printf("record as %d links %d at %v", len(mp), len(data.Link), now)
+			err := db.BatchRecordBGP(k, data, t)
+			log.Printf("record bgp graph %s at %v", k, now)
 			if err != nil {
-				log.Println(fmt.Errorf("record as up fail:%v", err))
+				log.Println(fmt.Errorf("record %s fail:%v", k, err))
+			}
+		}
+		ospfs := graph.GetAllOSPF()
+		for k, gr := range ospfs {
+			data, t := gr.GetData()
+			// if data too old, skip
+			if t.Add(conf.Interval).Before(now) {
+				continue
+			}
+			err := db.BatchRecordOSPF(k, data, t)
+			log.Printf("record ospf graph %d at %v", k, now)
+			if err != nil {
+				log.Println(fmt.Errorf("record %d fail:%v", k, err))
 			}
 		}
 	}
