@@ -32,7 +32,7 @@ func tickerInsertDB() {
 		for k, gr := range bgps {
 			data, t := gr.GetData()
 			// if data too old, skip
-			if t.Add(conf.Interval).Before(now) {
+			if t.Add(conf.Uptime.Interval).Before(now) {
 				continue
 			}
 			err := db.BatchRecordBGP(k, data, t)
@@ -45,7 +45,7 @@ func tickerInsertDB() {
 		for k, gr := range ospfs {
 			data, t := gr.GetData()
 			// if data too old, skip
-			if t.Add(conf.Interval).Before(now) {
+			if t.Add(conf.Uptime.Interval).Before(now) {
 				continue
 			}
 			err := db.BatchRecordOSPF(k, data, t)
