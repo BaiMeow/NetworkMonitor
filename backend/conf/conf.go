@@ -3,6 +3,7 @@ package conf
 import (
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/fsnotify/fsnotify"
@@ -29,16 +30,22 @@ var (
 )
 
 func Init() error {
-	viper.SetDefault("port", 8080)
-	viper.SetDefault("interval", 60)
-	viper.SetDefault("probeTimeout", 10)
+	viper.SetDefault("port", 8787)
+	viper.SetDefault("interval", 10)
+	viper.SetDefault("probeTimeout", 8)
 	viper.SetDefault("uptime.recordDuration", "48h")
 	viper.SetDefault("analysis", true)
 
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath(".")
+	viper.SetEnvPrefix("netm")
+	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+	viper.AutomaticEnv()
 	err := viper.ReadInConfig()
+	if err != nil {
+		fmt.Printf("read config file: %v", err)
+	}
 	viper.OnConfigChange(
 		func(_ fsnotify.Event) {
 			if err := update(); err != nil {
@@ -47,9 +54,6 @@ func Init() error {
 		})
 	viper.WatchConfig()
 
-	if err != nil {
-		return err
-	}
 	Port = viper.GetInt("port")
 	Influxdb.Addr = viper.GetString("influxdb.addr")
 	Influxdb.Token = viper.GetString("influxdb.token")
@@ -61,32 +65,35 @@ func Init() error {
 func update() error {
 	// update probe
 	var tmp []Probe
-	probes := viper.Get("probe").(map[string]any)
-	for name, probe := range probes {
-		probe, ok := probe.(map[string]any)
-		if !ok {
-			return fmt.Errorf("parse config error: %v", probe)
+	if probes, ok := viper.Get("probe").(map[string]any); ok {
+		for name, probe := range probes {
+			probe, ok := probe.(map[string]any)
+			if !ok {
+				return fmt.Errorf("parse config error: %v", probe)
+			}
+			parser, ok := probe["parse"].(map[string]any)
+			if !ok {
+				return fmt.Errorf("parse config error: invalid field parse")
+			}
+			fetcher, ok := probe["fetch"].(map[string]any)
+			if !ok {
+				return fmt.Errorf("parse config error: invalid field fetch")
+			}
+			drawer, ok := probe["draw"].(map[string]any)
+			if !ok {
+				return fmt.Errorf("parse config error: invalid field draw")
+			}
+			tmp = append(tmp, Probe{
+				Name:  name,
+				Parse: parser,
+				Fetch: fetcher,
+				Draw:  drawer,
+			})
 		}
-		parser, ok := probe["parse"].(map[string]any)
-		if !ok {
-			return fmt.Errorf("parse config error: invalid field parse")
-		}
-		fetcher, ok := probe["fetch"].(map[string]any)
-		if !ok {
-			return fmt.Errorf("parse config error: invalid field fetch")
-		}
-		drawer, ok := probe["draw"].(map[string]any)
-		if !ok {
-			return fmt.Errorf("parse config error: invalid field draw")
-		}
-		tmp = append(tmp, Probe{
-			Name:  name,
-			Parse: parser,
-			Fetch: fetcher,
-			Draw:  drawer,
-		})
+		Probes = tmp
+	} else {
+		Probes = nil
 	}
-	Probes = tmp
 
 	Interval = time.Duration(viper.GetInt("interval")) * time.Second
 	ProbeTimeout = time.Duration(viper.GetInt("probeTimeout")) * time.Second
