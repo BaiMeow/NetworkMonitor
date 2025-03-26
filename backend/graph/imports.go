@@ -14,6 +14,6 @@ import (
 	// parser
 	_ "github.com/BaiMeow/NetworkMonitor/graph/parse/bgp"
 	_ "github.com/BaiMeow/NetworkMonitor/graph/parse/birdospf"
-	_ "github.com/BaiMeow/NetworkMonitor/graph/parse/mtrbgp"
+	_ "github.com/BaiMeow/NetworkMonitor/graph/parse/mrtbgp"
 	_ "github.com/BaiMeow/NetworkMonitor/graph/parse/rosospf"
 )

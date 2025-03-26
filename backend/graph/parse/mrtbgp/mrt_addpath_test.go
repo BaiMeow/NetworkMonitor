@@ -1,4 +1,4 @@
-package mtrbgp
+package mrtbgp
 
 import (
 	"context"
@@ -27,7 +27,7 @@ func TestMrtAddPath(t *testing.T) {
 				t.Error(err)
 				return
 			}
-			res, err := mrt.Parse(context.Background(),data)
+			res, err := mrt.Parse(context.Background(), data)
 			if err != nil {
 				t.Error(err)
 				return
