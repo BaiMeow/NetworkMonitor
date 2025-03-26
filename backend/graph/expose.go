@@ -43,7 +43,7 @@ func GetBgpCloseness(name string) map[uint32]float64 {
 	defer fullLock.RUnlock()
 	gr := bgp[name]
 	if gr != nil {
-		return gr.betweenness
+		return gr.closeness
 	}
 	return nil
 }

@@ -121,10 +121,10 @@ option.tooltip = {
         }
       }
     }
-    if (params.data.betweenness) {
+    if (params.data.betweenness !== undefined) {
       output += `<br/>Betweenness: ${params.data.betweenness.toFixed(3)}`
     }
-    if (params.data.closeness) {
+    if (params.data.closeness !== undefined) {
       output += `<br/>Closeness: ${params.data.closeness.toFixed(3)}`
     }
     output += `<br/>Network:<br/>`
@@ -400,9 +400,9 @@ watch([nodes, ASMeta], () => {
 })
 
 async function loadData(name: string) {
-  bgpData.value = await getBGP(name)
   closeness.value = await getCloseness(name)
   betweenness.value = await getBetweenness(name)
+  bgpData.value = await getBGP(name)
 }
 watch(name, loadData, {
   immediate: true,
