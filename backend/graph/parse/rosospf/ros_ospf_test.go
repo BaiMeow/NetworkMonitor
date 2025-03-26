@@ -13,6 +13,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// todo fix test
 func TestROSOSPF(t *testing.T) {
 	testcases := []struct {
 		name        string
@@ -37,7 +38,7 @@ func TestROSOSPF(t *testing.T) {
 			var sentences []*proto.Sentence
 			gob.NewDecoder(bytes.NewReader(gobOutput)).Decode(&sentences)
 			p := RosOSPF{}
-			res, err := p.Parse(context.Background(),sentences)
+			res, err := p.Parse(context.Background(), sentences)
 			assert.NoError(t, err)
 			o := &entity.OSPF{}
 			_ = json.Unmarshal([]byte(v.ospfData), o)

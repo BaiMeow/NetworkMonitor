@@ -19,7 +19,7 @@ func TestROS6_GetData(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	sentences := resp.([]*proto.Sentence)
+	sentences := resp.([2][]*proto.Sentence)
 	gob.Register(sentences)
 	var buf bytes.Buffer
 	gob.NewEncoder(&buf).Encode(sentences)
@@ -36,7 +36,7 @@ func TestROS7_GetData(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	sentences := resp.([]*proto.Sentence)
+	sentences := resp.([2][]*proto.Sentence)
 	gob.Register(sentences)
 	var buf bytes.Buffer
 	gob.NewEncoder(&buf).Encode(sentences)

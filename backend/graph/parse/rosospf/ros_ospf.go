@@ -40,22 +40,28 @@ type network struct {
 }
 
 func (p *RosOSPF) Parse(ctx context.Context, input any) (*entity.OSPF, error) {
-	sentences, ok := input.([]*proto.Sentence)
+	sentences, ok := input.([2][]*proto.Sentence)
 	if !ok {
 		log.Fatalf("invalid input data type: %s\n", reflect.TypeOf(input).Elem())
 	}
 
-	networks := make(map[string]*network)
+	areaSentences := sentences[1]
+	areaIdMap := make(map[string]string)
+	for _, v := range areaSentences {
+		areaIdMap[v.Map["name"]] = v.Map["area-id"]
+	}
 
+	networks := make(map[string]*network)
+	lsaSentences := sentences[0]
 	var graph entity.OSPF
-	for _, sentence := range sentences {
+	for _, sentence := range lsaSentences {
 		if sentence.Word == "!done" { // 这个判断可有可无 因为fetcher已经做了处理
 			break
 		}
 		if sentence.Map["type"] != "router" || sentence.Map["area"] == "" || sentence.Map["id"] == "" {
 			continue
 		}
-		graph.GetArea(sentence.Map["area"]).AddRouter(sentence.Map["id"])
+		graph.GetArea(areaIdMap[sentence.Map["area"]]).AddRouter(sentence.Map["id"])
 
 		ptp := ros6BodyPtpReg.FindAllStringSubmatch(sentence.Map["body"], -1)
 		for _, field := range ptp {
@@ -66,7 +72,7 @@ func (p *RosOSPF) Parse(ctx context.Context, input any) (*entity.OSPF, error) {
 			if err != nil {
 				continue
 			}
-			graph.AddLink(sentence.Map["area"], sentence.Map["id"], field[1], cost)
+			graph.AddLink(areaIdMap[sentence.Map["area"]], sentence.Map["id"], field[1], cost)
 		}
 		ptp = ros7BodyPtpReg.FindAllStringSubmatch(sentence.Map["body"], -1)
 		for _, field := range ptp {
@@ -77,7 +83,7 @@ func (p *RosOSPF) Parse(ctx context.Context, input any) (*entity.OSPF, error) {
 			if err != nil {
 				continue
 			}
-			graph.AddLink(sentence.Map["area"], sentence.Map["id"], field[1], cost)
+			graph.AddLink(areaIdMap[sentence.Map["area"]], sentence.Map["id"], field[1], cost)
 		}
 		nw := ros7BodyNetworkReg.FindAllStringSubmatch(sentence.Map["body"], -1)
 		for _, field := range nw {
@@ -92,7 +98,7 @@ func (p *RosOSPF) Parse(ctx context.Context, input any) (*entity.OSPF, error) {
 			if nw == nil {
 				nw = &network{
 					cost: cost,
-					area: sentence.Map["area"],
+					area: areaIdMap[sentence.Map["area"]],
 				}
 				networks[field[1]] = nw
 			}

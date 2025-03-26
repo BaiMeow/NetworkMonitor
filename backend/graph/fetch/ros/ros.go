@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/BaiMeow/NetworkMonitor/graph/fetch"
 	"github.com/go-routeros/routeros/v3"
+	"github.com/go-routeros/routeros/v3/proto"
 	"net"
 	"time"
 )
@@ -55,9 +56,13 @@ func (R *ROS) GetData(ctx context.Context) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	reply, err := client.RunContext(ctx, "/routing/ospf/lsa/print", "detail", "?type=router")
+	reply1, err := client.RunContext(ctx, "/routing/ospf/lsa/print", "detail", "?type=router")
 	if err != nil {
 		return nil, err
 	}
-	return reply.Re, nil
+	reply2, err := client.RunContext(ctx, "/routing/ospf/area/print", "detail")
+	if err != nil {
+		return nil, err
+	}
+	return [2][]*proto.Sentence{reply1.Re, reply2.Re}, nil
 }
