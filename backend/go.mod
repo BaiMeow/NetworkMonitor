@@ -3,10 +3,10 @@ module github.com/BaiMeow/NetworkMonitor
 go 1.24
 
 require (
-	github.com/BaiMeow/go-mrt v0.0.0-20240727160601-2103d679651a
+	github.com/BaiMeow/go-mrt v0.0.0-20250326091020-8627ca4383f8
 	github.com/fsnotify/fsnotify v1.6.0
 	github.com/gin-gonic/gin v1.9.1
-	github.com/go-routeros/routeros v0.0.0-20210123142807-2a44d57c6730
+	github.com/go-routeros/routeros/v3 v3.0.1
 	github.com/influxdata/influxdb-client-go/v2 v2.14.0
 	github.com/osrg/gobgp/v3 v3.34.0
 	github.com/pkg/errors v0.9.1
@@ -15,8 +15,6 @@ require (
 	github.com/stretchr/testify v1.9.0
 	golang.org/x/crypto v0.34.0
 )
-
-require github.com/go-routeros/routeros/v3 v3.0.1 // indirect
 
 require (
 	github.com/antlr4-go/antlr/v4 v4.13.1
@@ -69,7 +67,7 @@ require (
 	golang.org/x/text v0.22.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20230525234030-28d5490b6b19 // indirect
 	google.golang.org/grpc v1.56.3 // indirect
-	google.golang.org/protobuf v1.33.0 // indirect
+	google.golang.org/protobuf v1.33.0
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
