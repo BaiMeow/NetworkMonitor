@@ -58,12 +58,26 @@ func AllASRecordAfter(bgpName string, after time.Time) ([]uint32, error) {
 	}
 	var asns []uint32
 	res, err := dbQuery.Query(context.Background(),
-		fmt.Sprintf(`from(bucket: "network")
+		fmt.Sprintf(`t1 =
+   from(bucket: "network")
 	|> range(start: %d)    
 	|> filter(fn: (r) => r["_measurement"] == "%s")
   	|> group(columns: ["src"])
   	|> unique(column: "src")
-  	|> keep(columns: ["src"])`, after.Unix(), bgpName))
+  	|> keep(columns: ["src"])
+
+t2 =
+   from(bucket: "network")
+	|> range(start: %d)    
+	|> filter(fn: (r) => r["_measurement"] == "%s")
+  	|> group(columns: ["dst"])
+  	|> unique(column: "dst")
+    |> map(fn: (r) => ({ r with src: r.dst }))
+  	|> keep(columns: ["src"])
+
+union(tables: [t1, t2])
+|> group()
+|> unique(column: "src")`, after.Unix(), bgpName, after.Unix(), bgpName))
 	if err != nil {
 		log.Printf("query fail:%v", err)
 		return asns, ErrDatabase
@@ -94,9 +108,9 @@ func BGPASNLast10Tickers(bgpName string, asn uint32) ([]bool, error) {
 	res, err := dbQuery.Query(context.Background(),
 		fmt.Sprintf(`from(bucket: "network")
   |> range(start: -10m, stop: now())
-  |> filter(fn: (r) => r["_measurement"] == "%s" and r["_field"] == "up" and r.src == "%d")
+  |> filter(fn: (r) => r["_measurement"] == "%s" and r["_field"] == "up" and ( r.src == "%d" or r.dst == "%d"))
   |> drop(columns: ["dst","src"])
-  |> aggregateWindow(every: 1m, fn: max, createEmpty: true)`, bgpName, asn))
+  |> aggregateWindow(every: 1m, fn: max, createEmpty: true)`, bgpName, asn, asn))
 	if err != nil {
 		log.Printf("query fail:%v", err)
 		return nil, ErrDatabase
@@ -132,12 +146,12 @@ func BGPLinks(bgpName string, asn uint32, startTime, stopTime time.Time, window 
 	var points []consts.LinkTime
 	res, err := dbQuery.Query(context.Background(), fmt.Sprintf(`from(bucket: "network")
   |> range(start: %d, stop: %d)
-  |> filter(fn: (r) => r["_measurement"] == "%s" and r.src == "%d")
-  |> group(columns: ["src","_time"])
+  |> filter(fn: (r) => r["_measurement"] == "%s" and (r.src == "%d" or r.dst == "%d"))
+  |> group(columns: ["_time"])
   |> count(column: "_value")
-  |> group(columns: ["src"])
+  |> group()
   |> aggregateWindow(every: %s, fn: max, createEmpty: true)
-  |> yield(name: "max")`, startTime.Unix(), stopTime.Unix(), bgpName, asn, every))
+  |> yield(name: "max")`, startTime.Unix(), stopTime.Unix(), bgpName, asn, asn, every))
 	if err != nil {
 		log.Printf("query fail:%v", err)
 		return nil, ErrDatabase
