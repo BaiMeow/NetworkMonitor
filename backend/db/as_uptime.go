@@ -23,6 +23,11 @@ func BatchRecordBGP(name string, bgp *entity.BGP, t time.Time) error {
 			AddTag("src", strconv.FormatUint(uint64(link.Src), 10)).
 			AddTag("dst", strconv.FormatUint(uint64(link.Dst), 10)).
 			SetTime(t))
+		points = append(points, influxdb2.NewPointWithMeasurement(fmt.Sprintf("bgp-%s", name)).
+			AddField("up", 1).
+			AddTag("dst", strconv.FormatUint(uint64(link.Src), 10)).
+			AddTag("src", strconv.FormatUint(uint64(link.Dst), 10)).
+			SetTime(t))
 	}
 	if err := dbWrite.WritePoint(context.Background(), points...); err != nil {
 		log.Printf("write record fail:%v", err)
@@ -108,9 +113,9 @@ func BGPASNLast10Tickers(bgpName string, asn uint32) ([]bool, error) {
 	res, err := dbQuery.Query(context.Background(),
 		fmt.Sprintf(`from(bucket: "network")
   |> range(start: -10m, stop: now())
-  |> filter(fn: (r) => r["_measurement"] == "%s" and r["_field"] == "up" and ( r.src == "%d" or r.dst == "%d"))
+  |> filter(fn: (r) => r["_measurement"] == "%s" and r["_field"] == "up" and r.src == "%d"))
   |> drop(columns: ["dst","src"])
-  |> aggregateWindow(every: 1m, fn: max, createEmpty: true)`, bgpName, asn, asn))
+  |> aggregateWindow(every: 1m, fn: max, createEmpty: true)`, bgpName, asn))
 	if err != nil {
 		log.Printf("query fail:%v", err)
 		return nil, ErrDatabase
@@ -146,12 +151,12 @@ func BGPLinks(bgpName string, asn uint32, startTime, stopTime time.Time, window 
 	var points []consts.LinkTime
 	res, err := dbQuery.Query(context.Background(), fmt.Sprintf(`from(bucket: "network")
   |> range(start: %d, stop: %d)
-  |> filter(fn: (r) => r["_measurement"] == "%s" and (r.src == "%d" or r.dst == "%d"))
+  |> filter(fn: (r) => r["_measurement"] == "%s" and r.src == "%d")
   |> group(columns: ["_time"])
   |> count(column: "_value")
   |> group()
   |> aggregateWindow(every: %s, fn: max, createEmpty: true)
-  |> yield(name: "max")`, startTime.Unix(), stopTime.Unix(), bgpName, asn, asn, every))
+  |> yield(name: "max")`, startTime.Unix(), stopTime.Unix(), bgpName, asn, every))
 	if err != nil {
 		log.Printf("query fail:%v", err)
 		return nil, ErrDatabase
