@@ -215,7 +215,7 @@ func (f *BGP) GetData(ctx context.Context) (any, error) {
 			case <-time.NewTimer(time.Second * 3).C:
 				continue
 			case <-ctx.Done():
-				return nil, fmt.Errorf("context timeout")
+				return nil, context.Cause(ctx)
 			}
 		}
 		return nil, errors.New("BGP session failed")
@@ -233,6 +233,14 @@ func (f *BGP) GetData(ctx context.Context) (any, error) {
 	}); err != nil {
 		return nil, err
 	}
+	// context timeout may interrupt ListPath without any err reported, which leads to incomplete data returning.
+	// so if we find it timeout, treat data as broken and return err.
+	select {
+	case <-ctx.Done():
+		return nil, context.Cause(ctx)
+	default:
+	}
+
 	return destinations, nil
 }
 
