@@ -1,0 +1,18 @@
+{{- if .Values.bgpService.enable -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-bgp-service
+  namespace: {{ .Release.Namespace }}
+  labels:
+    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+spec:
+  type: {{ .Values.bgpService.type }}
+  ports:
+  - port: {{ .Values.bgpService.externalPort }}
+    targetPort: 179
+    protocol: TCP
+    name: {{ .Values.bgpService.name }}
+  selector:
+    app: {{ .Release.Name }}
+{{ end }}

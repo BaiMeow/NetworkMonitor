@@ -1,0 +1,49 @@
+fullname: ""
+replicaCount: 1
+image: "ghcr.io/baimeow/network-monitor:latest"
+
+# probe fetch interval
+interval: 10
+# probe fetch timeout
+probeTimeout: 8
+
+# infludb 
+influxdb:
+  enable: true
+  # enable embed influxdb
+  embed: true
+  # used in external influxdb
+  addr: ''
+  org: ''
+  token: ''
+
+uptime:
+  # uptime data max store time
+  store-duration: '168h'
+  # uptime data store interval
+  interval: 20
+
+# redirect metadata request to other url
+metadataRedirect: '' 
+
+probe: {}
+
+volumes: []
+volumeMounts: []
+
+webService:
+  type: ClusterIP
+  externalPort: 80
+
+bgpService:
+  type: LoadBalancer
+  externalPort: 179
+  enable: true
+
+resources: 
+  requests:
+    cpu: 200m
+    memory: 128Mi
+  limits:
+    cpu: 1
+    memory: 512Mi

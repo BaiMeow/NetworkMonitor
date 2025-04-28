@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-app
+  namespace: {{ .Release.Namespace }}
+  labels:
+    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}
+  replicas: {{ default 1 .Values.replicaCount | int }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}
+    spec:
+      volumes:
+      - name: config
+        configMap:
+          name: {{ .Release.Name }}-configmap
+          items:
+          - key: config.yaml
+            path: config.yaml
+{{ .Values.volumes | toYaml | indent 6 }}
+      containers:
+      - name: {{ .Chart.Name }}
+        image: {{ .Values.image | quote }}
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: http-web
+          containerPort: 8787
+          protocol: TCP
+        - name: bgp
+          containerPort: 179
+          protocol: TCP
+        env: 
+        - name: GIN_MODE
+          value: release
+        volumeMounts:
+        - name: config
+          readOnly: true
+          mountPath: /config
+{{ .Values.volumes | toYaml | indent 8 }}              
+        startupProbe:
+          httpGet:
+            path: /api/list
+            port: 8787
+            scheme: HTTP
+          initialDelaySeconds: 15
+        resources:
+{{ toYaml .Values.resources | indent 10 }}

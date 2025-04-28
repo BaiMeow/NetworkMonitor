@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-configmap
+  namespace: {{ .Release.Namespace }}
+  labels:
+    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+data:
+  config.yaml: |-
+    interval: {{ .Values.interval }}
+    probeTimeout: {{ .Values.probeTimeout }}
+    port: 8787
+    {{- if and .Values.influxdb .Values.influxdb.enable}}
+    influxdb:
+        {{- if .Values.influxdb.embed }}
+        addr: "http://{{ .Release.Name }}-uptimedb.{{ .Release.Namespace }}.svc.cluster.local:8086"
+        org: {{ .Values.influxdb.org | default "network-monitor" | quote }}
+        token: {{ .Values.influxdb.token | quote }}
+        {{- else }}
+        addr:  {{ .Values.influxdb.addr | quote }}
+        org: {{ .Values.influxdb.org | quote }}
+        token: {{ .Values.influxdb.token | quote }}
+        {{- end }}    
+    {{- else}}
+    influxdb:
+      addr: ""
+    {{- end }}
+    uptime:
+      store-duration: {{ .Values.uptime.duration | default "168h" | quote }}
+      interval: {{ .Values.uptime.interval | default 20 | int }}
+    metadataRedirect: {{ .Values.metadataRedirect | quote }}
+{{ dict "probe" .Values.probe | toYaml | indent 4 }}
+  
