@@ -64,25 +64,45 @@ func main() {
 	r := gin.Default()
 	r.Use(middleware.Cors())
 	// ospf
-	r.GET("/api/ospf/:asn", controller.OSPF)
-	r.GET("/api/ospf/uptime/:routerId/recent", controller.OSPFRecentUptime)
+	{
+		ospf := r.Group("/api/ospf")
+		ospf.GET("/:asn", controller.OSPF)
+		{
+			up := ospf.Group("/:asn/uptime", func(c *gin.Context) {
+				if conf.Influxdb.Addr == "" {
+					c.AbortWithStatusJSON(403, controller.RespErrNotEnabled)
+				}
+			})
+			up.GET("/:routerId/recent", controller.OSPFRecentUptime)
+			up.GET("/:routerId/links", controller.OSPFLinks)
+		}
+	}
 
 	// bgp
-	r.GET("/api/bgp/:name", controller.BGP)
-	up := r.Group("/api/bgp/:name/uptime", func(c *gin.Context) {
-		if conf.Influxdb.Addr == "" {
-			c.AbortWithStatusJSON(403, controller.RespErrNotEnabled)
+	{
+		bgp := r.Group("/api/bgp")
+		bgp.GET("/:name", controller.BGP)
+		// uptime
+		{
+			up := bgp.Group("/:name/uptime", func(c *gin.Context) {
+				if conf.Influxdb.Addr == "" {
+					c.AbortWithStatusJSON(403, controller.RespErrNotEnabled)
+				}
+			})
+			up.GET("/:asn/recent", controller.BGPRecentUptime)
+			up.GET("/:asn/links", controller.BGPLinks)
 		}
-	})
-	up.GET("/:asn/recent", controller.BGPRecentUptime)
-	up.GET("/:asn/links", controller.BGPLinks)
-	ana := r.Group("/api/bgp/:name/analysis", func(c *gin.Context) {
-		if !conf.Analysis {
-			c.AbortWithStatusJSON(403, controller.RespErrNotEnabled)
+		// analysis
+		{
+			ana := bgp.Group("/:name/analysis", func(c *gin.Context) {
+				if !conf.Analysis {
+					c.AbortWithStatusJSON(403, controller.RespErrNotEnabled)
+				}
+			})
+			ana.GET("/betweenness", controller.BGPAnalysisBetweenness)
+			ana.GET("/closeness", controller.BGPAnalysisCloseness)
 		}
-	})
-	ana.GET("/betweenness", controller.BGPAnalysisBetweenness)
-	ana.GET("/closeness", controller.BGPAnalysisCloseness)
+	}
 
 	// others
 	r.GET("/api/list", controller.List)

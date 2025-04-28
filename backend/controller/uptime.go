@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/BaiMeow/NetworkMonitor/service/uptime"
 	"github.com/gin-gonic/gin"
+	"net/netip"
 	"regexp"
 	"strconv"
 	"time"
@@ -23,7 +24,7 @@ func BGPRecentUptime(c *gin.Context) {
 		c.JSON(400, RespErrParamInvalid)
 		return
 	}
-	ups, err := uptime.Last10TickerRecord(bgpName, asn)
+	ups, err := uptime.Last10BGPTickerRecord(bgpName, asn)
 	if err != nil {
 		c.JSON(500, RespInternalError)
 		return
@@ -36,7 +37,7 @@ func BGPRecentUptime(c *gin.Context) {
 }
 
 func BGPLinks(c *gin.Context) {
-	u64asn, err := strconv.ParseUint(c.Param("asn"), 10, 32)
+	u32asn, err := strconv.ParseUint(c.Param("asn"), 10, 32)
 	if err != nil {
 		c.JSON(400, RespErrASNInvalid)
 		return
@@ -56,7 +57,7 @@ func BGPLinks(c *gin.Context) {
 		c.JSON(400, RespErrParamInvalid)
 		return
 	}
-	links, err := uptime.Links(bgpName, uint32(u64asn), window, t)
+	links, err := uptime.BGPLinks(bgpName, uint32(u32asn), window, t)
 	if err != nil {
 		c.JSON(500, RespInternalError)
 		return
@@ -72,5 +73,38 @@ func OSPFRecentUptime(c *gin.Context) {
 	c.JSON(200, Resp{
 		Code: 0,
 		Msg:  "not implemented",
+	})
+}
+
+func OSPFLinks(c *gin.Context) {
+	u64asn, err := strconv.ParseUint(c.Param("asn"), 10, 32)
+	if err != nil {
+		c.JSON(400, RespErrASNInvalid)
+		return
+	}
+	routerId := c.Param("routerId")
+	_, err = netip.ParseAddr(routerId)
+	if err != nil {
+		c.JSON(400, RespErrParamInvalid)
+	}
+	window, err := time.ParseDuration(c.Query("window"))
+	if err != nil {
+		c.JSON(400, RespErrParamInvalid)
+		return
+	}
+	t, err := time.ParseDuration(c.Query("time"))
+	if err != nil {
+		c.JSON(400, RespErrParamInvalid)
+		return
+	}
+	links,err:=uptime.OSPFLinks(uint32(u64asn),routerId,window,t)
+	if err!=nil{
+		c.JSON(500, RespInternalError)
+		return
+	}
+	c.JSON(200, Resp{
+		Code: 0,
+		Msg:  "ok",
+		Data: links,
 	})
 }

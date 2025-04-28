@@ -20,7 +20,7 @@ func AllASNRecord(bgpName string) ([]uint32, error) {
 	return ASNs, nil
 }
 
-func Last10TickerRecord(bgpName string, asn uint32) ([]bool, error) {
+func Last10BGPTickerRecord(bgpName string, asn uint32) ([]bool, error) {
 	if !db.Enabled {
 		return nil, nil
 	}
@@ -31,7 +31,7 @@ func Last10TickerRecord(bgpName string, asn uint32) ([]bool, error) {
 	return records, nil
 }
 
-func Links(bgpName string, asn uint32, window, t time.Duration) ([]consts.LinkTime, error) {
+func BGPLinks(bgpName string, asn uint32, window, t time.Duration) ([]consts.LinkTime, error) {
 	if !db.Enabled {
 		return nil, nil
 	}
@@ -44,6 +44,25 @@ func Links(bgpName string, asn uint32, window, t time.Duration) ([]consts.LinkTi
 	stopTime := utils.LastUptimeTick()
 	startTime := stopTime.Add(-t)
 	links, err := db.BGPLinks(fmt.Sprintf("bgp-%s", bgpName), asn, startTime, stopTime, window)
+	if err != nil {
+		return links, fmt.Errorf("get links fail:%v", err)
+	}
+	return links, nil
+}
+
+func OSPFLinks(asn uint32,routerId string,window,t time.Duration)([]consts.LinkTime,error){
+	if !db.Enabled {
+		return nil, nil
+	}
+	if t > time.Hour*24 && window != time.Hour {
+		return nil, fmt.Errorf("invalid window size %s for time range %s", window, t)
+	}
+	if t <= time.Hour*24 && window != time.Minute {
+		return nil, fmt.Errorf("invalid window size %s for time range %s", window, t)
+	}
+	stopTime := utils.LastUptimeTick()
+	startTime := stopTime.Add(-t)
+	links, err := db.OSPFLinks(fmt.Sprintf("bgp-%d", asn), routerId, startTime, stopTime, window)
 	if err != nil {
 		return links, fmt.Errorf("get links fail:%v", err)
 	}

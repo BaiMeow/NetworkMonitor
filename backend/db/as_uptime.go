@@ -137,18 +137,11 @@ func BGPLinks(bgpName string, asn uint32, startTime, stopTime time.Time, window 
 	if !Enabled {
 		return nil, ErrDatabaseDisabled
 	}
-
-	var every string
-	if window == time.Minute {
-		every = "1m"
-	} else if window == time.Hour {
-		every = "1h"
-	} else {
-		log.Printf("invalid window:%v", window)
-		return nil, ErrInvalidInput
+	every, err := ParseWindow(window)
+	if err != nil {
+		return nil, err
 	}
 
-	var points []consts.LinkTime
 	res, err := dbQuery.Query(context.Background(), fmt.Sprintf(`from(bucket: "network")
   |> range(start: %d, stop: %d)
   |> filter(fn: (r) => r["_measurement"] == "%s" and r.src == "%d")
@@ -161,21 +154,5 @@ func BGPLinks(bgpName string, asn uint32, startTime, stopTime time.Time, window 
 		log.Printf("query fail:%v", err)
 		return nil, ErrDatabase
 	}
-	for res.Next() {
-		rc := res.Record()
-		var v int64
-		switch value := rc.Value().(type) {
-		case int64:
-			v = value
-		case nil:
-			v = 0
-		default:
-			log.Printf("convert influxdb value fail:%v", rc)
-		}
-		points = append(points, consts.LinkTime{
-			Time:  rc.Time(),
-			Links: int(v),
-		})
-	}
-	return points, nil
+	return ReadTimeLinks(res)
 }
