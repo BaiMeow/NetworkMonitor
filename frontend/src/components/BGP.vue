@@ -452,6 +452,7 @@ onBeforeRouteLeave(() => {
   if (interval) {
     clearInterval(interval)
   }
+  uptime_asn.value = 0
 })
 </script>
 

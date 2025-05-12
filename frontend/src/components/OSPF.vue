@@ -21,6 +21,7 @@ import { setUpdatedTime } from '@/state/updated_time'
 const route = useRoute()
 use([CanvasRenderer, GraphChart, TooltipComponent, TitleComponent])
 const isDark = useDark()
+const uptimeRouterId = ref("")
 
 const { option, selectList, loading } = useGraph()
 
@@ -171,6 +172,7 @@ let autoRefreshInterval: ReturnType<typeof setTimeout>
 watch(
   [asn],
   () => {
+    uptimeRouterId.value = ""
     if (autoRefreshInterval) clearInterval(autoRefreshInterval)
     loadData()
     autoRefreshInterval = setInterval(() => {
@@ -408,8 +410,6 @@ onBeforeRouteLeave(() => {
   }
 })
 
-const uptimeRouterId = ref("")
-
 handleClick.value = (e: ECElementEvent) => {
   if (e.dataType === 'node') {
     const data = e.data as Node
@@ -450,7 +450,7 @@ handleZrClick.value = (e: ElementEvent) => {
   transition: all 0.2s ease-in;
 }
 .fade-leave-active {
-  transition: all 0.2s ease-out;
+  transition: all 0.16s ease-out;
 }
 
 .fade-enter-from {
