@@ -118,9 +118,9 @@ const option: any = reactive({
 
 const refreshData = async () => {
   data.value = await getOSPFUptimeLinks(asn, routerId, time, window.value)
-  option.series[0].data = data.value.in.map((d) => d.links)
-  option.series[1].data = data.value.out.map((d) => d.links)
-  option.xAxis.data = data.value.in.map(
+  option.series[0].data = data.value.map((d) => d.in_degree)
+  option.series[1].data = data.value.map((d) => d.in_degree)
+  option.xAxis.data = data.value.map(
     (d) =>
       `${d.time.getMonth() + 1}/${d.time.getDate()} ${d.time.getHours()}:${d.time.getMinutes()}`,
   )

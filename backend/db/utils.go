@@ -3,6 +3,7 @@ package db
 import (
 	"github.com/BaiMeow/NetworkMonitor/consts"
 	"github.com/influxdata/influxdb-client-go/v2/api"
+	"github.com/influxdata/influxdb-client-go/v2/api/query"
 	"log"
 	"time"
 )
@@ -18,23 +19,35 @@ func ParseWindow(window time.Duration) (string, error) {
 	}
 }
 
-func ReadTimeLinks(res *api.QueryTableResult) ([]consts.LinkTime, error) {
-	var points []consts.LinkTime
+func readQueryTableResultFunc[T any](res *api.QueryTableResult, f func(rc *query.FluxRecord) T) ([]T, error) {
+	var points []T
 	for res.Next() {
-		rc := res.Record()
-		var v int64
-		switch value := rc.Value().(type) {
-		case int64:
-			v = value
-		case nil:
-			v = 0
-		default:
-			log.Printf("convert influxdb value fail:%v", rc)
-		}
-		points = append(points, consts.LinkTime{
-			Time:  rc.Time(),
-			Links: int(v),
-		})
+		points = append(points, f(res.Record()))
 	}
 	return points, nil
+}
+
+func readTimeLinks(res *api.QueryTableResult) ([]consts.LinkTime, error) {
+	return readQueryTableResultFunc(res, func(rc *query.FluxRecord) consts.LinkTime {
+		v, ok := rc.Value().(int64)
+		if !ok {
+			log.Printf("convert influxdb value fail: %v", rc)
+		}
+		return consts.LinkTime{
+			Time:  rc.Time(),
+			Links: int(v),
+		}
+	})
+}
+
+func readDirectedTimeLinks(res *api.QueryTableResult) ([]consts.DirectedLinkTime, error) {
+	return readQueryTableResultFunc(res, func(rc *query.FluxRecord) consts.DirectedLinkTime {
+		in, _ := rc.ValueByKey("in").(int64)
+		out, _ := rc.ValueByKey("out").(int64)
+		return consts.DirectedLinkTime{
+			Time:      rc.Time(),
+			InDegree:  int(in),
+			OutDegree: int(out),
+		}
+	})
 }

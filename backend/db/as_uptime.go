@@ -159,5 +159,5 @@ func BGPLinks(bgpName string, asn uint32, startTime, stopTime time.Time, window 
 		log.Printf("query fail:%v", err)
 		return nil, ErrDatabase
 	}
-	return ReadTimeLinks(res)
+	return readTimeLinks(res)
 }

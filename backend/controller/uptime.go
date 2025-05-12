@@ -126,9 +126,6 @@ func OSPFLinks(c *gin.Context) {
 	c.JSON(200, Resp{
 		Code: 0,
 		Msg:  "ok",
-		Data: gin.H{
-			"out": links[0],
-			"in":  links[1],
-		},
+		Data: links,
 	})
 }

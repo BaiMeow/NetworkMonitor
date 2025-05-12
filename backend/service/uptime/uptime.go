@@ -50,7 +50,7 @@ func BGPLinks(bgpName string, asn uint32, window, t time.Duration) ([]consts.Lin
 	return links, nil
 }
 
-func OSPFLinks(asn uint32, routerId string, window, t time.Duration) (*[2][]consts.LinkTime, error) {
+func OSPFLinks(asn uint32, routerId string, window, t time.Duration) ([]consts.DirectedLinkTime, error) {
 	if !db.Enabled {
 		return nil, nil
 	}

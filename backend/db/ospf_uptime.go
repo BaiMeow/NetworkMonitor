@@ -6,11 +6,11 @@ import (
 	"github.com/BaiMeow/NetworkMonitor/consts"
 	"log"
 	"slices"
+	"strconv"
 	"time"
 )
 
-func OSPFLinks(ospfName string, routerId string, startTime, stopTime time.Time, window time.Duration) (*[2][]consts.LinkTime, error) {
-	var directedLinkTime [2][]consts.LinkTime
+func OSPFLinks(ospfName string, routerId string, startTime, stopTime time.Time, window time.Duration) ([]consts.DirectedLinkTime, error) {
 	if !Enabled {
 		return nil, ErrDatabaseDisabled
 	}
@@ -19,44 +19,31 @@ func OSPFLinks(ospfName string, routerId string, startTime, stopTime time.Time, 
 		return nil, err
 	}
 
-	// out degree
-	res1, err := dbQuery.Query(context.Background(), fmt.Sprintf(`from(bucket: "network")
-  |> range(start: %d, stop: %d)
-  |> filter(fn: (r) => r["_measurement"] == "%s" and r.src == "%s")
-  |> group(columns: ["_time"])
-  |> count(column: "_value")
-  |> group()
-  |> aggregateWindow(every: %s, fn: max, createEmpty: true)
-  |> yield(name: "max")`, startTime.Unix(), stopTime.Unix(), ospfName, routerId, every))
+	res, err := dbQuery.Query(context.Background(), fmt.Sprintf(`routerId = %s
+graphName = %s
+
+from(bucket: "network")
+    |> range(start: %d, stop: %d)
+    |> filter(
+        fn: (r) => r["_measurement"] == graphName and (r.src == routerId or r.dst == routerId),
+    )
+    |> group(columns: ["_time"])
+    |> reduce(
+        fn: (r, accumulator) =>
+            if r.src == routerId then
+                {in: accumulator.in, out: accumulator.out + 1, _value: accumulator._value + 1}
+            else
+                {in: accumulator.in + 1, out: accumulator.out, _value: accumulator._value + 1},
+        identity: {in: 0, out: 0, _value: 0},
+    )
+    |> group()
+    |> aggregateWindow(every: %s, fn: max, createEmpty: true)`, strconv.Quote(routerId), strconv.Quote(ospfName), startTime.Unix(), stopTime.Unix(), every))
 	if err != nil {
 		log.Printf("query fail:%v", err)
 		return nil, ErrDatabase
 	}
 
-	directedLinkTime[0], err = ReadTimeLinks(res1)
-	if err != nil {
-		return nil, err
-	}
-
-	// in degree
-	res2, err := dbQuery.Query(context.Background(), fmt.Sprintf(`from(bucket: "network")
-  |> range(start: %d, stop: %d)
-  |> filter(fn: (r) => r["_measurement"] == "%s" and r.dst=="%s")
-  |> group(columns: ["_time"])
-  |> count(column: "_value")
-  |> group()
-  |> aggregateWindow(every: %s, fn: max, createEmpty: true)
-  |> yield(name: "max")`, startTime.Unix(), stopTime.Unix(), ospfName, routerId, every))
-	if err != nil {
-		log.Printf("query fail:%v", err)
-		return nil, ErrDatabase
-
-	}
-	directedLinkTime[1], err = ReadTimeLinks(res2)
-	if err!=nil{
-		return nil,err
-	}
-	return &directedLinkTime, err
+	return readDirectedTimeLinks(res)
 }
 
 func OSPFRouterLast10Tickers(ospfName string, routerId string) ([]bool, error) {

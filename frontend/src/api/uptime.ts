@@ -8,14 +8,21 @@ export interface UptimeLinks {
   links: number
 }
 
+export interface DirectedUptimeLink{
+  time: Date
+  in_degree: number
+  out_degree: number
+}
+
 interface UptimeLinksResp {
   time: string
   links: number
 }
 
-interface OSPFUptimeLinksResp {
-  in: UptimeLinks[]
-  out: UptimeLinks[]
+interface UptimeDirectedLinksResp {
+  time:string
+  in_degree:number
+  out_degree: number
 }
 
 export async function getBGPUptimeRecent(grName: string, asn: number) {
@@ -82,22 +89,14 @@ export async function getOSPFUptimeLinks(
         },
       },
     )
-    const data = res.data as Resp<OSPFUptimeLinksResp>
+    const data = res.data as Resp<Array<UptimeDirectedLinksResp>>
     if (data.code !== 0) {
       throw new Error(data.msg)
     }
+  return data.data.map((item) => {
     return {
-      in: data.data.in.map((item) => {
-        return {
-          time: new Date(item.time),
-          links: item.links,
-        }
-      }),
-      out: data.data.out.map((item) => {
-        return {
-          time: new Date(item.time),
-          links: item.links,
-        }
-      }),
+      ...item,
+      time: new Date(item.time),
     }
+  })
 }
