@@ -13,7 +13,7 @@ const timeAgo = useTimeAgo(() => updated_time.value || 0,{
   <div
     v-if="updated_time"
     :class="
-      new Date().valueOf() - updated_time.valueOf() > 1000 * 60
+      new Date().valueOf() - updated_time.valueOf() > 1000 * 120
         ? 'old-alert'
         : ''
     "
