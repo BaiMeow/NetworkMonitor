@@ -20,7 +20,7 @@ const updated_time = useUpdatedTime()
 .time-stamp {
   color: whitesmoke;
   font-weight: 600;
-  background-color: rgb(255, 157, 87);
+  background-color: green;
   padding: 2px 4px;
   border-radius: 5px;
   position: absolute;
@@ -33,14 +33,14 @@ const updated_time = useUpdatedTime()
 }
 
 .dark .time-stamp {
-  background-color: chocolate;
+  background-color: green;
 }
 
 .old-alert {
-  background-color: rgb(227, 38, 38);
+  background-color: rgb(180, 110, 0);
 }
 
 .dark .old-alert {
-  background-color: rgb(188, 18, 18);
+  background-color: rgb(180, 110, 0);
 }
 </style>
