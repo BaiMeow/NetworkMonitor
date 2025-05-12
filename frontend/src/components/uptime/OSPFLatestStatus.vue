@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { ref, onUnmounted } from 'vue'
-import { getBGPUptimeRecent } from '@/api/uptime'
+import { getOSPFUptimeRecent } from '@/api/uptime'
 
-const { grName, asn } = defineProps<{
-  grName: string
+const { asn,routerId } = defineProps<{
   asn: number
+  routerId: string
 }>()
 
 const uptime10 = ref([
@@ -21,7 +21,7 @@ const uptime10 = ref([
 ])
 
 const update = async () => {
-  const uptimes = await getBGPUptimeRecent(grName, asn)
+  const uptimes = await getOSPFUptimeRecent(asn,routerId)
   uptime10.value = uptimes.slice(0, 10)
 }
 update()

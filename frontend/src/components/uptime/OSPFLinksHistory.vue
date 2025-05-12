@@ -1,6 +1,6 @@
 <!-- eslint-disable @typescript-eslint/no-explicit-any -->
 <script setup lang="ts">
-import { getUptimeLinks, UptimeLinks } from '@/api/uptime'
+import { getOSPFUptimeLinks, UptimeLinks } from '@/api/uptime'
 import { ref, reactive, onUnmounted, computed, watch } from 'vue'
 import VChart from 'vue-echarts'
 import { graphic } from 'echarts/core'
@@ -14,9 +14,9 @@ import { use } from 'echarts/core'
 import { parseDuration } from '@/utils/time'
 import { useDark } from '@vueuse/core'
 import { fontColor } from '@/state/font'
-const { grName, asn, time } = defineProps<{
-  grName: string
+const { asn, routerId, time } = defineProps<{
   asn: number
+  routerId: string
   time: string
 }>()
 
@@ -29,9 +29,40 @@ const data = ref(Array<UptimeLinks>())
 
 use([LineChart, GridComponent, DataZoomComponent, ToolboxComponent])
 
+const itemStyle = {
+  color: computed(() =>
+    isDark.value ? 'rgb(214, 36, 95)' : 'rgb(255, 70, 131)',
+  ),
+}
+const areaStyle = {
+  color: computed(() =>
+    isDark.value
+      ? new graphic.LinearGradient(0, 0, 0, 1, [
+          {
+            offset: 0,
+            color: 'rgb(191, 119, 51)',
+          },
+          {
+            offset: 1,
+            color: 'rgb(214, 36, 95)',
+          },
+        ])
+      : new graphic.LinearGradient(0, 0, 0, 1, [
+          {
+            offset: 0,
+            color: 'rgb(255, 158, 68)',
+          },
+          {
+            offset: 1,
+            color: 'rgb(255, 70, 131)',
+          },
+        ]),
+  ),
+}
+
 const option: any = reactive({
   title: {
-    text: 'Peer AS Count',
+    text: 'Peer Router',
     textStyle: {
       color: fontColor,
     },
@@ -65,49 +96,31 @@ const option: any = reactive({
   },
   series: [
     {
-      name: 'Peer AS',
+      name: 'In',
       type: 'line',
       symbol: 'none',
       sampling: 'lttb',
       data: [],
-      itemStyle: {
-        color: computed(() =>
-          isDark.value ? 'rgb(214, 36, 95)' : 'rgb(255, 70, 131)',
-        ),
-      },
-      areaStyle: {
-        color: computed(() =>
-          isDark.value
-            ? new graphic.LinearGradient(0, 0, 0, 1, [
-                {
-                  offset: 0,
-                  color: 'rgb(191, 119, 51)',
-                },
-                {
-                  offset: 1,
-                  color: 'rgb(214, 36, 95)',
-                },
-              ])
-            : new graphic.LinearGradient(0, 0, 0, 1, [
-                {
-                  offset: 0,
-                  color: 'rgb(255, 158, 68)',
-                },
-                {
-                  offset: 1,
-                  color: 'rgb(255, 70, 131)',
-                },
-              ]),
-        ),
-      },
+      itemStyle: itemStyle,
+      areaStyle: areaStyle,
+    },
+    {
+      name: 'Out',
+      type: 'line',
+      symbol: 'none',
+      sampling: 'lttb',
+      data: [],
+      itemStyle: itemStyle,
+      areaStyle: areaStyle,
     },
   ],
 })
 
 const refreshData = async () => {
-  data.value = await getUptimeLinks(grName, asn, time, window.value)
-  option.series[0].data = data.value.map((d) => d.links)
-  option.xAxis.data = data.value.map(
+  data.value = await getOSPFUptimeLinks(asn, routerId, time, window.value)
+  option.series[0].data = data.value.in.map((d) => d.links)
+  option.series[1].data = data.value.out.map((d) => d.links)
+  option.xAxis.data = data.value.in.map(
     (d) =>
       `${d.time.getMonth() + 1}/${d.time.getDate()} ${d.time.getHours()}:${d.time.getMinutes()}`,
   )

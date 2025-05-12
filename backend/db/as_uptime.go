@@ -8,6 +8,7 @@ import (
 	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
 	"github.com/influxdata/influxdb-client-go/v2/api/write"
 	"log"
+	"slices"
 	"strconv"
 	"time"
 )
@@ -123,6 +124,10 @@ func BGPASNLast10Tickers(bgpName string, asn uint32) ([]bool, error) {
 	var t []bool
 	for res.Next() {
 		t = append(t, res.Record().Value() != nil)
+	}
+	// no data
+	if len(t) == 0 {
+		return slices.Repeat([]bool{false}, 10), nil
 	}
 	if len(t) < 10 {
 		log.Printf("parse query fail:%v", err)

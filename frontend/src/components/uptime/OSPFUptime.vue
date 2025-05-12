@@ -1,13 +1,10 @@
 <script setup lang="ts">
-import { useASMeta } from '@/state/meta'
 import { ref } from 'vue'
 
-const { grName, asn } = defineProps<{
-  grName: string
+const { asn, routerId } = defineProps<{
   asn: number
+  routerId: string
 }>()
-
-const ASMeta = useASMeta()
 
 const graph_mode = ref('24h')
 </script>
@@ -15,14 +12,8 @@ const graph_mode = ref('24h')
 <template>
   <div class="uptime-panel">
     <div class="uptime-head">
-      <div class="title">
-        {{
-          ASMeta?.metadata?.[asn + '']?.display
-            ? `${ASMeta.metadata[asn + ''].display} Network`
-            : `AS ${asn}`
-        }}
-      </div>
-      <BGPLatestStatus :grName="grName" class="status-bar" :asn="asn" />
+      <div class="title">Router {{ routerId }}</div>
+      <OSPFLatestStatus class="status-bar" :asn="asn" :routerId="routerId" />
     </div>
     <div class="uptime-body">
       <div class="wrap-graph">
@@ -30,10 +21,10 @@ const graph_mode = ref('24h')
           <el-option value="24h" label="1 day" />
           <el-option value="168h" label="7 days" />
         </el-select>
-        <BGPLinksHistory
+        <OSPFLinksHistory
           class="links-graph"
-          :grName="grName"
           :asn="asn"
+          :routerId="routerId"
           :time="graph_mode"
         />
       </div>
@@ -42,6 +33,9 @@ const graph_mode = ref('24h')
 </template>
 
 <style scoped>
+.title {
+  margin-left: 1rem;
+}
 .uptime-panel {
   display: flex;
   flex-direction: column;
@@ -62,6 +56,7 @@ const graph_mode = ref('24h')
   border-top-right-radius: 20px;
   background-color: rgba(176, 190, 197, 0.5);
   padding: 20px;
+  padding-bottom: 10px;
   height: 3rem;
   font-weight: bold;
   color: black;

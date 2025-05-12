@@ -5,6 +5,7 @@ import { watch, computed, ref } from 'vue'
 import { use } from 'echarts/core'
 import { CanvasRenderer } from 'echarts/renderers'
 import { GraphChart } from 'echarts/charts'
+import { ECElementEvent, ElementEvent } from 'echarts'
 import { TooltipComponent, TitleComponent } from 'echarts/components'
 
 import { getOSPF, Router } from '../api/ospf'
@@ -385,7 +386,8 @@ watch(
 
 let timer: ReturnType<typeof setTimeout> | null = null
 
-const { handleMouseUp, handleMouseDown } = useGraphEvent()
+const { handleClick, handleZrClick, handleMouseUp, handleMouseDown } =
+  useGraphEvent()
 handleMouseDown.value = () => {
   if (timer) {
     clearTimeout(timer)
@@ -405,9 +407,58 @@ onBeforeRouteLeave(() => {
     clearTimeout(timer)
   }
 })
+
+const uptimeRouterId = ref(0)
+
+handleClick.value = (e: ECElementEvent) => {
+  if (e.dataType === 'node') {
+    const data = e.data as Node
+    uptimeRouterId.value = data.name
+  }
+}
+
+handleZrClick.value = (e: ElementEvent) => {
+  if (e.target === undefined) {
+    uptimeRouterId.value = 0
+  }
+}
 </script>
 
 <template>
-  <div></div>
+  <Transition name="fade" appear>
+    <OSPFUptime
+      class="uptime"
+      v-if="uptimeRouterId"
+      :routerId="uptimeRouterId"
+      :asn="asn"
+    />
+  </Transition>
 </template>
-<style scoped></style>
+<style scoped>
+.uptime {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 80vw;
+  height: 80vh;
+  margin: auto;
+}
+
+.fade-enter-active {
+  transition: all 0.2s ease-in;
+}
+.fade-leave-active {
+  transition: all 0.2s ease-out;
+}
+
+.fade-enter-from {
+  opacity: 0;
+}
+
+.fade-enter,
+.fade-leave-to {
+  opacity: 0;
+}
+</style>

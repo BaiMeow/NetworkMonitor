@@ -13,7 +13,12 @@ interface UptimeLinksResp {
   links: number
 }
 
-export async function getUptimeRecent(grName: string, asn: number) {
+interface OSPFUptimeLinksResp {
+  in: UptimeLinks[]
+  out: UptimeLinks[]
+}
+
+export async function getBGPUptimeRecent(grName: string, asn: number) {
   const res = await axios.get(
     `${ApiHost}/api/bgp/${grName}/uptime/${asn}/recent`,
   )
@@ -24,7 +29,7 @@ export async function getUptimeRecent(grName: string, asn: number) {
   return data.data
 }
 
-export async function getUptimeLinks(
+export async function getBGPUptimeLinks(
   grName: string,
   asn: number,
   time: string,
@@ -49,4 +54,50 @@ export async function getUptimeLinks(
       links: item.links,
     }
   })
+}
+
+export async function getOSPFUptimeRecent(asn: number, routerId: string) {
+  const res = await axios.get(
+    `${ApiHost}/api/ospf/${asn}/uptime/${routerId}/recent`,
+  )
+  const data = res.data as Resp<UptimeRecent>
+  if (data.code !== 0) {
+    throw new Error(data.msg)
+  }
+  return data.data
+}
+
+export async function getOSPFUptimeLinks(
+  asn: number,
+  routerId: string,
+  time: string,
+  window: string,
+) {
+    const res = await axios.get(
+      `${ApiHost}/api/ospf/${asn}/uptime/${routerId}/links`,
+      {
+        params: {
+          time,
+          window,
+        },
+      },
+    )
+    const data = res.data as Resp<OSPFUptimeLinksResp>
+    if (data.code !== 0) {
+      throw new Error(data.msg)
+    }
+    return {
+      in: data.data.in.map((item) => {
+        return {
+          time: new Date(item.time),
+          links: item.links,
+        }
+      }),
+      out: data.data.out.map((item) => {
+        return {
+          time: new Date(item.time),
+          links: item.links,
+        }
+      }),
+    }
 }

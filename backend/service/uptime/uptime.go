@@ -50,7 +50,7 @@ func BGPLinks(bgpName string, asn uint32, window, t time.Duration) ([]consts.Lin
 	return links, nil
 }
 
-func OSPFLinks(asn uint32,routerId string,window,t time.Duration)([]consts.LinkTime,error){
+func OSPFLinks(asn uint32, routerId string, window, t time.Duration) (*[2][]consts.LinkTime, error) {
 	if !db.Enabled {
 		return nil, nil
 	}
@@ -62,9 +62,20 @@ func OSPFLinks(asn uint32,routerId string,window,t time.Duration)([]consts.LinkT
 	}
 	stopTime := utils.LastUptimeTick()
 	startTime := stopTime.Add(-t)
-	links, err := db.OSPFLinks(fmt.Sprintf("bgp-%d", asn), routerId, startTime, stopTime, window)
+	links, err := db.OSPFLinks(fmt.Sprintf("ospf-%d", asn), routerId, startTime, stopTime, window)
 	if err != nil {
 		return links, fmt.Errorf("get links fail:%v", err)
 	}
 	return links, nil
+}
+
+func Last10OSPFTickerRecord(asn uint32, routerId string) ([]bool, error) {
+	if !db.Enabled {
+		return nil, nil
+	}
+	records, err := db.OSPFRouterLast10Tickers(fmt.Sprintf("ospf-%d", asn), routerId)
+	if err != nil {
+		return nil, fmt.Errorf("get last 10 tickers fail:%v", err)
+	}
+	return records, nil
 }

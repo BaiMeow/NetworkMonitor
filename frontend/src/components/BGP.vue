@@ -478,14 +478,6 @@ onBeforeRouteLeave(() => {
   margin: auto;
 }
 
-.graph {
-  height: 100dvh;
-  width: 100vw;
-  top: 0;
-  left: 0;
-  position: absolute;
-}
-
 .fade-enter-active {
   transition: all 0.2s ease-in;
 }
