@@ -1,6 +1,6 @@
 <!-- eslint-disable @typescript-eslint/no-explicit-any -->
 <script setup lang="ts">
-import { getOSPFUptimeLinks, UptimeLinks } from '@/api/uptime'
+import { DirectedUptimeLink, getOSPFUptimeLinks } from '@/api/uptime'
 import { ref, reactive, onUnmounted, computed, watch } from 'vue'
 import VChart from 'vue-echarts'
 import { graphic } from 'echarts/core'
@@ -25,7 +25,7 @@ const window = computed(() =>
   parseDuration(time) > parseDuration('24h') ? '1h' : '1m',
 )
 
-const data = ref(Array<UptimeLinks>())
+const data = ref(Array<DirectedUptimeLink>())
 
 use([LineChart, GridComponent, DataZoomComponent, ToolboxComponent])
 

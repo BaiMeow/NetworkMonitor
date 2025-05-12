@@ -408,7 +408,7 @@ onBeforeRouteLeave(() => {
   }
 })
 
-const uptimeRouterId = ref(0)
+const uptimeRouterId = ref("")
 
 handleClick.value = (e: ECElementEvent) => {
   if (e.dataType === 'node') {
@@ -419,7 +419,7 @@ handleClick.value = (e: ECElementEvent) => {
 
 handleZrClick.value = (e: ElementEvent) => {
   if (e.target === undefined) {
-    uptimeRouterId.value = 0
+    uptimeRouterId.value = ""
   }
 }
 </script>
