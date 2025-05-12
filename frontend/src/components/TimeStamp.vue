@@ -3,9 +3,9 @@ import { useUpdatedTime } from '@/state/updated_time'
 import { useTimeAgo } from '@vueuse/core'
 
 const updated_time = useUpdatedTime()
-const timeAgo = useTimeAgo(() => updated_time.value || 0,{
-  updateInterval:1000,
-  showSecond:true
+const timeAgo = useTimeAgo(() => updated_time.value || 0, {
+  updateInterval: 1000,
+  showSecond: true,
 })
 </script>
 
@@ -19,9 +19,8 @@ const timeAgo = useTimeAgo(() => updated_time.value || 0,{
     "
     class="time-stamp"
   >
-    <i-ep:refresh class="time-stamp-icon" /><span class="time-stamp-text">
-      {{ timeAgo }}</span
-    >
+    <i-ep:refresh class="time-stamp-icon" />
+    <span class="time-stamp-text"> {{ timeAgo }}</span>
   </div>
 </template>
 
