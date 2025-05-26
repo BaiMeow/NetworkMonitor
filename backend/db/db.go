@@ -38,18 +38,20 @@ func Init() error {
 		return fmt.Errorf("find bucket fail:%v", err)
 	}
 
-	if slices.IndexFunc(*buckets, func(bucket domain.Bucket) bool {
-		return bucket.Name == bucketNetwork
-	}) == -1 {
-		log.Printf("create bucket %s\n", bucketNetwork)
-		org, err := c.OrganizationsAPI().FindOrganizationByName(context.Background(), conf.Influxdb.Org)
-		if err != nil {
-			return fmt.Errorf("org %s not existed:%v\n", conf.Influxdb.Org, err)
-		}
-		if _, err := c.BucketsAPI().CreateBucketWithName(context.Background(), org, bucketNetwork, domain.RetentionRule{
-			EverySeconds: int64(conf.Uptime.StoreDuration / time.Second),
-		}); err != nil {
-			return fmt.Errorf("create bucket fail:%v", err)
+	for _, name := range []string{bucketNetwork, bucketPeerCount} {
+		if slices.IndexFunc(*buckets, func(bucket domain.Bucket) bool {
+			return bucket.Name == name
+		}) == -1 {
+			log.Printf("create bucket %s\n", name)
+			org, err := c.OrganizationsAPI().FindOrganizationByName(context.Background(), conf.Influxdb.Org)
+			if err != nil {
+				return fmt.Errorf("org %s not existed:%v\n", conf.Influxdb.Org, err)
+			}
+			if _, err := c.BucketsAPI().CreateBucketWithName(context.Background(), org, name, domain.RetentionRule{
+				EverySeconds: int64(conf.Uptime.StoreDuration / time.Second),
+			}); err != nil {
+				return fmt.Errorf("create bucket fail:%v", err)
+			}
 		}
 	}
 
