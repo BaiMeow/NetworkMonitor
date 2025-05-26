@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func ParseWindow(window time.Duration) (string, error) {
+func parseWindow(window time.Duration) (string, error) {
 	if window == time.Minute {
 		return "1m", nil
 	} else if window == time.Hour {

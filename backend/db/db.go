@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/BaiMeow/NetworkMonitor/conf"
-	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
+	influxdb "github.com/influxdata/influxdb-client-go/v2"
 	"github.com/influxdata/influxdb-client-go/v2/api"
 	"github.com/influxdata/influxdb-client-go/v2/domain"
 	"log"
@@ -13,21 +13,25 @@ import (
 )
 
 var (
-	dbWrite api.WriteAPIBlocking
-	dbQuery api.QueryAPI
-	Enabled = false
+	networkWrite   api.WriteAPIBlocking
+	peerCountWrite api.WriteAPIBlocking
+	allQuery       api.QueryAPI
+	Enabled        = false
 )
 
 var ErrDatabaseDisabled = fmt.Errorf("database not enabled")
 var ErrInvalidInput = fmt.Errorf("input parameter invalid")
 
-const bucketNetwork = "network"
+const (
+	bucketNetwork   = "network"
+	bucketPeerCount = "peerCount"
+)
 
 func Init() error {
 	if conf.Influxdb.Addr == "" {
 		return ErrDatabaseDisabled
 	}
-	c := influxdb2.NewClient(conf.Influxdb.Addr, conf.Influxdb.Token)
+	c := influxdb.NewClient(conf.Influxdb.Addr, conf.Influxdb.Token)
 	// normally less than 20 buckets, no check page
 	buckets, err := c.BucketsAPI().FindBucketsByOrgName(context.Background(), conf.Influxdb.Org)
 	if err != nil {
@@ -49,8 +53,9 @@ func Init() error {
 		}
 	}
 
-	dbWrite = c.WriteAPIBlocking(conf.Influxdb.Org, bucketNetwork)
-	dbQuery = c.QueryAPI(conf.Influxdb.Org)
+	networkWrite = c.WriteAPIBlocking(conf.Influxdb.Org, bucketNetwork)
+	peerCountWrite = c.WriteAPIBlocking(conf.Influxdb.Org, bucketPeerCount)
+	allQuery = c.QueryAPI(conf.Influxdb.Org)
 
 	Enabled = true
 
