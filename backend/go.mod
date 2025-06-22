@@ -12,8 +12,13 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/pkg/sftp v1.13.7
 	github.com/spf13/viper v1.16.0
-	github.com/stretchr/testify v1.9.0
+	github.com/stretchr/testify v1.10.0
 	golang.org/x/crypto v0.34.0
+)
+
+require (
+	github.com/jellydator/ttlcache/v3 v3.4.0 // indirect
+	golang.org/x/sync v0.15.0 // indirect
 )
 
 require (

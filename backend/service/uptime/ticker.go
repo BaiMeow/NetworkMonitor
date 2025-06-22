@@ -35,6 +35,14 @@ func tickerInsertDB() {
 			if t.Add(conf.Uptime.Interval).Before(now) {
 				continue
 			}
+			// update ASN List cache
+			item := cacheAllASN.Get(k)
+			if item != nil {
+				v := item.Value()
+				for _, AS := range data.AS {
+					v[AS.ASN] = struct{}{}
+				}
+			}
 			err := db.BatchRecordBGP(k, data, t)
 			log.Printf("record bgp graph %s at %v", k, now)
 			if err != nil {

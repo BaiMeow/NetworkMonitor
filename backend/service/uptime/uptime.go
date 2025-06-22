@@ -2,10 +2,11 @@ package uptime
 
 import (
 	"fmt"
-	"github.com/BaiMeow/NetworkMonitor/conf"
 	"github.com/BaiMeow/NetworkMonitor/consts"
 	"github.com/BaiMeow/NetworkMonitor/db"
 	"github.com/BaiMeow/NetworkMonitor/utils"
+	"maps"
+	"slices"
 	"time"
 )
 
@@ -13,11 +14,11 @@ func AllASNRecord(bgpName string) ([]uint32, error) {
 	if !db.Enabled {
 		return nil, nil
 	}
-	ASNs, err := db.AllASRecordAfter(fmt.Sprintf("bgp-%s", bgpName), time.Now().Add(-conf.Uptime.StoreDuration))
-	if err != nil {
-		return nil, fmt.Errorf("get all recorded as fail:%v", err)
+	item := cacheAllASN.Get(bgpName)
+	if item == nil {
+		return nil, nil
 	}
-	return ASNs, nil
+	return slices.Collect(maps.Keys(item.Value())), nil
 }
 
 func Last10BGPTickerRecord(bgpName string, asn uint32) ([]bool, error) {
