@@ -21,9 +21,11 @@ import { setUpdatedTime } from '@/state/updated_time'
 const route = useRoute()
 use([CanvasRenderer, GraphChart, TooltipComponent, TitleComponent])
 const isDark = useDark()
-const uptimeRouterId = ref("")
+const uptimeRouterId = ref('')
 
 const { option, selectList, loading } = useGraph()
+
+let firstLoading = true
 
 loading.value = true
 
@@ -172,8 +174,9 @@ let autoRefreshInterval: ReturnType<typeof setTimeout>
 watch(
   [asn],
   () => {
-    uptimeRouterId.value = ""
+    uptimeRouterId.value = ''
     if (autoRefreshInterval) clearInterval(autoRefreshInterval)
+    firstLoading = true
     loadData()
     autoRefreshInterval = setInterval(() => {
       loadData()
@@ -376,17 +379,23 @@ watch([nodes], () => {
   })
 })
 
-watch(
-  ospfData,
-  async () => {
-    await renderData()
-    option.series[0].force.layoutAnimation = false
-    loading.value = false
-  },
-  { immediate: true },
-)
-
 let timer: ReturnType<typeof setTimeout> | null = null
+watch(ospfData, async () => {
+  if (!firstLoading) {
+    option.series[0].force.layoutAnimation = true
+  }
+  await renderData()
+  loading.value = false
+  if (!firstLoading) {
+    if (timer) {
+      clearTimeout(timer)
+    }
+    timer = setTimeout(() => {
+      option.series[0].force.layoutAnimation = false
+    }, 3000)
+  }
+  firstLoading = false
+})
 
 const { handleClick, handleZrClick, handleMouseUp, handleMouseDown } =
   useGraphEvent()
@@ -419,7 +428,7 @@ handleClick.value = (e: ECElementEvent) => {
 
 handleZrClick.value = (e: ElementEvent) => {
   if (e.target === undefined) {
-    uptimeRouterId.value = ""
+    uptimeRouterId.value = ''
   }
 }
 </script>

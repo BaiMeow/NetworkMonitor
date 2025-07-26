@@ -24,6 +24,8 @@ const isDark = useDark()
 
 const ASMeta = useASMeta()
 
+let firstLoading = true;
+
 interface Edge {
   source: string
   target: string
@@ -277,17 +279,23 @@ const edges = computed(() =>
   }, [] as Edge[]),
 )
 
+let timer: ReturnType<typeof setTimeout>
+
 // update graph
 watch([nodes, edges], async () => {
   if (!nodes.value || !edges.value) {
     return
   }
+
+  let loading = false
   const setLoadingOnce = (() => {
-    let once = false
     return () => {
-      if (once) return
-      once = true
+      if (loading) return
+      loading = true
       option.series[0].force.friction = 1
+      if (!firstLoading){
+        option.series[0].focus.layoutAnimation = true
+      }
       return
     }
   })()
@@ -365,6 +373,15 @@ watch([nodes, edges], async () => {
   option.series[0].force.friction = 0.15
   if (bgpData.value?.updated_at) setUpdatedTime(bgpData.value?.updated_at)
   graphLoading.value = false
+
+  if (!firstLoading && loading) {
+    if (timer) {
+      clearTimeout(timer)
+    }
+    timer = setTimeout(() => {
+      option.series[0].force.layoutAnimation = false
+    }, 3000)
+  }
 })
 
 // update selectList
@@ -404,15 +421,17 @@ async function loadData(name: string) {
   betweenness.value = await getBetweenness(name)
   bgpData.value = await getBGP(name)
 }
-watch(name, loadData, {
+
+watch(name, async ()=>{
+  firstLoading = true;
+  await loadData(name.value);
+}, {
   immediate: true,
 })
 
 const interval = setInterval(() => {
   loadData(name.value)
 }, 60 * 1000)
-
-let timer: ReturnType<typeof setTimeout>
 
 const { handleClick, handleMouseDown, handleMouseUp, handleZrClick } =
   useGraphEvent()
