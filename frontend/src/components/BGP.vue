@@ -319,21 +319,17 @@ watch([nodes, edges], async () => {
       continue
     }
 
-    if (option.series[0].data[i].peer_num !== nodes.value[idx].peer_num)
-      option.series[0].data[i].peer_num = nodes.value[idx].peer_num
+    const graphNode = option.series[0].data[i];
+    const dataNode = nodes.value[idx];
 
-    if (
-      option.series[0].data[i].network.join('|') !==
-      nodes.value[idx].network.join('|')
-    )
-      option.series[0].data[i].network = nodes.value[idx].network
-
-    if (
-      JSON.stringify(option.series[0].data[i].meta) !==
-      JSON.stringify(nodes.value[idx].meta)
-    ) {
-      option.series[0].data[i] = nodes.value[idx]
+    // existed, sync object
+    for (let graphNodeKey in graphNode){
+      if (!(graphNodeKey in dataNode)){
+        delete graphNode[graphNodeKey];
+      }
     }
+
+    Object.assign(graphNode,dataNode)
   }
 
   // add new nodes
