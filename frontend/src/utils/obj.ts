@@ -1,19 +1,36 @@
-export function mergeObjects(obj1: any, obj2: any): any {
-  for (const key in obj2) {
-    if (
-      obj2.hasOwnProperty(key) &&
-      (obj1.hasOwnProperty(key) || !(key in obj1))
-    ) {
-      if (
-        typeof obj2[key] === 'object' &&
-        obj2[key] !== null &&
-        typeof obj1[key] === 'object' &&
-        obj1[key] !== null
-      ) {
-        mergeObjects(obj1[key], obj2[key])
-      } else {
-        obj1[key] = obj2[key]
-      }
-    }
+export function deepEqual<T>(a: T, b: T): boolean {
+  if (a === b) return true
+
+  if (
+    typeof a !== 'object' ||
+    a === null ||
+    typeof b !== 'object' ||
+    b === null
+  ) {
+    return false
   }
+
+  if (Array.isArray(a) && Array.isArray(b)) {
+    if (a.length !== b.length) return false
+    for (let i = 0; i < a.length; i++) {
+      if (!deepEqual(a[i], b[i])) return false
+    }
+    return true
+  }
+
+  if (Array.isArray(a) !== Array.isArray(b)) {
+    return false
+  }
+
+  const keysA = Object.keys(a) as (keyof T)[]
+  const keysB = Object.keys(b) as (keyof T)[]
+
+  if (keysA.length !== keysB.length) return false
+
+  for (const key of keysA) {
+    if (!keysB.includes(key)) return false
+    if (!deepEqual(a[key], b[key])) return false
+  }
+
+  return true
 }

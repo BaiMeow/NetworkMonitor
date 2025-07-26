@@ -12,7 +12,7 @@ import { prettierNet } from '../utils/colornet'
 import { ASData } from '../api/meta'
 import BGPUptime from './uptime/BGPUptime.vue'
 import { useDark } from '@vueuse/core'
-import { mergeObjects } from '../utils/obj'
+import { deepEqual } from '../utils/obj'
 import { useGraph, useGraphEvent } from '@/state/graph'
 import { useRoute, onBeforeRouteLeave } from 'vue-router'
 import { dispatchEchartAction } from '@/state/graph'
@@ -247,7 +247,7 @@ const nodes = computed(() =>
 
       const nodeMeta = ASMeta.value?.metadata?.[node.name]
       if (nodeMeta?.monitor?.customNode) {
-        mergeObjects(node, nodeMeta.monitor?.customNode)
+        Object.assign(node,nodeMeta.monitor?.customNode)
       }
       if (nodeMeta) {
         node.meta = nodeMeta
@@ -325,11 +325,15 @@ watch([nodes, edges], async () => {
     // existed, sync object
     for (let graphNodeKey in graphNode){
       if (!(graphNodeKey in dataNode)){
+        setLoadingOnce()
         delete graphNode[graphNodeKey];
       }
     }
 
-    Object.assign(graphNode,dataNode)
+    if (!deepEqual(graphNode,dataNode)){
+      setLoadingOnce()
+      Object.assign(graphNode,dataNode)
+    }
   }
 
   // add new nodes
