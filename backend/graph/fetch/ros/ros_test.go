@@ -5,9 +5,15 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/gob"
+	"github.com/BaiMeow/NetworkMonitor/trace"
 	"github.com/go-routeros/routeros/v3/proto"
+	"go.opentelemetry.io/otel/trace/noop"
 	"testing"
 )
+
+func init() {
+	trace.Tracer = noop.Tracer{}
+}
 
 func TestROS6_GetData(t *testing.T) {
 	ros6 := &ROS{

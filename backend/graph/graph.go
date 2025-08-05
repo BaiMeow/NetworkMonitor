@@ -6,7 +6,11 @@ import (
 	"github.com/BaiMeow/NetworkMonitor/conf"
 	"github.com/BaiMeow/NetworkMonitor/graph/analysis"
 	"github.com/BaiMeow/NetworkMonitor/graph/entity"
+	"github.com/BaiMeow/NetworkMonitor/trace"
+	"go.opentelemetry.io/otel/attribute"
+	oteltrace "go.opentelemetry.io/otel/trace"
 	"log"
+
 	"slices"
 	"strconv"
 	"sync"
@@ -165,6 +169,14 @@ func newOSPFGraph(asn uint32) *OSPF {
 }
 
 func (o *OSPF) Draw(ctx context.Context) {
+	ctx, span := trace.Tracer.Start(ctx,
+		"OSPF.Draw",
+		oteltrace.WithAttributes(
+			attribute.String("name", o.name),
+			attribute.Int64("asn", int64(o.asn)),
+		))
+	defer span.End()
+
 	if o.disabled {
 		return
 	}
@@ -228,6 +240,13 @@ func newBGPGraph(name string) *BGP {
 }
 
 func (b *BGP) Draw(ctx context.Context) {
+	ctx, span := trace.Tracer.Start(ctx,
+		"BGP.Draw",
+		oteltrace.WithAttributes(
+			attribute.String("name", b.name),
+		))
+	defer span.End()
+
 	if b.disabled {
 		return
 	}

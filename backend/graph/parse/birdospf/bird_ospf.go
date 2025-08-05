@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/BaiMeow/NetworkMonitor/graph/entity"
+	"github.com/BaiMeow/NetworkMonitor/trace"
 	"log"
 	"strconv"
 
@@ -28,6 +29,11 @@ type BirdOSPF struct {
 }
 
 func (p *BirdOSPF) Parse(ctx context.Context, input any) (*entity.OSPF, error) {
+	ctx, span := trace.Tracer.Start(ctx,
+		"parse/birdospf/BirdOSPF.Parse",
+	)
+	defer span.End()
+
 	data, ok := input.([]byte)
 	if !ok {
 		return nil, fmt.Errorf("input of birdospf parser must be []byte")

@@ -2,11 +2,17 @@ package mrtbgp
 
 import (
 	"context"
+	"github.com/BaiMeow/NetworkMonitor/trace"
+	"go.opentelemetry.io/otel/trace/noop"
 	"io"
 	"os"
 	"path/filepath"
 	"testing"
 )
+
+func init() {
+	trace.Tracer = noop.Tracer{}
+}
 
 func TestMrtAddPath(t *testing.T) {
 	dir, err := os.ReadDir("./testfile")

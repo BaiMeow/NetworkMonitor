@@ -47,3 +47,7 @@ type UptimeCfg struct {
 	StoreDuration time.Duration
 	Interval      time.Duration
 }
+
+type Tracer struct {
+	Endpoint string
+}

@@ -4,11 +4,13 @@ import (
 	"context"
 	"fmt"
 	"github.com/BaiMeow/NetworkMonitor/graph/fetch"
+	"github.com/BaiMeow/NetworkMonitor/trace"
 	"github.com/BaiMeow/NetworkMonitor/utils"
 	apipb "github.com/osrg/gobgp/v3/api"
 	gobgplog "github.com/osrg/gobgp/v3/pkg/log"
 	"github.com/osrg/gobgp/v3/pkg/server"
 	"github.com/pkg/errors"
+	"go.opentelemetry.io/otel/attribute"
 	"log"
 	"net/netip"
 	"time"
@@ -192,12 +194,18 @@ type BGP struct {
 }
 
 func (f *BGP) GetData(ctx context.Context) (any, error) {
+	ctx, span := trace.Tracer.Start(ctx,
+		"fetch/bgp/BGP.GetData",
+	)
+	defer span.End()
+
 	// Wait ESTABLISHED
 	for i := 0; i < 10; i++ {
 		var established bool
 		if err := f.s.ListPeer(ctx, &apipb.ListPeerRequest{}, func(peer *apipb.Peer) {
 			if peer.State.SessionState == apipb.PeerState_ESTABLISHED {
 				established = true
+				span.SetAttributes(attribute.String("peer", peer.Transport.RemoteAddress))
 				if i != 0 {
 					log.Println("BGP Session State:", peer.State.SessionState)
 				}

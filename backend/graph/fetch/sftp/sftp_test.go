@@ -4,10 +4,16 @@ import (
 	"context"
 	"encoding/base64"
 	"github.com/BaiMeow/NetworkMonitor/graph/fetch"
+	"github.com/BaiMeow/NetworkMonitor/trace"
+	"go.opentelemetry.io/otel/trace/noop"
 	"golang.org/x/crypto/ssh"
 	"net"
 	"testing"
 )
+
+func init() {
+	trace.Tracer = noop.Tracer{}
+}
 
 func TestSftpWithPassword_GetData(t *testing.T) {
 	fetcher, err := fetch.Spawn["sftp"](map[string]any{

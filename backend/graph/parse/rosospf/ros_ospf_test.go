@@ -7,11 +7,17 @@ import (
 	"encoding/gob"
 	"encoding/json"
 	"github.com/BaiMeow/NetworkMonitor/graph/entity"
+	"github.com/BaiMeow/NetworkMonitor/trace"
 	"github.com/go-routeros/routeros/v3/proto"
+	"go.opentelemetry.io/otel/trace/noop"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
+
+func init() {
+	trace.Tracer = noop.Tracer{}
+}
 
 // todo fix test
 func TestROSOSPF(t *testing.T) {

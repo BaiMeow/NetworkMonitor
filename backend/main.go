@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/BaiMeow/NetworkMonitor/service/uptime"
+	"github.com/BaiMeow/NetworkMonitor/trace"
 	"github.com/pkg/errors"
 	"log"
 	"net/http"
@@ -29,6 +30,11 @@ func main() {
 	log.Println("init config")
 	if err := conf.Init(); err != nil {
 		log.Fatalf("init config fail:%v", err)
+	}
+
+	log.Println("init tracer")
+	if err := trace.Init(); err != nil {
+		log.Fatalf("init tracer fail:%v", err)
 	}
 
 	log.Println("init db")

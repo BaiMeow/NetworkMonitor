@@ -4,10 +4,16 @@ import (
 	"context"
 	"fmt"
 	"github.com/BaiMeow/NetworkMonitor/graph/fetch"
+	"github.com/BaiMeow/NetworkMonitor/trace"
 	apipb "github.com/osrg/gobgp/v3/api"
+	"go.opentelemetry.io/otel/trace/noop"
 	"testing"
 	"time"
 )
+
+func init() {
+	trace.Tracer = noop.Tracer{}
+}
 
 func TestBGPDial(t *testing.T) {
 	bgp, err := fetch.Spawn["bgp"](map[string]any{

@@ -27,6 +27,7 @@ var (
 	UpdateCallBack   func()
 	MetadataRedirect string
 	Analysis         bool
+	Trace            Tracer
 )
 
 func Init() error {
@@ -108,6 +109,8 @@ func update() error {
 
 	uptimeInterval := time.Duration(viper.GetInt("uptime.interval")) * time.Second
 	Uptime.Interval = uptimeInterval
+
+	Trace.Endpoint = viper.GetString("trace.endpoint")
 
 	if UpdateCallBack != nil {
 		UpdateCallBack()

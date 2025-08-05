@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/BaiMeow/NetworkMonitor/graph/fetch"
+	"github.com/BaiMeow/NetworkMonitor/trace"
 	"github.com/go-routeros/routeros/v3"
 	"github.com/go-routeros/routeros/v3/proto"
 	"net"
@@ -40,6 +41,11 @@ type ROS struct {
 }
 
 func (R *ROS) GetData(ctx context.Context) (any, error) {
+	ctx, span := trace.Tracer.Start(ctx,
+		"fetch/ros/ROS.GetData",
+	)
+	defer span.End()
+
 	dialer := &net.Dialer{
 		Timeout: time.Second * 10,
 	}

@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/BaiMeow/NetworkMonitor/graph/fetch"
+	"github.com/BaiMeow/NetworkMonitor/trace"
 	"github.com/BaiMeow/NetworkMonitor/utils"
 	"github.com/BaiMeow/NetworkMonitor/utils/ctxex"
 	"net/http"
@@ -63,6 +64,11 @@ type birdLgGoResult struct {
 }
 
 func (b *BirdLgGo) GetData(ctx context.Context) (any, error) {
+	ctx, span := trace.Tracer.Start(ctx,
+		"fetch/birdlggo/BirdLgGo.GetData",
+	)
+	defer span.End()
+
 	payload, err := json.Marshal(birdLgGoPayload{
 		Servers: []string{b.Server},
 		Type:    b.Type,

@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"github.com/BaiMeow/NetworkMonitor/graph/entity"
 	"github.com/BaiMeow/NetworkMonitor/graph/parse"
+	"github.com/BaiMeow/NetworkMonitor/trace"
 	"github.com/BaiMeow/go-mrt"
 	"io"
 	"log"
@@ -28,6 +29,11 @@ type MrtAddPath struct {
 }
 
 func (p *MrtAddPath) Parse(ctx context.Context, input any) (*entity.BGP, error) {
+	ctx, span := trace.Tracer.Start(ctx,
+		"parse/mtrbgp/MrtAddPath.Parse",
+	)
+	defer span.End()
+
 	data, ok := input.([]byte)
 	if !ok {
 		log.Fatalf("invalid input data type: %s\n", reflect.TypeOf(input).Elem())

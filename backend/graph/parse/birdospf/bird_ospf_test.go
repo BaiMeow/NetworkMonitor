@@ -3,10 +3,16 @@ package birdospf
 import (
 	"context"
 	_ "embed"
+	"github.com/BaiMeow/NetworkMonitor/trace"
+	"go.opentelemetry.io/otel/trace/noop"
 	"os"
 	"path/filepath"
 	"testing"
 )
+
+func init() {
+	trace.Tracer = noop.Tracer{}
+}
 
 func TestMUSTParse(t *testing.T) {
 	entries, err := os.ReadDir("./testdata")

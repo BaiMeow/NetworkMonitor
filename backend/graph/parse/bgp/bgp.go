@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/BaiMeow/NetworkMonitor/graph/entity"
 	"github.com/BaiMeow/NetworkMonitor/graph/parse"
+	"github.com/BaiMeow/NetworkMonitor/trace"
 	apipb "github.com/osrg/gobgp/v3/api"
 	"google.golang.org/protobuf/types/known/anypb"
 	"log"
@@ -33,6 +34,11 @@ type BGP struct {
 }
 
 func (b *BGP) Parse(ctx context.Context, input any) (*entity.BGP, error) {
+	ctx, span := trace.Tracer.Start(ctx,
+		"parse/bgp/BGP.Parse",
+	)
+	defer span.End()
+
 	destinations, ok := input.([]*apipb.Destination)
 	if !ok {
 		log.Fatalf("invalid data type for BGP parser: %s", reflect.TypeOf(input).Elem().Name())

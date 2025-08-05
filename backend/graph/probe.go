@@ -7,6 +7,9 @@ import (
 	"github.com/BaiMeow/NetworkMonitor/graph/entity"
 	"github.com/BaiMeow/NetworkMonitor/graph/fetch"
 	"github.com/BaiMeow/NetworkMonitor/graph/parse"
+	"github.com/BaiMeow/NetworkMonitor/trace"
+	"go.opentelemetry.io/otel/attribute"
+	oteltrace "go.opentelemetry.io/otel/trace"
 	"log"
 )
 
@@ -41,11 +44,19 @@ func NewProbe[T entity.DrawType](p conf.Probe) (*Probe[T], error) {
 }
 
 func (p *Probe[T]) Draw(ctx context.Context) (T, error) {
+	ctx, span := trace.Tracer.Start(ctx,
+		"Probe.Draw",
+		oteltrace.WithAttributes(
+			attribute.String("name", p.Name),
+		),
+	)
+	defer span.End()
+
 	data, err := p.Fetch.GetData(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("fetch data from %s fail:%v", p.Name, err)
 	}
-	res, err := p.Parser.Parse(ctx,data)
+	res, err := p.Parser.Parse(ctx, data)
 	if err != nil {
 		return nil, fmt.Errorf("parse data from %s fail:%v", p.Name, err)
 	}

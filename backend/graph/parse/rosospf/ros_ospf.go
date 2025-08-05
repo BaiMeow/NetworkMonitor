@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/gob"
 	"github.com/BaiMeow/NetworkMonitor/graph/entity"
+	"github.com/BaiMeow/NetworkMonitor/trace"
 	"log"
 	"reflect"
 	"regexp"
@@ -40,6 +41,11 @@ type network struct {
 }
 
 func (p *RosOSPF) Parse(ctx context.Context, input any) (*entity.OSPF, error) {
+	ctx, span := trace.Tracer.Start(ctx,
+		"parse/rosospf/RosOSPF.Parse",
+	)
+	defer span.End()
+
 	sentences, ok := input.([2][]*proto.Sentence)
 	if !ok {
 		log.Fatalf("invalid input data type: %s\n", reflect.TypeOf(input).Elem())

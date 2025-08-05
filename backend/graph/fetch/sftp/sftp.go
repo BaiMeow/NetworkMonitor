@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/BaiMeow/NetworkMonitor/graph/fetch"
 	"github.com/BaiMeow/NetworkMonitor/template"
+	"github.com/BaiMeow/NetworkMonitor/trace"
 	"github.com/BaiMeow/NetworkMonitor/utils/ctxex"
 	"github.com/pkg/sftp"
 	"golang.org/x/crypto/ssh"
@@ -83,6 +84,11 @@ type WithPassword struct {
 }
 
 func (s *WithPassword) GetData(ctx context.Context) (any, error) {
+	ctx, span := trace.Tracer.Start(ctx,
+		"fetch/sftp/WithPassword.GetData",
+	)
+	defer span.End()
+
 	cfg := &ssh.ClientConfig{
 		User: s.User,
 		Auth: []ssh.AuthMethod{

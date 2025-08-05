@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"github.com/BaiMeow/NetworkMonitor/graph/fetch"
+	"github.com/BaiMeow/NetworkMonitor/trace"
 	"github.com/BaiMeow/NetworkMonitor/utils/ctxex"
 	"golang.org/x/crypto/ssh"
 	"log"
@@ -73,6 +74,11 @@ type SshWithPassword struct {
 }
 
 func (s *SshWithPassword) GetData(ctx context.Context) (any, error) {
+	ctx, span := trace.Tracer.Start(ctx,
+		"fetch/ssh/SshWithPassword.GetData",
+	)
+	defer span.End()
+
 	cfg := &ssh.ClientConfig{
 		User: s.User,
 		Auth: []ssh.AuthMethod{

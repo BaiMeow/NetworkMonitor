@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/BaiMeow/NetworkMonitor/graph/fetch"
 	"github.com/BaiMeow/NetworkMonitor/template"
+	"github.com/BaiMeow/NetworkMonitor/trace"
 	"github.com/pkg/errors"
 	"io"
 	"net/http"
@@ -67,6 +68,11 @@ type HTTP struct {
 }
 
 func (f *HTTP) GetData(ctx context.Context) (any, error) {
+	ctx, span := trace.Tracer.Start(ctx,
+		"fetch/http/HTTP.GetData",
+	)
+	defer span.End()
+
 	url, err := f.URL.ExecuteString()
 	if err != nil {
 		return nil, errors.Wrap(err, "generate url")

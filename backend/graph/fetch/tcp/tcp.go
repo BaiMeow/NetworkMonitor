@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/BaiMeow/NetworkMonitor/graph/fetch"
+	"github.com/BaiMeow/NetworkMonitor/trace"
 	"github.com/BaiMeow/NetworkMonitor/utils/ctxex"
 	"net"
 	"strconv"
@@ -39,6 +40,11 @@ type Tcp struct {
 }
 
 func (t *Tcp) GetData(ctx context.Context) (any, error) {
+	ctx, span := trace.Tracer.Start(ctx,
+		"fetch/tcp/Tcp.GetData",
+	)
+	defer span.End()
+
 	dialer := &net.Dialer{}
 	conn, err := dialer.DialContext(ctx, "tcp", net.JoinHostPort(t.host, strconv.Itoa(t.port)))
 	if err != nil {

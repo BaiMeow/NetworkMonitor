@@ -4,8 +4,14 @@ import (
 	"context"
 	"fmt"
 	"github.com/BaiMeow/NetworkMonitor/graph/fetch"
+	"github.com/BaiMeow/NetworkMonitor/trace"
+	"go.opentelemetry.io/otel/trace/noop"
 	"testing"
 )
+
+func init() {
+	trace.Tracer = noop.Tracer{}
+}
 
 func TestBirdLgGo_GetData(t *testing.T) {
 	fetcher, err := fetch.Spawn["bird-lg-go"](map[string]any{

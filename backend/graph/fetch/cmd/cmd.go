@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/BaiMeow/NetworkMonitor/graph/fetch"
+	"github.com/BaiMeow/NetworkMonitor/trace"
 	"os/exec"
 	"strings"
 )
@@ -26,6 +27,11 @@ type Command struct {
 }
 
 func (c *Command) GetData(ctx context.Context) (any, error) {
+	ctx, span := trace.Tracer.Start(ctx,
+		"fetch/cmd/Command.GetData",
+	)
+	defer span.End()
+
 	ss := strings.SplitN(c.Command, " ", 2)
 	var cmd, arg string
 	switch len(ss) {
