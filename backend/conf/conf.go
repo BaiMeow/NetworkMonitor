@@ -111,6 +111,7 @@ func update() error {
 	Uptime.Interval = uptimeInterval
 
 	Trace.Endpoint = viper.GetString("trace.endpoint")
+	Trace.ServiceName = viper.GetString("trace.serviceName")
 
 	if UpdateCallBack != nil {
 		UpdateCallBack()

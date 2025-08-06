@@ -49,5 +49,6 @@ type UptimeCfg struct {
 }
 
 type Tracer struct {
-	Endpoint string
+	Endpoint    string
+	ServiceName string
 }

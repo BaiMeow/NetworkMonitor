@@ -11,7 +11,6 @@ import (
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.34.0"
 	"go.opentelemetry.io/otel/trace"
-
 	"log"
 )
 
@@ -34,7 +33,11 @@ func newExporter() (sdktrace.SpanExporter, error) {
 		return stdouttrace.New()
 	}
 
-	return otlptracegrpc.New(context.Background(), otlptracegrpc.WithEndpoint(conf.Trace.Endpoint))
+	return otlptracegrpc.New(
+		context.Background(),
+		otlptracegrpc.WithEndpoint(conf.Trace.Endpoint),
+		otlptracegrpc.WithInsecure(),
+	)
 }
 
 func newTraceProvider(exp sdktrace.SpanExporter) *sdktrace.TracerProvider {
@@ -42,7 +45,7 @@ func newTraceProvider(exp sdktrace.SpanExporter) *sdktrace.TracerProvider {
 		resource.Default(),
 		resource.NewWithAttributes(
 			semconv.SchemaURL,
-			semconv.ServiceName("DN11NetworkMonitor"),
+			semconv.ServiceName(conf.Trace.ServiceName),
 		),
 	)
 
