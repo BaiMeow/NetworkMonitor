@@ -49,6 +49,7 @@ func (p *Probe[T]) Draw(ctx context.Context) (T, error) {
 		oteltrace.WithAttributes(
 			attribute.String("name", p.Name),
 		),
+		oteltrace.WithSpanKind(oteltrace.SpanKindProducer),
 	)
 	defer span.End()
 
