@@ -11,7 +11,6 @@ declare module 'vue' {
     BGPLatestStatus: typeof import('./src/components/uptime/BGPLatestStatus.vue')['default']
     BGPLinksHistory: typeof import('./src/components/uptime/BGPLinksHistory.vue')['default']
     BGPUptime: typeof import('./src/components/uptime/BGPUptime.vue')['default']
-    CountDown: typeof import('./src/components/CountDown.vue')['default']
     Dark: typeof import('./src/components/Dark.vue')['default']
     ElButton: typeof import('element-plus/es')['ElButton']
     ElIcon: typeof import('element-plus/es')['ElIcon']

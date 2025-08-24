@@ -1,0 +1,31 @@
+interval: 10
+probeTimeout: 8
+port: 8787
+analysis: true
+# begin uptime
+# if you don't want to use influxdb to record uptime, just left addr empty
+influxdb:
+  addr: ''
+  org: 'network-monitor'
+  token: 'token'
+uptime:
+  store-duration: '168h'
+  interval: 10
+# end uptime
+
+# redirect metadata to another url
+metadataRedirect: ""
+
+probe:
+ bgp1:
+    fetch: 
+      type: bgp
+      mode: listen
+      asn: 4220000255
+      router-id: 172.17.6.253
+    parse:
+      type: bgp
+    draw:
+      type: bgp
+      name: bgp2
+  # bgp dial to collector

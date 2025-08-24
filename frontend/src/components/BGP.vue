@@ -1,11 +1,12 @@
 <!-- eslint-disable @typescript-eslint/no-explicit-any -->
 <script lang="ts" setup>
+import { apiFetch } from '@/api'
 import { use } from 'echarts/core'
 import { CanvasRenderer } from 'echarts/renderers'
 import { GraphChart } from 'echarts/charts'
 import { TooltipComponent, TitleComponent } from 'echarts/components'
 import { ECElementEvent, ElementEvent } from 'echarts'
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onUnmounted } from 'vue'
 import { Netmask } from 'netmask'
 import { getBetweenness, getBGP, getCloseness } from '../api/bgp'
 import { prettierNet } from '../utils/colornet'
@@ -19,6 +20,7 @@ import { dispatchEchartAction } from '@/state/graph'
 import { useASMeta } from '@/state/meta'
 import { fontColor } from '@/state/font'
 import { setUpdatedTime } from '@/state/updated_time'
+
 
 const isDark = useDark()
 
@@ -59,6 +61,55 @@ const { option, selectList, loading: graphLoading } = useGraph()
 const route = useRoute()
 const name = computed<string>(() => route.params.name as string)
 
+
+// ====== Ping 设备在线检测（最小实现） ======
+type Dev = { name: string; ip: string; up: boolean; rtt?: number | null; last?: string }
+const devices = ref<Dev[]>([
+  { name: 'ROS', ip: '172.20.0.1', up: false, rtt: null },
+  { name: 'PVE2', ip: '172.17.2.2', up: false, rtt: null },
+  { name: 'PVE3', ip: '172.17.3.2', up: false, rtt: null },
+  { name: 'PVE6', ip: '172.17.6.2', up: false, rtt: null },
+  { name: 'ES208GC', ip: '172.17.6.108', up: false, rtt: null },
+  { name: 'xiaomi-gateway', ip: '172.17.6.199', up: false, rtt: null },
+  { name: 'home_dsm', ip: '172.17.6.220', up: false, rtt: null },
+  { name: 'OP2', ip: '172.17.2.1', up: false, rtt: null },
+  { name: 'OP3', ip: '172.17.3.1', up: false, rtt: null },
+  { name: 'OP5', ip: '172.17.6.1', up: false, rtt: null },
+  { name: 'OP13', ip: '172.17.6.105', up: false, rtt: null },
+  // { name: '核心交换', ip: '172.20.0.2', up: false, rtt: null },
+  // …按需加
+])
+
+async function probe(ip: string) {
+  const res = await apiFetch(`/api/ping?host=${encodeURIComponent(ip)}`)
+  if (!res.ok) throw new Error(await res.text())
+  const data = await res.json() as { alive: boolean, rtt_ms: number }
+  return data
+}
+
+async function refreshPing() {
+  await Promise.all(
+    devices.value.map(async (d) => {
+      try {
+        const r = await probe(d.ip)
+        d.up  = r.alive                    // ← 映射到 up
+        d.rtt = Number.isFinite(r.rtt_ms) ? r.rtt_ms : null
+        d.last = new Date().toLocaleTimeString()
+      } catch {
+        d.up = false
+        d.rtt = null
+        d.last = new Date().toLocaleTimeString()
+      }
+    }),
+  )
+}
+
+// 首次 & 定时刷新
+refreshPing()
+const pingTimer = setInterval(refreshPing, 15 * 1000)
+onUnmounted(() => clearInterval(pingTimer))
+
+
 import { updatedData } from '@/state/event'
 watch(updatedData, (data) => {
   if (data?.type === 'bgp' && data.key === name.value) loadData(name.value)
@@ -67,7 +118,7 @@ watch(updatedData, (data) => {
 graphLoading.value = true
 
 option.title = {
-  text: 'DN11 & Vidar Network',
+  text: 'DN11 & DN06 Network monitor',
   textStyle: {
     color: fontColor,
   },
@@ -484,9 +535,68 @@ onBeforeRouteLeave(() => {
       :grName="name"
     />
   </Transition>
+  
+  <!-- 右上角：设备状态面板 -->
+<div class="ping-panel">
+  <div class="ping-title">Device Monitor</div>
+  <div v-for="d in devices" :key="d.ip" class="ping-row">
+    <span :class="['dot', d.up ? 'ok' : 'down']"></span>
+    <span class="dev-name">{{ d.name }}</span>
+    <span class="dev-ip">{{ d.ip }}</span>
+    <span class="dev-rtt" v-if="d.up">{{ Math.round(d.rtt ?? 0) }} ms</span>
+    <span class="dev-rtt" v-else>DOWN</span>
+    <span class="dev-last">· {{ d.last }}</span>
+  </div>
+</div>
+
+  
 </template>
 
 <style scoped>
+
+
+.ping-panel {
+  position: fixed;
+  top: 12px;
+  right: 12px;
+  min-width: 240px;
+  max-width: 320px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(0,0,0,.06);
+  border-radius: 10px;
+  padding: 10px 12px;
+  box-shadow: 0 2px 14px rgba(0,0,0,.08);
+  z-index: 1000;
+  font-size: 12px;
+}
+:root.dark .ping-panel { background: rgba(34,34,34,0.9); color: #eaeaea; }
+
+.ping-title { font-weight: 700; margin-bottom: 6px; }
+.ping-row {
+  display: grid;
+  grid-template-columns: 10px 1fr auto auto auto;
+  gap: 8px;
+  align-items: center;
+  padding: 3px 0;
+  border-bottom: 1px dashed rgba(0,0,0,.06);
+}
+.ping-row:last-child { border-bottom: none; }
+
+.dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  display: inline-block;
+}
+.dot.ok { background: #2ecc71; }
+.dot.down { background: #e74c3c; }
+
+.dev-name { font-weight: 600; }
+.dev-ip { opacity: .7; }
+.dev-rtt { font-variant-numeric: tabular-nums; }
+.dev-last { opacity: .6; }
+
+
+
+
 .uptime {
   position: absolute;
   top: 0;
