@@ -100,6 +100,10 @@ OSPF graph don't support custom node style, so only display field applied in met
    cd 到 backend 目录下，执行 `go build`
 
    cd to backend directory, run `go build`
+   
+4. 如果要使用自动构建工具，请运行./build_and_deploy.sh
+
+   cd到项目根目录下，运行即可
 
 ## 运行 launch
 
@@ -119,7 +123,7 @@ influxdb uptime is under experiment, not recommanded.
 
 ## Project DN11
 
-这个项目是去中心化网络 DN11 的一部分。
+这个项目是去中心化网络 DN11 的一部分。也是甜甜的DN06的一部分了（
 
 This repo now included in Project DN11, a decentralized network.
 
