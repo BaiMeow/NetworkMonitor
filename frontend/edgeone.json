@@ -12,8 +12,8 @@
       "statusCode": 301
     },
     {
-      "source": "/api/:path",
-      "destination": "https://monitor.dn11.baimeow.cn/api/:path",
+      "source": "/api/*",
+      "destination": "https://monitor.dn11.baimeow.cn/api/:splat",
       "statusCode": 301
     }
   ]
