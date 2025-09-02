@@ -1,0 +1,20 @@
+{
+  "name": "dn11-networkmonitor",
+  "buildCommand": "pnpm run build",
+  "installCommand": "pnpm install --frozen-lockfile",
+  "outputDirectory": "../backend/static",
+  "nodeVersion": "22.11.0",
+ 
+  "redirects": [
+    {
+      "source": "/monitor-metadata.json",
+      "destination": "https://monitor.dn11.baimeow.cn/monitor-metadata.json",
+      "statusCode": 301
+    },
+    {
+      "source": "/api/:path",
+      "destination": "https://monitor.dn11.baimeow.cn/api/:path",
+      "statusCode": 301
+    }
+  ]
+}
