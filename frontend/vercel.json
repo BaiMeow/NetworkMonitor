@@ -1,9 +1,8 @@
 {
-  "redirects": [
+  "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://monitor.dn11.baimeow.cn/api/:path*",
-      "permanent": true
+      "destination": "https://monitor.dn11.baimeow.cn/api/:path*"
     }
   ]
 }
