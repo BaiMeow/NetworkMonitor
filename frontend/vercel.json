@@ -3,6 +3,10 @@
     {
       "source": "/api/:path*",
       "destination": "https://monitor.dn11.baimeow.cn/api/:path*"
+    },
+    {
+      "source": "/monitor-metadata.json",
+      "destination": "https://monitor.dn11.baimeow.cn/monitor-metadata.json"
     }
   ]
 }
