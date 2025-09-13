@@ -3,12 +3,13 @@ package bgp
 import (
 	"context"
 	"fmt"
+	"testing"
+	"time"
+
 	"github.com/BaiMeow/NetworkMonitor/graph/fetch"
 	"github.com/BaiMeow/NetworkMonitor/trace"
 	apipb "github.com/osrg/gobgp/v3/api"
 	"go.opentelemetry.io/otel/trace/noop"
-	"testing"
-	"time"
 )
 
 func init() {
@@ -27,12 +28,17 @@ func TestBGPDial(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	data, err := bgp.GetData(context.Background())
-	if err != nil {
-		t.Error(err)
-		return
+	for {
+		time.Sleep(time.Second)
+		start := time.Now()
+		data, err := bgp.GetData(context.Background())
+		if err != nil {
+			t.Error(err)
+			return
+		}
+		fmt.Println(time.Since(start).String())
+		fmt.Println(countPath(data.([]*apipb.Destination)))
 	}
-	fmt.Println(countPath(data.([]*apipb.Destination)))
 }
 
 func TestBGPListen(t *testing.T) {
@@ -52,12 +58,4 @@ func TestBGPListen(t *testing.T) {
 		return
 	}
 	fmt.Println(countPath(data.([]*apipb.Destination)))
-}
-
-func countPath(dess []*apipb.Destination) int {
-	var sum int
-	for _, des := range dess {
-		sum += len(des.GetPaths())
-	}
-	return sum
 }

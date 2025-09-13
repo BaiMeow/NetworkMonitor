@@ -3,6 +3,10 @@ package bgp
 import (
 	"context"
 	"fmt"
+	"log"
+	"net/netip"
+	"time"
+
 	"github.com/BaiMeow/NetworkMonitor/graph/fetch"
 	"github.com/BaiMeow/NetworkMonitor/trace"
 	"github.com/BaiMeow/NetworkMonitor/utils"
@@ -11,9 +15,6 @@ import (
 	"github.com/osrg/gobgp/v3/pkg/server"
 	"github.com/pkg/errors"
 	"go.opentelemetry.io/otel/attribute"
-	"log"
-	"net/netip"
-	"time"
 )
 
 func init() {
@@ -199,34 +200,17 @@ func (f *BGP) GetData(ctx context.Context) (any, error) {
 	)
 	defer span.End()
 
-	// Wait ESTABLISHED
-	for i := 0; i < 10; i++ {
-		var established bool
-		if err := f.s.ListPeer(ctx, &apipb.ListPeerRequest{}, func(peer *apipb.Peer) {
-			if peer.State.SessionState == apipb.PeerState_ESTABLISHED {
-				established = true
-				span.SetAttributes(attribute.String("peer", peer.Transport.RemoteAddress))
-				if i != 0 {
-					log.Println("BGP Session State:", peer.State.SessionState)
-				}
-			} else {
-				log.Println("BGP Session State:", peer.State.SessionState)
-			}
-		}); err != nil {
-			return nil, fmt.Errorf("list bgp peer: %v", err)
+	var estCount int
+	if err := f.s.ListPeer(ctx, &apipb.ListPeerRequest{}, func(peer *apipb.Peer) {
+		if peer.State.SessionState == apipb.PeerState_ESTABLISHED {
+			estCount++
 		}
-		if established {
-			break
-		}
-		if i != 9 {
-			select {
-			case <-time.NewTimer(time.Second * 3).C:
-				continue
-			case <-ctx.Done():
-				return nil, context.Cause(ctx)
-			}
-		}
-		return nil, errors.New("BGP session failed")
+	}); err != nil {
+		return nil, fmt.Errorf("list bgp peer: %v", err)
+	}
+	span.SetAttributes(attribute.Int("established_count", estCount))
+	if estCount == 0 {
+		return nil, errors.New("no established peer")
 	}
 
 	var destinations []*apipb.Destination
@@ -248,7 +232,8 @@ func (f *BGP) GetData(ctx context.Context) (any, error) {
 		return nil, context.Cause(ctx)
 	default:
 	}
-
+	span.SetAttributes(attribute.Int("destination_count", len(destinations)))
+	span.SetAttributes(attribute.Int("path_count", countPath(destinations)))
 	return destinations, nil
 }
 
@@ -262,4 +247,12 @@ func (f *BGP) CleanUp() error {
 	}
 	f.s.Stop()
 	return nil
+}
+
+func countPath(dess []*apipb.Destination) int {
+	var sum int
+	for _, des := range dess {
+		sum += len(des.GetPaths())
+	}
+	return sum
 }
