@@ -1,0 +1,9 @@
+{
+  "redirects": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://monitor.dn11.baimeow.cn/api/:path*",
+      "permanent": true
+    }
+  ]
+}
