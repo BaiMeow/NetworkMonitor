@@ -4,10 +4,11 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/BaiMeow/NetworkMonitor/graph/entity"
-	"github.com/BaiMeow/NetworkMonitor/trace"
 	"log"
 	"strconv"
+
+	"github.com/BaiMeow/NetworkMonitor/graph/entity"
+	"github.com/BaiMeow/NetworkMonitor/trace"
 
 	"github.com/BaiMeow/NetworkMonitor/graph/parse"
 	"github.com/BaiMeow/NetworkMonitor/graph/parse/birdospf/parser"
@@ -102,7 +103,7 @@ func (v *birdOSPFVisitor) visitRouter(ctx *parser.RouterContext, area *entity.Ar
 
 func (v *birdOSPFVisitor) visitRouterEntry(ctx *parser.RouterEntryContext, area *entity.Area, routerID string, router *entity.Router) {
 	var cost int
-	if i := ctx.INT(); i != nil {
+	if i := ctx.INT(0); i != nil {
 		c, err := strconv.ParseUint(i.GetText(), 10, 64)
 		if err != nil {
 			log.Printf("invalid cost %v", i)

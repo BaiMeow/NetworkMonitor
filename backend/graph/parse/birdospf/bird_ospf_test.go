@@ -3,11 +3,12 @@ package birdospf
 import (
 	"context"
 	_ "embed"
-	"github.com/BaiMeow/NetworkMonitor/trace"
-	"go.opentelemetry.io/otel/trace/noop"
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/BaiMeow/NetworkMonitor/trace"
+	"go.opentelemetry.io/otel/trace/noop"
 )
 
 func init() {

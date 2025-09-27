@@ -17,7 +17,7 @@ routerEntry      : ('router' IP
                   | 'network' Prefix
                   | 'external' Prefix
                   | 'xrouter' IP )
-                  ( Metric | Metric2 ) INT ( 'via' IP )?
+                  ( Metric | Metric2 ) INT ( 'via' IP )? ('tag' (HEX|INT))?
                   ;
 distance         : Distance INT
                   | Unreachable;
@@ -36,3 +36,4 @@ STRING      : '"' .*? '"'
             ;
 INT         : [0-9]+;
 WS          : [ \t\r\n]+ -> skip;
+HEX         : [0-9a-f]+;
