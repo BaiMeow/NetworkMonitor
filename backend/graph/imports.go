@@ -5,6 +5,7 @@ import (
 	_ "github.com/BaiMeow/NetworkMonitor/graph/fetch/bgp"
 	_ "github.com/BaiMeow/NetworkMonitor/graph/fetch/birdlggo"
 	_ "github.com/BaiMeow/NetworkMonitor/graph/fetch/cmd"
+	_ "github.com/BaiMeow/NetworkMonitor/graph/fetch/gobgp"
 	_ "github.com/BaiMeow/NetworkMonitor/graph/fetch/http"
 	_ "github.com/BaiMeow/NetworkMonitor/graph/fetch/ros"
 	_ "github.com/BaiMeow/NetworkMonitor/graph/fetch/sftp"
