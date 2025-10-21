@@ -3,6 +3,8 @@ package trace
 import (
 	"context"
 	"fmt"
+	"log"
+
 	"github.com/BaiMeow/NetworkMonitor/conf"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
@@ -11,10 +13,10 @@ import (
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.34.0"
 	"go.opentelemetry.io/otel/trace"
-	"log"
+	"go.opentelemetry.io/otel/trace/noop"
 )
 
-var Tracer trace.Tracer
+var Tracer trace.Tracer = &noop.Tracer{}
 
 func Init() error {
 	exporter, err := newExporter()
