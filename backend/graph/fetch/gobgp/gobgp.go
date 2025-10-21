@@ -24,10 +24,10 @@ func init() {
 		}
 
 		var opts []grpc.DialOption
-		if cred, ok := m["mtls"].(map[string]string); ok {
+		if tlsConfig, ok := m["mtls"].(map[string]string); ok {
 			rootCertPool := x509.NewCertPool()
-			rootCertPool.AppendCertsFromPEM([]byte(cred["ca"]))
-			pair, err := tls.LoadX509KeyPair(cred["cert"], cred["key"])
+			rootCertPool.AppendCertsFromPEM([]byte(tlsConfig["ca"]))
+			pair, err := tls.X509KeyPair([]byte(tlsConfig["cert"]), []byte(tlsConfig["key"]))
 			if err != nil {
 				return nil, fmt.Errorf("new tls client fail: %v", err)
 			}
