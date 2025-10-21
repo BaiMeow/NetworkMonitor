@@ -24,14 +24,25 @@ func init() {
 		}
 
 		var opts []grpc.DialOption
-		if tlsConfig, ok := m["mtls"].(map[string]string); ok {
+		if tlsConfig, ok := m["mtls"].(map[string]any); ok {
+			caCert, ok := tlsConfig["ca"].(string)
+			if !ok {
+				return nil, fmt.Errorf("cacert is not string")
+			}
+			clientCert, ok := tlsConfig["cert"].(string)
+			if !ok {
+				return nil, fmt.Errorf("client cert is not string")
+			}
+			clientKey, ok := tlsConfig["key"].(string)
+			if !ok {
+				return nil, fmt.Errorf("client key is not string")
+			}
 			rootCertPool := x509.NewCertPool()
-			rootCertPool.AppendCertsFromPEM([]byte(tlsConfig["ca"]))
-			pair, err := tls.X509KeyPair([]byte(tlsConfig["cert"]), []byte(tlsConfig["key"]))
+			rootCertPool.AppendCertsFromPEM([]byte(caCert))
+			pair, err := tls.X509KeyPair([]byte(clientCert), []byte(clientKey))
 			if err != nil {
 				return nil, fmt.Errorf("new tls client fail: %v", err)
 			}
-
 			opts = append(opts, grpc.WithTransportCredentials(
 				credentials.NewTLS(&tls.Config{
 					RootCAs:      rootCertPool,
