@@ -6,6 +6,7 @@ import (
 	_ "github.com/BaiMeow/NetworkMonitor/graph/fetch/birdlggo"
 	_ "github.com/BaiMeow/NetworkMonitor/graph/fetch/cmd"
 	_ "github.com/BaiMeow/NetworkMonitor/graph/fetch/gobgp"
+	_ "github.com/BaiMeow/NetworkMonitor/graph/fetch/gobgpwatch"
 	_ "github.com/BaiMeow/NetworkMonitor/graph/fetch/http"
 	_ "github.com/BaiMeow/NetworkMonitor/graph/fetch/ros"
 	_ "github.com/BaiMeow/NetworkMonitor/graph/fetch/sftp"
@@ -15,6 +16,7 @@ import (
 	// parser
 	_ "github.com/BaiMeow/NetworkMonitor/graph/parse/bgp"
 	_ "github.com/BaiMeow/NetworkMonitor/graph/parse/birdospf"
+	_ "github.com/BaiMeow/NetworkMonitor/graph/parse/gobgp"
 	_ "github.com/BaiMeow/NetworkMonitor/graph/parse/mrtbgp"
 	_ "github.com/BaiMeow/NetworkMonitor/graph/parse/rosospf"
 )
