@@ -9,6 +9,7 @@ import (
 	"log"
 	"math"
 	"sync"
+	"time"
 
 	"github.com/BaiMeow/NetworkMonitor/graph/fetch"
 	"github.com/BaiMeow/NetworkMonitor/trace"
@@ -120,6 +121,9 @@ func (f *GoBGPWatch) Run() {
 				return
 			}
 			log.Println("watch err:", err)
+			// wait and retry
+			time.Sleep(time.Second)
+			continue
 		}
 		f.lock.Lock()
 		f.paths = make(map[string]*apipb.Path)
