@@ -109,7 +109,7 @@ func (f *GoBGPWatch) Run() {
 			Table: &apipb.WatchEventRequest_Table{
 				Filters: []*apipb.WatchEventRequest_Table_Filter{
 					{
-						Type: apipb.WatchEventRequest_Table_Filter_ADJIN,
+						Type: apipb.WatchEventRequest_Table_Filter_POST_POLICY,
 						Init: true,
 					},
 				},
