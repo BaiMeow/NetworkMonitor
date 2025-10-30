@@ -30,7 +30,7 @@ export function prettierNet(
     .flatMap((s) => new Netmask(s.prefix))
   // 宣告公共 错误
   real.forEach((n) => {
-    if (!all.public.some((e) => new Netmask(e.prefix).contains(n))) return;
+    if (!all.public.some((e) => new Netmask(e.prefix).contains(n))) return
     if (publicAllowed.some((e) => e.contains(n))) return
     str += `<div class="overannounced-net">${n.toString()}</div>`
   })
