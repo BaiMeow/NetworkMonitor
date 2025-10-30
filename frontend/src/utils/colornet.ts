@@ -12,7 +12,7 @@ export function prettierNet(
   const real = net.map((n) => new Netmask(n))
   let str = ''
 
-  // 宣告他人
+  // 宣告他人 或 宣告保留
   real.forEach((n) => {
     if (!record?.every((r) => !r.contains(n))) return
     if (
@@ -21,6 +21,18 @@ export function prettierNet(
     ) {
       str += `<div class="overannounced-net">${n.toString()}</div>`
     }
+  })
+
+  const publicAllowed = all.public
+    .map((p) => p.service)
+    .flat()
+    .filter((s) => s.allowedASN.includes(asn))
+    .flatMap((s) => new Netmask(s.prefix))
+  // 宣告公共 错误
+  real.forEach((n) => {
+    if (!all.public.some((e) => new Netmask(e.prefix).contains(n))) return;
+    if (publicAllowed.some((e) => e.contains(n))) return
+    str += `<div class="overannounced-net">${n.toString()}</div>`
   })
 
   // 宣告未分配网段
@@ -42,6 +54,12 @@ export function prettierNet(
   real
     .filter((n) => record?.some((r) => r.contains(n)))
     .forEach((n) => (str += `<div>${n.toString()}</div>`))
+
+  // 宣告公共 正确
+  real.forEach((n) => {
+    if (publicAllowed.find((e) => e.contains(n)))
+      str += `<div>${n.toString()}</div>`
+  })
 
   return str == '' ? '</br>' : str
 }
