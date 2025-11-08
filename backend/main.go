@@ -1,14 +1,17 @@
 package main
 
 import (
-	"github.com/BaiMeow/NetworkMonitor/service/uptime"
-	"github.com/BaiMeow/NetworkMonitor/trace"
-	"github.com/pkg/errors"
 	"log"
 	"net/http"
 	"os"
 	"path"
 	"strconv"
+
+	"errors"
+
+	"github.com/BaiMeow/NetworkMonitor/controller/iot"
+	"github.com/BaiMeow/NetworkMonitor/service/uptime"
+	"github.com/BaiMeow/NetworkMonitor/trace"
 
 	"github.com/BaiMeow/NetworkMonitor/conf"
 	"github.com/BaiMeow/NetworkMonitor/controller"
@@ -65,6 +68,11 @@ func main() {
 	}
 
 	controller.Init()
+
+	if conf.Iot.Enabled {
+		log.Println("init iot server")
+		iot.Serve()
+	}
 
 	log.Println("run web")
 	r := gin.Default()

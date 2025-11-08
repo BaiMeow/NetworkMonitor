@@ -1,9 +1,10 @@
 package controller
 
 import (
+	"strconv"
+
 	"github.com/BaiMeow/NetworkMonitor/graph"
 	"github.com/gin-gonic/gin"
-	"strconv"
 )
 
 func BGPAnalysisBetweenness(c *gin.Context) {

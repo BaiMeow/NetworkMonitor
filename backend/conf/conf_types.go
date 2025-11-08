@@ -52,3 +52,8 @@ type Tracer struct {
 	Endpoint    string
 	ServiceName string
 }
+
+type IOT struct {
+	Port    int
+	Enabled bool
+}

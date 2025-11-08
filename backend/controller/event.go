@@ -2,10 +2,11 @@ package controller
 
 import (
 	"encoding/json"
-	"github.com/BaiMeow/NetworkMonitor/graph"
-	"github.com/gin-gonic/gin"
 	"io"
 	"log"
+
+	"github.com/BaiMeow/NetworkMonitor/graph"
+	"github.com/gin-gonic/gin"
 )
 
 var Stream = NewServer()

@@ -2,12 +2,13 @@ package controller
 
 import (
 	"fmt"
-	"github.com/BaiMeow/NetworkMonitor/service/uptime"
-	"github.com/gin-gonic/gin"
 	"net/netip"
 	"regexp"
 	"strconv"
 	"time"
+
+	"github.com/BaiMeow/NetworkMonitor/service/uptime"
+	"github.com/gin-gonic/gin"
 )
 
 var bgpNameRegex = regexp.MustCompile("^[a-zA-Z0-9]+$")

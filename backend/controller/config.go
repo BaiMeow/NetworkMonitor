@@ -1,9 +1,10 @@
 package controller
 
 import (
+	"net/http"
+
 	"github.com/BaiMeow/NetworkMonitor/conf"
 	"github.com/gin-gonic/gin"
-	"net/http"
 )
 
 func Config(c *gin.Context) {

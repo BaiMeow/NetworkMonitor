@@ -1,11 +1,12 @@
 package controller
 
 import (
+	"strconv"
+	"time"
+
 	"github.com/BaiMeow/NetworkMonitor/service/graph"
 	"github.com/BaiMeow/NetworkMonitor/utils"
 	"github.com/gin-gonic/gin"
-	"strconv"
-	"time"
 )
 
 func OSPF(c *gin.Context) {

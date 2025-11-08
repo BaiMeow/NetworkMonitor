@@ -28,6 +28,8 @@ var (
 	MetadataRedirect string
 	Analysis         bool
 	Trace            Tracer
+
+	Iot IOT
 )
 
 func Init() error {
@@ -59,6 +61,9 @@ func Init() error {
 	Influxdb.Addr = viper.GetString("influxdb.addr")
 	Influxdb.Token = viper.GetString("influxdb.token")
 	Influxdb.Org = viper.GetString("influxdb.org")
+
+	Iot.Port = viper.GetInt("iot.port")
+	Iot.Enabled = viper.GetBool("iot.enabled")
 
 	return update()
 }
