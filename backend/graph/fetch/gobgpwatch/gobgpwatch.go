@@ -120,7 +120,14 @@ func (f *GoBGPWatch) Run() {
 			if errors.Is(err, context.Canceled) {
 				return
 			}
+
 			log.Println("watch err:", err)
+
+			// clear data
+			f.lock.Lock()
+			f.paths = nil
+			f.lock.Unlock()
+
 			// wait and retry
 			time.Sleep(time.Second)
 			continue
