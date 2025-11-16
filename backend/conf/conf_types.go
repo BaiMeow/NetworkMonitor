@@ -1,7 +1,7 @@
 package conf
 
 import (
-	"maps"
+	"reflect"
 	"time"
 )
 
@@ -13,16 +13,7 @@ type Probe struct {
 }
 
 func (p *Probe) Equal(p2 *Probe) bool {
-	if p == nil && p2 != nil || p != nil && p2 == nil {
-		return false
-	}
-	if p == nil {
-		return true
-	}
-	return p.Name == p2.Name &&
-		maps.Equal(p.Parse, p2.Parse) &&
-		maps.Equal(p.Fetch, p2.Fetch) &&
-		maps.Equal(p.Draw, p2.Draw)
+	return reflect.DeepEqual(p.Name, p2.Name)
 }
 
 type Parser map[string]any
