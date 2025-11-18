@@ -106,7 +106,8 @@ func (f *GoBGPWatch) GetData(ctx context.Context) (any, error) {
 
 func (f *GoBGPWatch) Run() {
 	for {
-		res, err := f.api.WatchEvent(f.ctx, &apipb.WatchEventRequest{
+		ctx, cancel := context.WithTimeout(f.ctx, time.Hour)
+		res, err := f.api.WatchEvent(ctx, &apipb.WatchEventRequest{
 			Table: &apipb.WatchEventRequest_Table{
 				Filters: []*apipb.WatchEventRequest_Table_Filter{
 					{
@@ -117,6 +118,7 @@ func (f *GoBGPWatch) Run() {
 			},
 		})
 		if err != nil {
+			cancel()
 			if errors.Is(err, context.Canceled) {
 				return
 			}
@@ -156,12 +158,17 @@ func (f *GoBGPWatch) Run() {
 				key := fmt.Sprintf("%s/%d|%s|%d|%d", prefix.GetPrefix(), prefix.GetPrefixLen(), p.SourceId, p.GetLocalIdentifier(), p.GetIdentifier())
 				f.lock.Lock()
 				if p.IsWithdraw {
-					delete(f.paths, key)
+					if f.paths[key] == nil {
+						fmt.Println("delete non existed path: ", key)
+					} else {
+						delete(f.paths, key)
+					}
 				} else {
 					f.paths[key] = p
 				}
 				f.lock.Unlock()
 			}
 		}
+		cancel()
 	}
 }
