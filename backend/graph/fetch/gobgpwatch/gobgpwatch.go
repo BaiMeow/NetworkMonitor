@@ -155,7 +155,7 @@ func (f *GoBGPWatch) Run() {
 					fmt.Println("unmarshal prefix error:", err)
 					continue
 				}
-				key := fmt.Sprintf("%s/%d|%s|%d|%d", prefix.GetPrefix(), prefix.GetPrefixLen(), p.SourceId, p.GetLocalIdentifier(), p.GetIdentifier())
+				key := fmt.Sprintf("%s/%d|%s|%d", prefix.GetPrefix(), prefix.GetPrefixLen(), p.SourceId, p.GetIdentifier())
 				f.lock.Lock()
 				if p.IsWithdraw {
 					if f.paths[key] == nil {
