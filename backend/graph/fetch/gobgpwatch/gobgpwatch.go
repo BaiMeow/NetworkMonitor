@@ -134,9 +134,6 @@ func (f *GoBGPWatch) Run() {
 			time.Sleep(time.Second)
 			continue
 		}
-		f.lock.Lock()
-		f.paths = make(map[string]*apipb.Path)
-		f.lock.Unlock()
 		for {
 			event, err := res.Recv()
 			if err != nil {
@@ -148,6 +145,10 @@ func (f *GoBGPWatch) Run() {
 				break
 			}
 			paths := event.GetTable().GetPaths()
+			f.lock.Lock()
+			if f.paths == nil {
+				f.paths = make(map[string]*apipb.Path)
+			}
 			for _, p := range paths {
 				var prefix apipb.IPAddressPrefix
 				err := p.GetNlri().UnmarshalTo(&prefix)
@@ -156,7 +157,6 @@ func (f *GoBGPWatch) Run() {
 					continue
 				}
 				key := fmt.Sprintf("%s/%d|%s|%d", prefix.GetPrefix(), prefix.GetPrefixLen(), p.SourceId, p.GetIdentifier())
-				f.lock.Lock()
 				if p.IsWithdraw {
 					if f.paths[key] == nil {
 						fmt.Println("delete non existed path: ", key)
@@ -166,8 +166,8 @@ func (f *GoBGPWatch) Run() {
 				} else {
 					f.paths[key] = p
 				}
-				f.lock.Unlock()
 			}
+			f.lock.Unlock()
 		}
 		cancel()
 	}
