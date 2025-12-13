@@ -43,7 +43,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://127.0.0.1:8787',
+        target: 'https://monitor.dn11.baimeow.cn',
         changeOrigin: true,
       },
       '/monitor-metadata.json': {

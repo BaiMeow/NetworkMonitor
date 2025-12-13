@@ -2,10 +2,9 @@
 <script lang="ts" setup>
 import { watch, computed, ref } from 'vue'
 
-import { use } from 'echarts/core'
+import { use, ECElementEvent, ElementEvent } from 'echarts/core'
 import { CanvasRenderer } from 'echarts/renderers'
 import { GraphChart } from 'echarts/charts'
-import { ECElementEvent, ElementEvent } from 'echarts'
 import { TooltipComponent, TitleComponent } from 'echarts/components'
 
 import { getOSPF, Router } from '../api/ospf'

@@ -1,12 +1,12 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <script lang="ts" setup>
 import { listenEchartAction, useGraph, useGraphEvent } from '@/state/graph'
-import { ECElementEvent, ECharts, ElementEvent } from 'echarts'
+import { ECharts } from 'echarts'
 import VChart from 'vue-echarts'
 import { TooltipComponent, TitleComponent } from 'echarts/components'
 import { CanvasRenderer } from 'echarts/renderers'
 import { GraphChart } from 'echarts/charts'
-import { use } from 'echarts/core'
+import { use, ECElementEvent, ElementEvent } from 'echarts/core'
 import { ref } from 'vue'
 import { useASMetaLoading } from '@/state/meta'
 

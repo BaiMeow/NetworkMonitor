@@ -1,10 +1,9 @@
 <!-- eslint-disable @typescript-eslint/no-explicit-any -->
 <script lang="ts" setup>
-import { use } from 'echarts/core'
+import { use, ECElementEvent, ElementEvent } from 'echarts/core'
 import { CanvasRenderer } from 'echarts/renderers'
 import { GraphChart } from 'echarts/charts'
 import { TooltipComponent, TitleComponent } from 'echarts/components'
-import { ECElementEvent, ElementEvent } from 'echarts'
 import { ref, computed, watch } from 'vue'
 import { Netmask } from 'netmask'
 import { getBetweenness, getBGP, getCloseness } from '../api/bgp'
@@ -24,7 +23,7 @@ const isDark = useDark()
 
 const ASMeta = useASMeta()
 
-let firstLoading = true;
+let firstLoading = true
 
 interface Edge {
   source: string
@@ -249,7 +248,7 @@ const nodes = computed(() =>
 
       const nodeMeta = ASMeta.value?.metadata?.[node.name]
       if (nodeMeta?.monitor?.customNode) {
-        Object.assign(node,nodeMeta.monitor?.customNode)
+        Object.assign(node, nodeMeta.monitor?.customNode)
       }
       if (nodeMeta) {
         node.meta = nodeMeta
@@ -293,7 +292,7 @@ watch([nodes, edges], async () => {
       if (loading) return
       loading = true
       option.series[0].force.friction = 1
-      if (!firstLoading){
+      if (!firstLoading) {
         option.series[0].focus.layoutAnimation = true
       }
       return
@@ -327,20 +326,20 @@ watch([nodes, edges], async () => {
       continue
     }
 
-    const graphNode = option.series[0].data[i];
-    const dataNode = nodes.value[idx];
+    const graphNode = option.series[0].data[i]
+    const dataNode = nodes.value[idx]
 
     // existed, sync object
-    for (let graphNodeKey in graphNode){
-      if (!(graphNodeKey in dataNode)){
+    for (let graphNodeKey in graphNode) {
+      if (!(graphNodeKey in dataNode)) {
         setLoadingOnce()
-        delete graphNode[graphNodeKey];
+        delete graphNode[graphNodeKey]
       }
     }
 
-    if (!deepEqual(graphNode,dataNode)){
+    if (!deepEqual(graphNode, dataNode)) {
       setLoadingOnce()
-      Object.assign(graphNode,dataNode)
+      Object.assign(graphNode, dataNode)
     }
   }
 
@@ -422,12 +421,16 @@ async function loadData(name: string) {
   bgpData.value = await getBGP(name)
 }
 
-watch(name, async ()=>{
-  firstLoading = true;
-  await loadData(name.value);
-}, {
-  immediate: true,
-})
+watch(
+  name,
+  async () => {
+    firstLoading = true
+    await loadData(name.value)
+  },
+  {
+    immediate: true,
+  },
+)
 
 const interval = setInterval(() => {
   loadData(name.value)

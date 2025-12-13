@@ -1,8 +1,9 @@
 import { reactive, ref } from 'vue'
 import { selectItem } from '@/components/SearchBar.vue'
-import { ECElementEvent, ElementEvent, ECharts } from 'echarts'
-import { Payload } from 'echarts'
+import { ECElementEvent, ElementEvent } from 'echarts/core'
+import { Payload, ECharts } from 'echarts'
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const option = reactive({} as any)
 const selectList = ref([] as Array<selectItem>)
 const loading = ref(true)
