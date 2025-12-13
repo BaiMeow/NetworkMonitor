@@ -32,7 +32,10 @@ html body {
 }
 
 .app {
-  height: 100vh;
+  position: absolute;
+  height: calc(100vh - 20px);
+  width: calc(100vw - 20px);
+  padding: 10px;
 }
 
 ::view-transition-old(root),

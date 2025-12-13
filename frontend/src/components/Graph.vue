@@ -83,8 +83,8 @@ const ASMetaLoading = useASMetaLoading()
 .top-bar {
   position: absolute;
   display: flex;
-  top: 2vh;
-  right: 2vw;
+  top: 10px;
+  right: 10px;
   width: 14rem;
   align-items: center;
   gap: 1rem;

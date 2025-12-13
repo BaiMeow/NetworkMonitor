@@ -67,6 +67,8 @@ option.title = {
       ? `${ASMeta.value.metadata[asn.value].display} Network`
       : `AS ${asn.value}`,
   ),
+  left: '10',
+  top: '10',
   textStyle: {
     color: fontColor,
   },

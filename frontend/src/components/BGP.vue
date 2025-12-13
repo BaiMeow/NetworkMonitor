@@ -66,7 +66,9 @@ watch(updatedData, (data) => {
 graphLoading.value = true
 
 option.title = {
-  text: 'DN11 & Vidar Network',
+  text: computed(()=>`${name.value} Network`),
+  left: '10',
+  top: '10',
   textStyle: {
     color: fontColor,
   },

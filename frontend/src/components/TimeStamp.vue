@@ -32,8 +32,8 @@ const timeAgo = useTimeAgo(() => updated_time.value || 0, {
   padding: 2px 4px;
   border-radius: 5px;
   position: absolute;
-  bottom: 0.4rem;
-  right: 0.4rem;
+  bottom: 10px;
+  right: 10px;
   font-size: small;
   display: inline-flex;
   align-items: center;
