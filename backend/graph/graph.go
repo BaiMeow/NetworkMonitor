@@ -3,13 +3,14 @@ package graph
 import (
 	"context"
 	"fmt"
+	"log"
+
 	"github.com/BaiMeow/NetworkMonitor/conf"
 	"github.com/BaiMeow/NetworkMonitor/graph/analysis"
 	"github.com/BaiMeow/NetworkMonitor/graph/entity"
 	"github.com/BaiMeow/NetworkMonitor/trace"
 	"go.opentelemetry.io/otel/attribute"
 	oteltrace "go.opentelemetry.io/otel/trace"
-	"log"
 
 	"slices"
 	"strconv"
@@ -221,8 +222,15 @@ func (o *OSPF) Draw(ctx context.Context) {
 
 type BGP struct {
 	baseGraph[*entity.BGP]
-	betweenness map[uint32]float64
-	closeness   map[uint32]float64
+	betweenness     map[uint32]float64
+	closeness       map[uint32]float64
+	pathBetweenness []PathBetweenness
+}
+
+type PathBetweenness struct {
+	Src         string  `json:"src"`
+	Dst         string  `json:"dst"`
+	Betweenness float64 `json:"betweenness"`
 }
 
 func newBGPGraph(name string) *BGP {
@@ -280,6 +288,7 @@ func (b *BGP) Draw(ctx context.Context) {
 		wg.Wait()
 	}()
 
+	var pbt []PathBetweenness
 	bt := make(map[uint32]float64)
 	cl := make(map[uint32]float64)
 	if conf.Analysis {
@@ -292,6 +301,17 @@ func (b *BGP) Draw(ctx context.Context) {
 		for _, c := range g.Closeness() {
 			cl[c.Node.Tag["asn"].(uint32)] = c.Closeness
 		}
+		for _, p := range g.PathBetweenness() {
+			// remove half
+			if p.Src.Id > p.Dst.Id {
+				continue
+			}
+			pbt = append(pbt, PathBetweenness{
+				Src:         strconv.FormatUint(uint64(p.Src.Tag["asn"].(uint32)), 10),
+				Dst:         strconv.FormatUint(uint64(p.Dst.Tag["asn"].(uint32)), 10),
+				Betweenness: p.Betweenness,
+			})
+		}
 		log.Println("analysis time:", time.Since(t))
 	}
 
@@ -300,6 +320,7 @@ func (b *BGP) Draw(ctx context.Context) {
 	if success > 0 {
 		b.betweenness = bt
 		b.closeness = cl
+		b.pathBetweenness = pbt
 		equal := b.data.Equal(data)
 		b.data = data
 		b.updatedAt = time.Now()

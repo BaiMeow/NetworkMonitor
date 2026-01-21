@@ -10,15 +10,13 @@ type BetweennessResult struct {
 }
 
 func (g *Graph) Betweenness() []BetweennessResult {
+	if g.ShortestPath == nil {
+		g.AllSourceShortestPaths()
+	}
 	var passCount = make([]float64, len(g.Nodes))
 	for _, node := range g.Nodes {
-		paths := g.SingleSourceShortestPaths(node)
-		var dstMap = make(map[int][]*Path)
-		for _, path := range paths {
-			dstMap[path.Dst.Id] = append(dstMap[path.Dst.Id], path)
-		}
-		for _, paths := range dstMap {
-			paths = slices.DeleteFunc(paths,func(p *Path) bool {
+		for _, paths := range g.ShortestPath[node.Id] {
+			paths = slices.DeleteFunc(slices.Clone(paths), func(p *Path) bool {
 				return len(p.Nodes) < 3
 			})
 			if len(paths) == 0 {

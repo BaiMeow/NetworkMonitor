@@ -2,11 +2,12 @@ package analysis
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"math/rand"
 	"slices"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestGraph_SingleSourceShortestPaths(t *testing.T) {
@@ -36,7 +37,7 @@ func TestGraph_SingleSourceShortestPaths(t *testing.T) {
 		for _, n := range p.Nodes {
 			sb.WriteString(fmt.Sprintf("%d --> ", n.Id))
 		}
-		t.Logf(sb.String()[:sb.Len()-5])
+		t.Log(sb.String()[:sb.Len()-5])
 	}
 	for _, p := range paths {
 		printPath(p)
@@ -58,6 +59,22 @@ func TestGraph_SingleSourceShortestPaths2(t *testing.T) {
 	assert.Equal(t, 2, len(slices.DeleteFunc(paths, func(p *Path) bool {
 		return p.Dst.Id != 1
 	})), "There should be 2 paths from 0 to 1")
+}
+
+func TestGraph_All(t *testing.T) {
+	g := &Graph{}
+	for i := 0; i < 2; i++ {
+		g.Nodes = append(g.Nodes, &Node{Id: i})
+	}
+	addLink := func(src, dst *Node) {
+		src.Out = append(src.Out, &Edge{Src: src, Dst: dst, Cost: 1})
+		dst.Out = append(dst.Out, &Edge{Src: dst, Dst: src, Cost: 1})
+	}
+	addLink(g.Nodes[0], g.Nodes[1])
+	addLink(g.Nodes[0], g.Nodes[1])
+	g.Betweenness()
+	g.Closeness()
+	g.PathBetweenness()
 }
 
 func BenchmarkGraph_AllSourceShortestPaths(b *testing.B) {

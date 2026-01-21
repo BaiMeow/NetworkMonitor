@@ -115,6 +115,7 @@ func main() {
 			})
 			ana.GET("/betweenness", controller.BGPAnalysisBetweenness)
 			ana.GET("/closeness", controller.BGPAnalysisCloseness)
+			ana.GET("/pathBetweenness", controller.BGPAnalysisPathBetweenness)
 		}
 	}
 

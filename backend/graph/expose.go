@@ -47,3 +47,13 @@ func GetBgpCloseness(name string) map[uint32]float64 {
 	}
 	return nil
 }
+
+func GetBgpPathBetweenness(name string) []PathBetweenness {
+	fullLock.RLock()
+	defer fullLock.RUnlock()
+	gr := bgp[name]
+	if gr != nil {
+		return gr.pathBetweenness
+	}
+	return nil
+}

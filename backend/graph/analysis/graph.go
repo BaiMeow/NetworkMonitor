@@ -1,9 +1,10 @@
 package analysis
 
 import (
+	"slices"
+
 	"github.com/BaiMeow/NetworkMonitor/graph/entity"
 	pq "github.com/emirpasic/gods/queues/priorityqueue"
-	"slices"
 )
 
 type Node struct {
@@ -21,7 +22,8 @@ type Edge struct {
 }
 
 type Graph struct {
-	Nodes []*Node
+	Nodes        []*Node
+	ShortestPath map[int]map[int][]*Path
 }
 
 func ConvertFromBGP(bgp *entity.BGP) *Graph {
@@ -153,10 +155,17 @@ func (g *Graph) SingleSourceShortestPaths(src *Node) []*Path {
 	return allPaths
 }
 
-func (g *Graph) AllSourceShortestPaths() []*Path {
-	var allPaths []*Path
-	for _, node := range g.Nodes {
-		allPaths = append(allPaths, g.SingleSourceShortestPaths(node)...)
+func (g *Graph) AllSourceShortestPaths() {
+	if g.ShortestPath == nil {
+		g.ShortestPath = make(map[int]map[int][]*Path)
 	}
-	return allPaths
+	for _, node := range g.Nodes {
+		if _, ok := g.ShortestPath[node.Id]; !ok {
+			g.ShortestPath[node.Id] = make(map[int][]*Path)
+		}
+		paths := g.SingleSourceShortestPaths(node)
+		for _, path := range paths {
+			g.ShortestPath[node.Id][path.Dst.Id] = append(g.ShortestPath[node.Id][path.Dst.Id], path)
+		}
+	}
 }

@@ -6,12 +6,14 @@ type ClosenessResult struct {
 }
 
 func (g *Graph) Closeness() []ClosenessResult {
+	if g.ShortestPath == nil {
+		g.AllSourceShortestPaths()
+	}
 	var result []ClosenessResult
 	for _, node := range g.Nodes {
-		paths := g.SingleSourceShortestPaths(node)
 		distance := make([]int, len(g.Nodes))
-		for _, path := range paths {
-			distance[path.Dst.Id] = path.Length
+		for dst, paths := range g.ShortestPath[node.Id] {
+			distance[dst] = paths[0].Length
 		}
 		var sum int
 		for i, v := range distance {
