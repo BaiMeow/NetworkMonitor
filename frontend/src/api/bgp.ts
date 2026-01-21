@@ -49,3 +49,18 @@ export async function getBetweenness(name: string) {
   }
   return data.data
 }
+
+export async function getPathBetweenness(name: string) {
+  const res = await axios.get(`${ApiHost}/api/bgp/${name}/analysis/pathBetweenness`)
+  const data = res.data as Resp<
+    Array<{
+      src: string
+      dst: string
+      betweenness:number
+    }>
+  >
+  if (data.code !== 0) {
+    throw new Error(data.msg)
+  }
+  return data.data
+}

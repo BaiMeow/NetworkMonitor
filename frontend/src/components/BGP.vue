@@ -6,7 +6,12 @@ import { GraphChart } from 'echarts/charts'
 import { TooltipComponent, TitleComponent } from 'echarts/components'
 import { ref, computed, watch } from 'vue'
 import { Netmask } from 'netmask'
-import { getBetweenness, getBGP, getCloseness } from '../api/bgp'
+import {
+  getBetweenness,
+  getBGP,
+  getCloseness,
+  getPathBetweenness,
+} from '../api/bgp'
 import { prettierNet } from '../utils/colornet'
 import { ASData } from '../api/meta'
 import BGPUptime from './uptime/BGPUptime.vue'
@@ -66,7 +71,7 @@ watch(updatedData, (data) => {
 graphLoading.value = true
 
 option.title = {
-  text: computed(()=>`${name.value} Network`),
+  text: computed(() => `${name.value} Network`),
   left: '10',
   top: '10',
   textStyle: {
@@ -202,6 +207,7 @@ option.series = [
 const bgpData = ref<Awaited<ReturnType<typeof getBGP>>>()
 const betweenness = ref<Awaited<ReturnType<typeof getBetweenness>>>()
 const closeness = ref<Awaited<ReturnType<typeof getCloseness>>>()
+const pathBetweenness = ref<Awaited<ReturnType<typeof getPathBetweenness>>>()
 const nodes = computed(() =>
   bgpData.value?.as
     .reduce((nodes, cur) => {
@@ -271,10 +277,18 @@ const edges = computed(() =>
     if (src == null || dst == null) {
       return edges
     }
+
+    const betweenness = pathBetweenness.value?.find((p) => {
+      return p.src === src.name && p.dst === dst.name ||  p.dst === src.name && p.src === dst.name
+    })
+
     edges.push({
       source: cur.src.toString(),
       target: cur.dst.toString(),
       value: 100 / Math.min(src.peer_num, dst.peer_num) + 10,
+      lineStyle: {
+        width: betweenness ? 100 * betweenness.betweenness : 10,
+      },
     })
     return edges
   }, [] as Edge[]),
@@ -301,23 +315,41 @@ watch([nodes, edges], async () => {
     }
   })()
 
-  // remove not existed edges
+  // refresh nodes
   for (let i = 0; i < option.series[0].links.length; i++) {
-    if (
-      edges.value?.findIndex(
-        (edge) =>
-          edge.source === option.series[0].links[i].source &&
-          edge.target === option.series[0].links[i].target,
-      ) === -1
-    ) {
+    // find edge
+    const idx = edges.value?.findIndex(
+      (edge) =>
+        edge.source === option.series[0].links[i].source &&
+        edge.target === option.series[0].links[i].target,
+    )
+    if (idx === -1) {
       setLoadingOnce()
       option.series[0].links.splice(i, 1)
       i--
+      continue
+    }
+
+    const graphEdge = option.series[0].links[i]
+    const dataEdge = edges.value[idx]
+
+    // existed, sync object
+    for (let graphNodeKey in graphEdge) {
+      if (!(graphNodeKey in dataEdge)) {
+        setLoadingOnce()
+        delete graphEdge[graphNodeKey]
+      }
+    }
+
+    if (!deepEqual(graphEdge, dataEdge)) {
+      setLoadingOnce()
+      Object.assign(graphEdge, dataEdge)
     }
   }
 
   // refresh nodes
   for (let i = 0; i < option.series[0].data.length; i++) {
+    // find node
     const idx = nodes.value?.findIndex(
       (node) => node.name === option.series[0].data[i].name,
     )
@@ -420,6 +452,7 @@ watch([nodes, ASMeta], () => {
 async function loadData(name: string) {
   closeness.value = await getCloseness(name)
   betweenness.value = await getBetweenness(name)
+  pathBetweenness.value = await getPathBetweenness(name)
   bgpData.value = await getBGP(name)
 }
 
