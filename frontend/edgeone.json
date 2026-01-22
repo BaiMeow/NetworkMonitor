@@ -1,9 +1,9 @@
 {
   "name": "dn11-networkmonitor",
   "buildCommand": "pnpm run build",
-  "installCommand": "pnpm install --frozen-lockfile",
+  "installCommand": "pnpm install",
   "outputDirectory": "../backend/static",
-  "nodeVersion": "22.11.0",
+  "nodeVersion": "24.5.0",
  
   "redirects": [
     {
