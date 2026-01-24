@@ -8,7 +8,7 @@ export interface UptimeLinks {
   links: number
 }
 
-export interface DirectedUptimeLink{
+export interface DirectedUptimeLink {
   time: Date
   in_degree: number
   out_degree: number
@@ -20,8 +20,8 @@ interface UptimeLinksResp {
 }
 
 interface UptimeDirectedLinksResp {
-  time:string
-  in_degree:number
+  time: string
+  in_degree: number
   out_degree: number
 }
 
@@ -80,19 +80,19 @@ export async function getOSPFUptimeLinks(
   time: string,
   window: string,
 ) {
-    const res = await axios.get(
-      `${ApiHost}/api/ospf/${asn}/uptime/${routerId}/links`,
-      {
-        params: {
-          time,
-          window,
-        },
+  const res = await axios.get(
+    `${ApiHost}/api/ospf/${asn}/uptime/${routerId}/links`,
+    {
+      params: {
+        time,
+        window,
       },
-    )
-    const data = res.data as Resp<Array<UptimeDirectedLinksResp>>
-    if (data.code !== 0) {
-      throw new Error(data.msg)
-    }
+    },
+  )
+  const data = res.data as Resp<Array<UptimeDirectedLinksResp>>
+  if (data.code !== 0) {
+    throw new Error(data.msg)
+  }
   return data.data.map((item) => {
     return {
       ...item,

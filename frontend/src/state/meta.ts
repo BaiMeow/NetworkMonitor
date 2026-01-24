@@ -18,5 +18,5 @@ export function useASMeta() {
 }
 
 export function useASMetaLoading() {
-    return doneLoading
+  return doneLoading
 }

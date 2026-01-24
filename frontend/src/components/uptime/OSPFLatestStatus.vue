@@ -2,7 +2,7 @@
 import { ref, onUnmounted } from 'vue'
 import { getOSPFUptimeRecent } from '@/api/uptime'
 
-const { asn,routerId } = defineProps<{
+const { asn, routerId } = defineProps<{
   asn: number
   routerId: string
 }>()
@@ -21,7 +21,7 @@ const uptime10 = ref([
 ])
 
 const update = async () => {
-  const uptimes = await getOSPFUptimeRecent(asn,routerId)
+  const uptimes = await getOSPFUptimeRecent(asn, routerId)
   uptime10.value = uptimes.slice(0, 10)
 }
 update()
