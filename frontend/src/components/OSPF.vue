@@ -7,7 +7,13 @@ import { CanvasRenderer } from 'echarts/renderers'
 import { GraphChart } from 'echarts/charts'
 import { TooltipComponent, TitleComponent } from 'echarts/components'
 
-import { getOSPF, Router } from '../api/ospf'
+import {
+  getBetweenness,
+  getCloseness,
+  getOSPF,
+  getPathBetweenness,
+  Router,
+} from '../api/ospf'
 import { ElementOf, useDark } from '@vueuse/core'
 import { onBeforeRouteLeave, useRoute } from 'vue-router'
 import { useGraph, useGraphEvent } from '@/state/graph'
@@ -33,6 +39,7 @@ interface Edge {
   target: string
   value: number
   cost: number
+  betweenness?: number
   lineStyle?: any
   symbol?: string[]
 }
@@ -40,6 +47,8 @@ interface Edge {
 interface Node {
   name: string
   value: string
+  betweenness?: number
+  closeness?: number
   meta?: any
   peer_num?: number
   subnet?: string[]
@@ -57,6 +66,7 @@ const ASMeta = useASMeta()
 const asn = computed<string>(() => route.params.asn as string)
 
 import { updatedData } from '@/state/event'
+import { calcEdgeWidthFromPathBetweenness } from '@/utils/edge_width'
 watch(updatedData, (data) => {
   if (data?.type === 'ospf' && data.key === asn.value + '') loadData()
 })
@@ -98,6 +108,15 @@ option.tooltip = {
         for (let key in node.data.meta) {
           output += `${key}: ${node.data.meta[key]}`
         }
+      }
+      if (
+        params.data.betweenness != undefined &&
+        params.data.betweenness >= 0
+      ) {
+        output += `<br/>Betweenness: ${params.data.betweenness.toFixed(3)}`
+      }
+      if (params.data.closeness != undefined && params.data.closeness >= 0) {
+        output += `<br/>Closeness: ${params.data.closeness.toFixed(3)}`
       }
       if (node.data.subnet?.length) {
         output += '<br/>Subnet:'
@@ -166,8 +185,15 @@ option.lineStyle = {
 
 // load data
 const ospfData = ref<Awaited<ReturnType<typeof getOSPF>>>()
+const betweenness = ref<Awaited<ReturnType<typeof getBetweenness>>>()
+const closeness = ref<Awaited<ReturnType<typeof getCloseness>>>()
+const pathBetweenness = ref<Awaited<ReturnType<typeof getPathBetweenness>>>()
 async function loadData() {
-  ospfData.value = await getOSPF(parseInt(asn.value))
+  let asnInt = parseInt(asn.value)
+  closeness.value = await getCloseness(asnInt)
+  betweenness.value = await getBetweenness(asnInt)
+  pathBetweenness.value = await getPathBetweenness(asnInt)
+  ospfData.value = await getOSPF(asnInt)
 }
 
 // auto refresh
@@ -232,6 +258,8 @@ const nodes = computed(() =>
       nodes.push({
         name: router.router_id,
         value: '' + peer_num,
+        betweenness: betweenness.value?.[router.router_id],
+        closeness: closeness.value?.[router.router_id],
         meta: router.metadata ? router.metadata : {},
         subnet: router.subnet,
         area: [cur.area_id],
@@ -282,20 +310,37 @@ const edges = computed(() =>
         line.src < line.dst
           ? line
           : {
-              src: line.dst,
-              dst: line.src,
-              cost: line.cost,
-            },
+            src: line.dst,
+            dst: line.src,
+            cost: line.cost,
+          },
       )
 
       // middle line
       if (lines.length % 2 === 1) {
         const line = lines.pop() as NonNullable<(typeof lines)[number]>
+        const betweenness =
+          (pathBetweenness.value?.find(
+            (p) =>
+              p.src == line.src && p.dst == line.dst && p.cost == line.cost,
+          )?.betweenness || 0) +
+          (pathBetweenness.value?.find(
+            (p) =>
+              p.src == line.dst && p.dst == line.src && p.cost == line.cost,
+          )?.betweenness || 0)
+
         edges.push({
           source: line.src,
           target: line.dst,
           value: 100 / line.cost,
           cost: line.cost,
+          betweenness: betweenness,
+          lineStyle: {
+            width: calcEdgeWidthFromPathBetweenness(
+              betweenness,
+              nodes.value?.length,
+            ),
+          },
         })
       }
 
@@ -303,13 +348,25 @@ const edges = computed(() =>
       let next_curveness = false
       while (lines.length !== 0) {
         const l1 = lines.pop() as NonNullable<(typeof lines)[number]>
+        const betweenness =
+          (pathBetweenness.value?.find(
+            (p) => p.src == l1.src && p.dst == l1.dst && p.cost == l1.cost,
+          )?.betweenness || 0) +
+          (pathBetweenness.value?.find(
+            (p) => p.src == l1.dst && p.dst == l1.src && p.cost == l1.cost,
+          )?.betweenness || 0)
         edges.push({
           source: l1.src,
           target: l1.dst,
           value: 100 / l1.cost,
           cost: l1.cost,
+          betweenness: betweenness,
           lineStyle: {
             curveness: next_curveness ? -curveness : curveness,
+            width: calcEdgeWidthFromPathBetweenness(
+              betweenness,
+              nodes.value?.length,
+            ),
           },
         })
         if (next_curveness) {
@@ -319,18 +376,29 @@ const edges = computed(() =>
       }
 
       let pre_source = arrows[arrows.length - 1]?.src
+
       while (arrows.length !== 0) {
         const arrow = arrows.pop() as NonNullable<(typeof lines)[number]>
+        const betweenness =
+          pathBetweenness.value?.find(
+            (p) =>
+              p.src == arrow.src && p.dst == arrow.dst && p.cost == arrow.cost,
+          )?.betweenness || 0
         edges.push({
           source: arrow.src,
           target: arrow.dst,
           value: 100 / arrow.cost,
           cost: arrow.cost,
+          betweenness: betweenness,
           lineStyle: {
             curveness:
               pre_source === arrow.src && next_curveness
                 ? -curveness
                 : curveness,
+            width: calcEdgeWidthFromPathBetweenness(
+              betweenness,
+              nodes.value?.length,
+            ),
           },
           symbol: ['', 'arrow'],
         })
@@ -436,12 +504,7 @@ handleZrClick.value = (e: ElementEvent) => {
 
 <template>
   <Transition name="fade" appear>
-    <OSPFUptime
-      class="uptime"
-      v-if="uptimeRouterId"
-      :routerId="uptimeRouterId"
-      :asn="asn"
-    />
+    <OSPFUptime class="uptime" v-if="uptimeRouterId" :routerId="uptimeRouterId" :asn="asn" />
   </Transition>
 </template>
 <style scoped>
@@ -459,6 +522,7 @@ handleZrClick.value = (e: ElementEvent) => {
 .fade-enter-active {
   transition: all 0.2s ease-in;
 }
+
 .fade-leave-active {
   transition: all 0.16s ease-out;
 }

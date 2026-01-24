@@ -65,6 +65,7 @@ const route = useRoute()
 const name = computed<string>(() => route.params.name as string)
 
 import { updatedData } from '@/state/event'
+import { calcEdgeWidthFromPathBetweenness } from '@/utils/edge_width'
 watch(updatedData, (data) => {
   if (data?.type === 'bgp' && data.key === name.value) loadData(name.value)
 })
@@ -279,9 +280,12 @@ const edges = computed(() =>
       return edges
     }
 
-    const betweenness = pathBetweenness.value?.find((p) => {
-      return p.src === src.name && p.dst === dst.name ||  p.dst === src.name && p.src === dst.name
-    })?.betweenness
+    const betweenness =
+      pathBetweenness.value?.find(
+        (p) =>
+          (p.src === src.name && p.dst === dst.name) ||
+          (p.dst === src.name && p.src === dst.name),
+      )?.betweenness || 0
 
     edges.push({
       source: cur.src.toString(),
@@ -289,7 +293,10 @@ const edges = computed(() =>
       value: 100 / Math.min(src.peer_num, dst.peer_num) + 10,
       betweenness: betweenness,
       lineStyle: {
-        width: (betweenness ? 100 * betweenness : 0) + 0.5,
+        width: calcEdgeWidthFromPathBetweenness(
+          betweenness,
+          nodes.value?.length,
+        ),
       },
     })
     return edges
@@ -541,6 +548,7 @@ onBeforeRouteLeave(() => {
 .fade-enter-active {
   transition: all 0.2s ease-in;
 }
+
 .fade-leave-active {
   transition: all 0.2s ease-out;
 }
