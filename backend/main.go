@@ -81,6 +81,7 @@ func main() {
 	{
 		ospf := r.Group("/api/ospf")
 		ospf.GET("/:asn", controller.OSPF)
+		// uptime
 		{
 			up := ospf.Group("/:asn/uptime", func(c *gin.Context) {
 				if conf.Influxdb.Addr == "" {
@@ -89,6 +90,17 @@ func main() {
 			})
 			up.GET("/:routerId/recent", controller.OSPFRecentUptime)
 			up.GET("/:routerId/links", controller.OSPFLinks)
+		}
+		// analysis
+		{
+			ana := ospf.Group("/:asn/analysis", func(c *gin.Context) {
+				if !conf.Analysis {
+					c.AbortWithStatusJSON(403, controller.RespErrNotEnabled)
+				}
+			})
+			ana.GET("/betweenness", controller.OSPFAnalysisBetweenness)
+			ana.GET("/closeness", controller.OSPFAnalysisCloseness)
+			ana.GET("/pathBetweenness", controller.OSPFAnalysisPathBetweenness)
 		}
 	}
 

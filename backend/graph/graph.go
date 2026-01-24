@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"log/slog"
 
 	"github.com/BaiMeow/NetworkMonitor/conf"
 	"github.com/BaiMeow/NetworkMonitor/graph/analysis"
@@ -152,7 +153,10 @@ func (g *baseGraph[T]) StartDrawDaemon() {
 
 type OSPF struct {
 	baseGraph[*entity.OSPF]
-	asn uint32
+	asn             uint32
+	betweenness     map[string]float64
+	closeness       map[string]float64
+	pathBetweenness []PathBetweenness
 }
 
 func newOSPFGraph(asn uint32) *OSPF {
@@ -208,11 +212,37 @@ func (o *OSPF) Draw(ctx context.Context) {
 		wg.Wait()
 	}()
 
+	var pbt []PathBetweenness
+	bt := make(map[string]float64)
+	cl := make(map[string]float64)
+	if conf.Analysis {
+		t := time.Now()
+		g := analysis.ConvertFromOSPF(data)
+
+		for _, b := range g.Betweenness() {
+			bt[b.Node.Tag["routerId"].(string)] = b.Betweenness
+		}
+		for _, c := range g.Closeness() {
+			cl[c.Node.Tag["routerId"].(string)] = c.Closeness
+		}
+		for _, p := range g.PathBetweenness() {
+			pbt = append(pbt, PathBetweenness{
+				Src:         p.Src.Tag["routerId"].(string),
+				Dst:         p.Dst.Tag["routerId"].(string),
+				Betweenness: p.Betweenness,
+			})
+		}
+		slog.Debug("ospf analysis", slog.Duration("elapsed", time.Since(t)), slog.String("name", o.name))
+	}
+
 	o.dataLock.Lock()
 	defer o.dataLock.Unlock()
 	if success > 0 {
 		equal := o.data.Equal(data)
 		o.data = data
+		o.pathBetweenness = pbt
+		o.betweenness = bt
+		o.closeness = cl
 		o.updatedAt = time.Now()
 		if !equal {
 			notifyEventUpdate("ospf", o.name)

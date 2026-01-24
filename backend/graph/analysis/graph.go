@@ -59,6 +59,40 @@ func ConvertFromBGP(bgp *entity.BGP) *Graph {
 	return g
 }
 
+func ConvertFromOSPF(ospf *entity.OSPF) *Graph {
+	id := 0
+	g := &Graph{}
+	for _, area := range *ospf {
+		for _, router := range area.Router {
+			node := &Node{Id: id}
+			id++
+			node.Tag = map[string]any{"routerId": router.RouterId}
+			g.Nodes = append(g.Nodes, node)
+		}
+		for _, link := range area.Links {
+			var (
+				srcNode *Node
+				dstNode *Node
+			)
+			for _, node := range g.Nodes {
+				if node.Tag["routerId"].(string) == link.Src {
+					srcNode = node
+				}
+				if node.Tag["routerId"].(string) == link.Dst {
+					dstNode = node
+				}
+			}
+			if srcNode == nil || dstNode == nil {
+				continue
+			}
+			edge := &Edge{Src: srcNode, Dst: dstNode, Cost: link.Cost}
+			srcNode.Out = append(srcNode.Out, edge)
+			dstNode.In = append(dstNode.In, edge)
+		}
+	}
+	return g
+}
+
 func (g *Graph) FindNode(filter func(node *Node) bool) *Node {
 	for _, node := range g.Nodes {
 		if filter(node) {

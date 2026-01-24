@@ -26,6 +26,7 @@ func (g *Graph) Closeness() []ClosenessResult {
 		if sum == -1 {
 			// graph not full connected, not supported
 			result = append(result, ClosenessResult{Node: node, Closeness: -1})
+			continue
 		}
 		result = append(result, ClosenessResult{Node: node, Closeness: float64(len(g.Nodes)-1) / float64(sum)})
 	}

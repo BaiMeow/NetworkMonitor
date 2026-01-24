@@ -7,6 +7,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/BaiMeow/NetworkMonitor/graph/entity"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -99,5 +100,45 @@ func BenchmarkGraph_AllSourceShortestPaths(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		g.AllSourceShortestPaths()
+	}
+}
+
+func TestConvertFromOSPF(t *testing.T) {
+	g := ConvertFromOSPF(&entity.OSPF{
+		{
+			Router: []entity.Router{
+				{
+					RouterId: "1",
+				},
+				{
+					RouterId: "2",
+				},
+				{
+					RouterId: "3",
+				},
+			},
+			Links: []entity.Link{
+				{
+					Src:  "1",
+					Dst:  "2",
+					Cost: 2,
+				},
+				{
+					Src:  "3",
+					Dst:  "1",
+					Cost: 1,
+				},
+				{
+					Src:  "2",
+					Dst:  "3",
+					Cost: 2,
+				},
+			},
+		},
+	})
+	assert.Equal(t, 3, len(g.Nodes))
+	for _, n := range g.Nodes {
+		assert.Equal(t, 1, len(n.In))
+		assert.Equal(t, 1, len(n.Out))
 	}
 }

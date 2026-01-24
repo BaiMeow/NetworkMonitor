@@ -57,3 +57,33 @@ func GetBgpPathBetweenness(name string) []PathBetweenness {
 	}
 	return nil
 }
+
+func GetOSPFBetweenness(asn uint32) map[string]float64 {
+	fullLock.RLock()
+	defer fullLock.RUnlock()
+	gr := ospf[asn]
+	if gr != nil {
+		return gr.betweenness
+	}
+	return nil
+}
+
+func GetOSPFCloseness(asn uint32) map[string]float64 {
+	fullLock.RLock()
+	defer fullLock.RUnlock()
+	gr := ospf[asn]
+	if gr != nil {
+		return gr.closeness
+	}
+	return nil
+}
+
+func GetOSPFPathBetweenness(asn uint32) []PathBetweenness {
+	fullLock.RLock()
+	defer fullLock.RUnlock()
+	gr := ospf[asn]
+	if gr != nil {
+		return gr.pathBetweenness
+	}
+	return nil
+}
