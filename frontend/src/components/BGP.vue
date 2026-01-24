@@ -35,6 +35,7 @@ interface Edge {
   target: string
   value: number
   lineStyle?: any
+  betweenness?: number
   symbol?: string[]
   emphasis?: any
 }
@@ -100,7 +101,7 @@ option.tooltip = {
   formatter: (params: Params<any>) => {
     if (params.dataType === 'edge') {
       params = params as Params<Edge>
-      return `${params.data.source} ↔ ${params.data.target}`
+      return `${params.data.source} ↔ ${params.data.target}<br/>Betweenness: ${params.data.betweenness.toFixed(4)}`
     }
 
     // dataType === node
@@ -280,14 +281,15 @@ const edges = computed(() =>
 
     const betweenness = pathBetweenness.value?.find((p) => {
       return p.src === src.name && p.dst === dst.name ||  p.dst === src.name && p.src === dst.name
-    })
+    })?.betweenness
 
     edges.push({
       source: cur.src.toString(),
       target: cur.dst.toString(),
       value: 100 / Math.min(src.peer_num, dst.peer_num) + 10,
+      betweenness: betweenness,
       lineStyle: {
-        width: betweenness ? 100 * betweenness.betweenness : 10,
+        width: (betweenness ? 100 * betweenness : 0) + 0.5,
       },
     })
     return edges
