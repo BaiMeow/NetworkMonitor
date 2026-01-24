@@ -16,6 +16,8 @@ type Node struct {
 }
 
 type Edge struct {
+	// Must Count From 0
+	Id   int
 	Src  *Node
 	Dst  *Node
 	Cost int
@@ -27,11 +29,13 @@ type Graph struct {
 }
 
 func ConvertFromBGP(bgp *entity.BGP) *Graph {
-	id := 0
+	var (
+		nodeIdReleaser IdReleaser
+		edgeIdReleaser IdReleaser
+	)
 	g := &Graph{}
 	for _, as := range bgp.AS {
-		node := &Node{Id: id}
-		id++
+		node := &Node{Id: nodeIdReleaser.Next()}
 		node.Tag = map[string]any{"asn": as.ASN}
 		g.Nodes = append(g.Nodes, node)
 	}
@@ -49,10 +53,10 @@ func ConvertFromBGP(bgp *entity.BGP) *Graph {
 		if srcNode == nil || dstNode == nil {
 			continue
 		}
-		edge := &Edge{Src: srcNode, Dst: dstNode, Cost: 1}
+		edge := &Edge{Id: edgeIdReleaser.Next(), Src: srcNode, Dst: dstNode, Cost: 1}
 		srcNode.Out = append(srcNode.Out, edge)
 		dstNode.In = append(dstNode.In, edge)
-		edgeRe := &Edge{Src: dstNode, Dst: srcNode, Cost: 1}
+		edgeRe := &Edge{Id: edgeIdReleaser.Next(), Src: dstNode, Dst: srcNode, Cost: 1}
 		dstNode.Out = append(dstNode.Out, edgeRe)
 		srcNode.In = append(srcNode.In, edgeRe)
 	}
@@ -60,12 +64,14 @@ func ConvertFromBGP(bgp *entity.BGP) *Graph {
 }
 
 func ConvertFromOSPF(ospf *entity.OSPF) *Graph {
-	id := 0
+	var (
+		nodeIdReleaser IdReleaser
+		edgeIdReleaser IdReleaser
+	)
 	g := &Graph{}
 	for _, area := range *ospf {
 		for _, router := range area.Router {
-			node := &Node{Id: id}
-			id++
+			node := &Node{Id: nodeIdReleaser.Next()}
 			node.Tag = map[string]any{"routerId": router.RouterId}
 			g.Nodes = append(g.Nodes, node)
 		}
@@ -85,7 +91,7 @@ func ConvertFromOSPF(ospf *entity.OSPF) *Graph {
 			if srcNode == nil || dstNode == nil {
 				continue
 			}
-			edge := &Edge{Src: srcNode, Dst: dstNode, Cost: link.Cost}
+			edge := &Edge{Id: edgeIdReleaser.Next(), Src: srcNode, Dst: dstNode, Cost: link.Cost}
 			srcNode.Out = append(srcNode.Out, edge)
 			dstNode.In = append(dstNode.In, edge)
 		}
@@ -202,4 +208,15 @@ func (g *Graph) AllSourceShortestPaths() {
 			g.ShortestPath[node.Id][path.Dst.Id] = append(g.ShortestPath[node.Id][path.Dst.Id], path)
 		}
 	}
+}
+
+func (g *Graph) GetCloseCost(src int, dst int) int {
+	if src < 0 || src >= len(g.Nodes) {
+		return -1
+	}
+	paths := g.ShortestPath[src][dst]
+	if len(paths) == 0 {
+		return -1
+	}
+	return paths[0].Length
 }

@@ -229,6 +229,7 @@ func (o *OSPF) Draw(ctx context.Context) {
 			pbt = append(pbt, PathBetweenness{
 				Src:         p.Src.Tag["routerId"].(string),
 				Dst:         p.Dst.Tag["routerId"].(string),
+				Cost:        p.Cost,
 				Betweenness: p.Betweenness,
 			})
 		}
@@ -260,6 +261,7 @@ type BGP struct {
 type PathBetweenness struct {
 	Src         string  `json:"src"`
 	Dst         string  `json:"dst"`
+	Cost        int     `json:"cost"`
 	Betweenness float64 `json:"betweenness"`
 }
 
