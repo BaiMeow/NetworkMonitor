@@ -98,7 +98,12 @@ option.tooltip = {
   formatter: (params: Params<any>) => {
     if (params.dataType === 'edge') {
       params = params as Params<Edge>
-      return `Link: ${params.data.source} ↔ ${params.data.target} <br/> Cost: <div class="cost">${params.data.cost}</div>`
+      let output = `Link: ${params.data.source} ↔ ${params.data.target}`
+      if (params.data.betweenness != undefined) {
+        output += `<br/>Betweenness: ${params.data.betweenness.toFixed(4)}`
+      }
+      output += `<br/>Cost: <div class="cost">${params.data.cost}</div>`
+      return output
     } else {
       const node = params as Params<Node>
       let output = `Router ID: ${node.data.name}`
@@ -109,13 +114,10 @@ option.tooltip = {
           output += `${key}: ${node.data.meta[key]}`
         }
       }
-      if (
-        params.data.betweenness != undefined &&
-        params.data.betweenness >= 0
-      ) {
+      if (params.data.betweenness != undefined) {
         output += `<br/>Betweenness: ${params.data.betweenness.toFixed(3)}`
       }
-      if (params.data.closeness != undefined && params.data.closeness >= 0) {
+      if (params.data.closeness != undefined) {
         output += `<br/>Closeness: ${params.data.closeness.toFixed(3)}`
       }
       if (node.data.subnet?.length) {
@@ -310,10 +312,10 @@ const edges = computed(() =>
         line.src < line.dst
           ? line
           : {
-            src: line.dst,
-            dst: line.src,
-            cost: line.cost,
-          },
+              src: line.dst,
+              dst: line.src,
+              cost: line.cost,
+            },
       )
 
       // middle line
@@ -504,7 +506,12 @@ handleZrClick.value = (e: ElementEvent) => {
 
 <template>
   <Transition name="fade" appear>
-    <OSPFUptime class="uptime" v-if="uptimeRouterId" :routerId="uptimeRouterId" :asn="asn" />
+    <OSPFUptime
+      class="uptime"
+      v-if="uptimeRouterId"
+      :routerId="uptimeRouterId"
+      :asn="asn"
+    />
   </Transition>
 </template>
 <style scoped>
