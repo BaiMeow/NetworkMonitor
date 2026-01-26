@@ -10,6 +10,13 @@ type BetweennessResult struct {
 }
 
 func (g *Graph) Betweenness() []BetweennessResult {
+	var result []BetweennessResult
+	if len(g.Nodes) < 3 {
+		for _, n := range g.Nodes {
+			result = append(result, BetweennessResult{Node: n, Betweenness: 0})
+		}
+		return result
+	}
 	if g.ShortestPath == nil {
 		g.AllSourceShortestPaths()
 	}
@@ -30,7 +37,6 @@ func (g *Graph) Betweenness() []BetweennessResult {
 		}
 	}
 
-	var result []BetweennessResult
 	nodeCount := float64(len(g.Nodes))
 	for _, node := range g.Nodes {
 		result = append(result, BetweennessResult{Node: node, Betweenness: passCount[node.Id] / (nodeCount - 1) / (nodeCount - 2)})
