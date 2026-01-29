@@ -5,8 +5,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
-	"io"
-	"log"
+	"log/slog"
 	"math"
 	"sync"
 	"time"
@@ -71,7 +70,7 @@ func init() {
 			ctx:    ctx,
 			api:    api,
 		}
-		go fetcher.Run()
+		go fetcher.run()
 		return fetcher, nil
 	})
 }
@@ -104,9 +103,83 @@ func (f *GoBGPWatch) GetData(ctx context.Context) (any, error) {
 	return paths, nil
 }
 
-func (f *GoBGPWatch) Run() {
+func (f *GoBGPWatch) CleanUp() error {
+	f.cancel()
+	return nil
+}
+
+const fetchALLInterval = time.Hour
+
+func (f *GoBGPWatch) run() {
+	session, cancel, err := f.mustConnect()
+	if err != nil {
+		slog.Error("GoBGP watch mustConnect fail", "err", err)
+		return
+	}
+	var (
+		lock          sync.Mutex
+		init          = true
+		fetchALLTimer = time.NewTimer(fetchALLInterval)
+	)
+
+	// watch loop
+	go func() {
+		for {
+			if f.ctx.Err() != nil {
+				return
+			}
+			lock.Lock()
+			err := f.watch(session, init)
+			if init {
+				init = false
+			}
+			if err != nil && !errors.Is(err, context.Canceled) {
+				slog.Error("GoBGP watch fail", "err", err)
+				fetchALLTimer.Stop()
+				cancel()
+				// reconnect
+				newSession, newCancel, err := f.mustConnect()
+				if err != nil {
+					slog.Error("GoBGP watch mustConnect fail", "err", err)
+					return
+				}
+				session = newSession
+				cancel = newCancel
+				init = true
+				fetchALLTimer.Reset(fetchALLInterval)
+			}
+			lock.Unlock()
+		}
+	}()
+
+	// reconnect
 	for {
-		ctx, cancel := context.WithTimeout(f.ctx, time.Hour)
+		select {
+		case <-f.ctx.Done():
+			cancel()
+			return
+		case <-time.After(fetchALLInterval):
+			fmt.Println("GoBGP watch reconnect")
+			newSession, newCancel, err := f.mustConnect()
+			if err != nil {
+				slog.Error("GoBGP watch mustConnect fail", "err", err)
+				cancel()
+				return
+			}
+			cancel()
+			lock.Lock()
+			session = newSession
+			cancel = newCancel
+			init = true
+			lock.Unlock()
+		}
+	}
+}
+
+func (f *GoBGPWatch) mustConnect() (apipb.GobgpApi_WatchEventClient, context.CancelFunc, error) {
+	for {
+		// try mustConnect
+		ctx, cancel := context.WithCancel(f.ctx)
 		res, err := f.api.WatchEvent(ctx, &apipb.WatchEventRequest{
 			Table: &apipb.WatchEventRequest_Table{
 				Filters: []*apipb.WatchEventRequest_Table_Filter{
@@ -119,56 +192,47 @@ func (f *GoBGPWatch) Run() {
 		})
 		if err != nil {
 			cancel()
-			if errors.Is(err, context.Canceled) {
-				return
+			// cancel by caller
+			if f.ctx.Err() != nil {
+				return nil, nil, f.ctx.Err()
 			}
-
-			log.Println("watch err:", err)
-
-			// clear data
-			f.lock.Lock()
-			f.paths = nil
-			f.lock.Unlock()
-
+			slog.Error("watch err:", "err", err)
 			// wait and retry
 			time.Sleep(time.Second)
 			continue
 		}
-		for {
-			event, err := res.Recv()
-			if err != nil {
-				if errors.Is(err, io.EOF) {
-					log.Println("watch event EOF")
-				} else {
-					log.Printf("watch event error: %v", err)
-				}
-				break
-			}
-			paths := event.GetTable().GetPaths()
-			f.lock.Lock()
-			if f.paths == nil {
-				f.paths = make(map[string]*apipb.Path)
-			}
-			for _, p := range paths {
-				var prefix apipb.IPAddressPrefix
-				err := p.GetNlri().UnmarshalTo(&prefix)
-				if err != nil {
-					fmt.Println("unmarshal prefix error:", err)
-					continue
-				}
-				key := fmt.Sprintf("%s/%d|%s|%d", prefix.GetPrefix(), prefix.GetPrefixLen(), p.SourceId, p.GetIdentifier())
-				if p.IsWithdraw {
-					if f.paths[key] == nil {
-						fmt.Println("delete non existed path: ", key)
-					} else {
-						delete(f.paths, key)
-					}
-				} else {
-					f.paths[key] = p
-				}
-			}
-			f.lock.Unlock()
-		}
-		cancel()
+		return res, cancel, nil
 	}
+}
+
+func (f *GoBGPWatch) watch(c apipb.GobgpApi_WatchEventClient, init bool) error {
+	event, err := c.Recv()
+	if err != nil {
+		return err
+	}
+	paths := event.GetTable().GetPaths()
+	f.lock.Lock()
+	if init {
+		f.paths = make(map[string]*apipb.Path)
+	}
+	for _, p := range paths {
+		var prefix apipb.IPAddressPrefix
+		err := p.GetNlri().UnmarshalTo(&prefix)
+		if err != nil {
+			fmt.Println("unmarshal prefix error:", err)
+			continue
+		}
+		key := fmt.Sprintf("%s/%d|%s|%d", prefix.GetPrefix(), prefix.GetPrefixLen(), p.SourceId, p.GetIdentifier())
+		if p.IsWithdraw {
+			if f.paths[key] == nil {
+				fmt.Println("delete non existed path: ", key)
+			} else {
+				delete(f.paths, key)
+			}
+		} else {
+			f.paths[key] = p
+		}
+	}
+	f.lock.Unlock()
+	return nil
 }
