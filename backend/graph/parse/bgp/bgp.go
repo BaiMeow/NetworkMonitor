@@ -3,15 +3,15 @@ package bgp
 import (
 	"context"
 	"fmt"
+	"log"
+	"reflect"
+	"slices"
+
 	"github.com/BaiMeow/NetworkMonitor/graph/entity"
 	"github.com/BaiMeow/NetworkMonitor/graph/parse"
 	"github.com/BaiMeow/NetworkMonitor/trace"
-	apipb "github.com/osrg/gobgp/v3/api"
-	"google.golang.org/protobuf/types/known/anypb"
-	"log"
-	"net/netip"
-	"reflect"
-	"slices"
+	"github.com/osrg/gobgp/v4/pkg/apiutil"
+	"github.com/osrg/gobgp/v4/pkg/packet/bgp"
 )
 
 func init() {
@@ -38,29 +38,33 @@ func (b *BGP) Parse(ctx context.Context, input any) (*entity.BGP, error) {
 		"parse/bgp/BGP.Parse",
 	)
 	defer span.End()
-
-	destinations, ok := input.([]*apipb.Destination)
+	inputArr, ok := input.([][2]any)
 	if !ok {
 		log.Fatalf("invalid data type for BGP parser: %s", reflect.TypeOf(input).Elem().Name())
 	}
-	var bgp entity.BGP
+	var gr entity.BGP
 
-	for _, des := range destinations {
-		for _, p := range des.Paths {
-			idx := slices.IndexFunc(p.Pattrs, func(a *anypb.Any) bool {
-				return a.GetTypeUrl() == "type.googleapis.com/apipb.AsPathAttribute"
+	for _, p := range inputArr {
+		nlri, ok := p[0].(bgp.NLRI)
+		if !ok {
+			return nil, fmt.Errorf("invalid prefix: %s", p[0])
+		}
+		prefix, ok := nlri.(*bgp.IPAddrPrefix)
+		if !ok {
+			return nil, fmt.Errorf("invalid prefix: %s", nlri)
+		}
+		paths, ok := p[1].([]*apiutil.Path)
+		for _, p := range paths {
+			idx := slices.IndexFunc(p.Attrs, func(a bgp.PathAttributeInterface) bool {
+				_, ok := a.(*bgp.PathAttributeAsPath)
+				return ok
 			})
 			if idx == -1 {
 				continue
 			}
-			asPathAttrPb := p.Pattrs[idx]
-			var asPathAttr apipb.AsPathAttribute
-			if err := asPathAttrPb.UnmarshalTo(&asPathAttr); err != nil {
-				log.Println("unmarshal ASPathAttr failed:", err)
-				continue
-			}
-			for _, se := range asPathAttr.Segments {
-				numbers := se.GetNumbers()
+			asPathAttrPb := p.Attrs[idx].(*bgp.PathAttributeAsPath)
+			for _, se := range asPathAttrPb.Value {
+				numbers := se.GetAS()
 				if b.leftShiftCount != 0 {
 					if len(numbers) <= b.leftShiftCount {
 						continue
@@ -68,12 +72,11 @@ func (b *BGP) Parse(ctx context.Context, input any) (*entity.BGP, error) {
 					numbers = numbers[b.leftShiftCount:]
 				}
 				for i := 0; i < len(numbers)-1; i++ {
-					bgp.AddAsLink(numbers[i], numbers[i+1])
+					gr.AddAsLink(numbers[i], numbers[i+1])
 				}
-				bgp.AddPrefix(numbers[len(numbers)-1], netip.MustParsePrefix(des.GetPrefix()))
+				gr.AddPrefix(numbers[len(numbers)-1], prefix.Prefix)
 			}
 		}
 	}
-
-	return &bgp, nil
+	return &gr, nil
 }

@@ -6,13 +6,11 @@ import (
 	"log"
 	"net/netip"
 	"reflect"
-	"slices"
 
 	"github.com/BaiMeow/NetworkMonitor/graph/entity"
 	"github.com/BaiMeow/NetworkMonitor/graph/parse"
 	"github.com/BaiMeow/NetworkMonitor/trace"
-	apipb "github.com/osrg/gobgp/v3/api"
-	"google.golang.org/protobuf/types/known/anypb"
+	apipb "github.com/osrg/gobgp/v4/api"
 )
 
 func init() {
@@ -37,21 +35,19 @@ func (b *GoBGP) Parse(ctx context.Context, input any) (*entity.BGP, error) {
 	}
 	var bgp entity.BGP
 	for _, p := range paths {
-		idx := slices.IndexFunc(p.Pattrs, func(a *anypb.Any) bool {
-			return a.GetTypeUrl() == "type.googleapis.com/apipb.AsPathAttribute"
-		})
-		if idx == -1 {
+		var asPathAttr *apipb.AsPathAttribute
+		for _, attr := range p.Pattrs {
+			if attr.GetAsPath() != nil {
+				asPathAttr = attr.GetAsPath()
+			}
+		}
+		if asPathAttr == nil {
+			log.Println("as path attribute not found")
 			continue
 		}
-		asPathAttrPb := p.Pattrs[idx]
-		var asPathAttr apipb.AsPathAttribute
-		if err := asPathAttrPb.UnmarshalTo(&asPathAttr); err != nil {
-			log.Println("unmarshal ASPathAttr failed:", err)
-			continue
-		}
-		var prefix apipb.IPAddressPrefix
-		if err := p.GetNlri().UnmarshalTo(&prefix); err != nil {
-			log.Println("unmarshal prefix failed:", err)
+		prefix := p.GetNlri().GetPrefix()
+		if prefix == nil {
+			log.Println("prefix not found")
 			continue
 		}
 		for _, se := range asPathAttr.Segments {

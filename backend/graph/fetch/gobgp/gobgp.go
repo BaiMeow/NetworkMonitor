@@ -9,7 +9,7 @@ import (
 
 	"github.com/BaiMeow/NetworkMonitor/graph/fetch"
 	"github.com/BaiMeow/NetworkMonitor/trace"
-	apipb "github.com/osrg/gobgp/v3/api"
+	apipb "github.com/osrg/gobgp/v4/api"
 	"github.com/pkg/errors"
 	"go.opentelemetry.io/otel/attribute"
 	"google.golang.org/grpc"
@@ -56,14 +56,14 @@ func init() {
 			return nil, fmt.Errorf("new grpc client fail: %v", err)
 		}
 		return &GoBGP{
-			api: apipb.NewGobgpApiClient(client),
+			api: apipb.NewGoBgpServiceClient(client),
 		}, nil
 	})
 }
 
 type GoBGP struct {
 	fetch.Base
-	api apipb.GobgpApiClient
+	api apipb.GoBgpServiceClient
 }
 
 func (f *GoBGP) GetData(ctx context.Context) (any, error) {
@@ -79,7 +79,7 @@ func (f *GoBGP) GetData(ctx context.Context) (any, error) {
 			return nil, fmt.Errorf("list bgp peer: %v", err)
 		}
 		for _, v := range resp {
-			if v.Peer.State.SessionState == apipb.PeerState_ESTABLISHED {
+			if v.Peer.State.SessionState == apipb.PeerState_SESSION_STATE_ESTABLISHED {
 				estCount++
 			}
 		}
@@ -89,9 +89,10 @@ func (f *GoBGP) GetData(ctx context.Context) (any, error) {
 		}
 	}
 
-	var destinations []*apipb.Destination
+	var paths []*apipb.Path
 	{
 		resp, err := recvResponse(f.api.ListPath(ctx, &apipb.ListPathRequest{
+			TableType: apipb.TableType_TABLE_TYPE_GLOBAL,
 			Family: &apipb.Family{
 				Afi:  apipb.Family_AFI_IP,
 				Safi: apipb.Family_SAFI_UNICAST,
@@ -102,14 +103,11 @@ func (f *GoBGP) GetData(ctx context.Context) (any, error) {
 			return nil, fmt.Errorf("list bgp path: %v", err)
 		}
 		for _, v := range resp {
-			if v.GetDestination() != nil {
-				destinations = append(destinations, v.GetDestination())
-			}
+			paths = append(paths, v.GetDestination().GetPaths()...)
 		}
 	}
-	span.SetAttributes(attribute.Int("destination_count", len(destinations)))
-	span.SetAttributes(attribute.Int("path_count", countPath(destinations)))
-	return destinations, nil
+	span.SetAttributes(attribute.Int("path_count", len(paths)))
+	return paths, nil
 }
 
 func countPath(dess []*apipb.Destination) int {

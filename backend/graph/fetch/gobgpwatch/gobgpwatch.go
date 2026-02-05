@@ -12,7 +12,7 @@ import (
 
 	"github.com/BaiMeow/NetworkMonitor/graph/fetch"
 	"github.com/BaiMeow/NetworkMonitor/trace"
-	apipb "github.com/osrg/gobgp/v3/api"
+	apipb "github.com/osrg/gobgp/v4/api"
 	"github.com/pkg/errors"
 	"go.opentelemetry.io/otel/attribute"
 	"google.golang.org/grpc"
@@ -62,7 +62,7 @@ func init() {
 		if err != nil {
 			return nil, fmt.Errorf("new grpc client fail: %v", err)
 		}
-		api := apipb.NewGobgpApiClient(client)
+		api := apipb.NewGoBgpServiceClient(client)
 
 		ctx, cancel := context.WithCancel(context.Background())
 		fetcher := &GoBGPWatch{
@@ -77,7 +77,7 @@ func init() {
 
 type GoBGPWatch struct {
 	fetch.Base
-	api    apipb.GobgpApiClient
+	api    apipb.GoBgpServiceClient
 	ctx    context.Context
 	cancel context.CancelFunc
 
@@ -99,7 +99,7 @@ func (f *GoBGPWatch) GetData(ctx context.Context) (any, error) {
 	for _, v := range f.paths {
 		paths = append(paths, v)
 	}
-	span.SetAttributes(attribute.Int("destinations", len(paths)))
+	span.SetAttributes(attribute.Int("paths", len(paths)))
 	return paths, nil
 }
 
@@ -176,7 +176,7 @@ func (f *GoBGPWatch) run() {
 	}
 }
 
-func (f *GoBGPWatch) mustConnect() (apipb.GobgpApi_WatchEventClient, context.CancelFunc, error) {
+func (f *GoBGPWatch) mustConnect() (apipb.GoBgpService_WatchEventClient, context.CancelFunc, error) {
 	for {
 		// try mustConnect
 		ctx, cancel := context.WithCancel(f.ctx)
@@ -184,7 +184,7 @@ func (f *GoBGPWatch) mustConnect() (apipb.GobgpApi_WatchEventClient, context.Can
 			Table: &apipb.WatchEventRequest_Table{
 				Filters: []*apipb.WatchEventRequest_Table_Filter{
 					{
-						Type: apipb.WatchEventRequest_Table_Filter_POST_POLICY,
+						Type: apipb.WatchEventRequest_Table_Filter_TYPE_POST_POLICY,
 						Init: true,
 					},
 				},
@@ -205,7 +205,7 @@ func (f *GoBGPWatch) mustConnect() (apipb.GobgpApi_WatchEventClient, context.Can
 	}
 }
 
-func (f *GoBGPWatch) watch(c apipb.GobgpApi_WatchEventClient, init bool) error {
+func (f *GoBGPWatch) watch(c apipb.GoBgpService_WatchEventClient, init bool) error {
 	event, err := c.Recv()
 	if err != nil {
 		return err
@@ -216,10 +216,8 @@ func (f *GoBGPWatch) watch(c apipb.GobgpApi_WatchEventClient, init bool) error {
 		f.paths = make(map[string]*apipb.Path)
 	}
 	for _, p := range paths {
-		var prefix apipb.IPAddressPrefix
-		err := p.GetNlri().UnmarshalTo(&prefix)
-		if err != nil {
-			fmt.Println("unmarshal prefix error:", err)
+		prefix := p.GetNlri().GetPrefix()
+		if prefix == nil {
 			continue
 		}
 		key := fmt.Sprintf("%s/%d|%s|%d", prefix.GetPrefix(), prefix.GetPrefixLen(), p.SourceId, p.GetIdentifier())

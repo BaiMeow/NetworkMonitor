@@ -10,9 +10,10 @@ import (
 	"github.com/BaiMeow/NetworkMonitor/graph/fetch"
 	"github.com/BaiMeow/NetworkMonitor/trace"
 	"github.com/BaiMeow/NetworkMonitor/utils"
-	apipb "github.com/osrg/gobgp/v3/api"
-	gobgplog "github.com/osrg/gobgp/v3/pkg/log"
-	"github.com/osrg/gobgp/v3/pkg/server"
+	apipb "github.com/osrg/gobgp/v4/api"
+	"github.com/osrg/gobgp/v4/pkg/apiutil"
+	"github.com/osrg/gobgp/v4/pkg/packet/bgp"
+	"github.com/osrg/gobgp/v4/pkg/server"
 	"github.com/pkg/errors"
 	"go.opentelemetry.io/otel/attribute"
 )
@@ -53,10 +54,7 @@ func init() {
 		default:
 			return nil, fmt.Errorf("invalid bgp fetcher mode: %s", mode)
 		}
-
-		logger := gobgplog.NewDefaultLogger()
-		logger.SetLevel(gobgplog.ErrorLevel)
-		bgpServer := server.NewBgpServer(server.LoggerOption(logger))
+		bgpServer := server.NewBgpServer()
 		ctx, cancel := context.WithCancel(context.Background())
 		bgp := &BGP{
 			s:      bgpServer,
@@ -202,7 +200,7 @@ func (f *BGP) GetData(ctx context.Context) (any, error) {
 
 	var estCount int
 	if err := f.s.ListPeer(ctx, &apipb.ListPeerRequest{}, func(peer *apipb.Peer) {
-		if peer.State.SessionState == apipb.PeerState_ESTABLISHED {
+		if peer.State.SessionState == apipb.PeerState_SESSION_STATE_ESTABLISHED {
 			estCount++
 		}
 	}); err != nil {
@@ -213,15 +211,13 @@ func (f *BGP) GetData(ctx context.Context) (any, error) {
 		return nil, errors.New("no established peer")
 	}
 
-	var destinations []*apipb.Destination
-	if err := f.s.ListPath(ctx, &apipb.ListPathRequest{
-		Family: &apipb.Family{
-			Afi:  apipb.Family_AFI_IP,
-			Safi: apipb.Family_SAFI_UNICAST,
-		},
+	var destinations [][2]any
+	if err := f.s.ListPath(apiutil.ListPathRequest{
+		TableType:      apipb.TableType_TABLE_TYPE_GLOBAL,
+		Family:         bgp.NewFamily(bgp.AFI_IP, bgp.SAFI_UNICAST),
 		EnableFiltered: true,
-	}, func(destination *apipb.Destination) {
-		destinations = append(destinations, destination)
+	}, func(prefix bgp.NLRI, paths []*apiutil.Path) {
+		destinations = append(destinations, [2]any{prefix, paths})
 	}); err != nil {
 		return nil, err
 	}
@@ -233,7 +229,7 @@ func (f *BGP) GetData(ctx context.Context) (any, error) {
 	default:
 	}
 	span.SetAttributes(attribute.Int("destination_count", len(destinations)))
-	span.SetAttributes(attribute.Int("path_count", countPath(destinations)))
+	//span.SetAttributes(attribute.Int("path_count", countPath(destinations)))
 	return destinations, nil
 }
 

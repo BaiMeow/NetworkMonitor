@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/BaiMeow/NetworkMonitor/graph/fetch"
-	apipb "github.com/osrg/gobgp/v3/api"
+	apipb "github.com/osrg/gobgp/v4/api"
 )
 
 func TestGoBGPWatch_GetData(t *testing.T) {
