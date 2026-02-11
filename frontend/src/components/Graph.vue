@@ -20,24 +20,6 @@ listenEchartAction((payload, opt) => {
   echarts.value?.dispatchAction(payload, opt)
 })
 const ASMetaLoading = useASMetaLoading()
-
-// let showLoadingTimeout = setTimeout(() => {}, 0)
-// const showLoading = ref(true)
-// watch(
-//   () => loading.value,
-//   (cur, old) => {
-//     if (old && !cur) {
-//       clearTimeout(showLoadingTimeout)
-//       showLoading.value = false
-//     } else if (cur && !old) {
-//       showLoadingTimeout = setTimeout(() => {
-//         showLoading.value = true
-//       }, 200)
-//     } else {
-//       showLoading.value = cur
-//     }
-//   },
-// )
 </script>
 <template>
   <Transition>

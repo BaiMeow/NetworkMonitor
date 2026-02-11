@@ -26,7 +26,7 @@ import { setUpdatedTime } from '@/state/updated_time'
 const route = useRoute()
 use([CanvasRenderer, GraphChart, TooltipComponent, TitleComponent])
 const isDark = useDark()
-const uptimeRouterId = ref('')
+const focusedRouterId = ref('')
 
 const { option, selectList, loading } = useGraph()
 
@@ -130,6 +130,9 @@ option.tooltip = {
       return output
     }
   },
+  position: function () {
+    return [20, 50]
+  },
 }
 option.symbolSize = 50
 option.animationDurationUpdate = 1500
@@ -203,7 +206,7 @@ let autoRefreshInterval: ReturnType<typeof setTimeout>
 watch(
   [asn],
   () => {
-    uptimeRouterId.value = ''
+    focusedRouterId.value = ''
     if (autoRefreshInterval) clearInterval(autoRefreshInterval)
     firstLoading = true
     loadData()
@@ -490,29 +493,126 @@ onBeforeRouteLeave(() => {
   }
 })
 
+interface PathsWithCost {
+  paths: Array<PathWithIndex>
+  cost: number
+}
+
+interface PathWithIndex {
+  index: number
+  edge: Edge
+}
+
+function getEdgeIndexesInShortestPathOf(src: string) {
+  let confirmed_paths: Array<null | Array<number>> | undefined =
+    nodes.value?.map(() => null)
+  if (!confirmed_paths) return []
+  const start_idx = nodes.value?.findIndex((n) => n.name === src)
+  if (!start_idx) return []
+  confirmed_paths[start_idx] = []
+  let unvisited_paths: Array<PathWithIndex> =
+    edges.value?.map((e, i) => {
+      return {
+        index: i,
+        edge: e,
+      }
+    }) || []
+  let pathss: Array<PathsWithCost> = []
+  while (
+    unvisited_paths.length != 0 &&
+    confirmed_paths.some((cp) => cp === null)
+  ) {
+    console.log(pathss, unvisited_paths, confirmed_paths)
+    if (pathss.length === 0) {
+      const pathsStartsWithSrc = unvisited_paths.filter(
+        (p) => p.edge.source === src,
+      )
+      if (pathsStartsWithSrc.length === 0) return []
+      const minCostPath = pathsStartsWithSrc.reduce((p, c) =>
+        c.edge.cost < p.edge.cost ? c : p,
+      )
+      unvisited_paths = unvisited_paths.filter(
+        (p) => p.index !== minCostPath.index,
+      )
+      pathss.push({
+        cost: minCostPath.edge.cost,
+        paths: [minCostPath],
+      })
+    }
+
+    // remove no next
+    pathss = pathss.flatMap((p) => {
+      const pathsStartsWithSrc = unvisited_paths?.filter(
+        (p2) => p2.edge.source === p.paths[pathss.length - 1].edge.target,
+      )
+      if (!pathsStartsWithSrc || pathsStartsWithSrc.length == 0) {
+        return []
+      }
+      return p
+    })
+
+    if (pathss.length === 0) {
+      continue
+    }
+
+    const nextEdge = pathss
+      .flatMap((p) => {
+        const pathsStartsWithSrc = unvisited_paths?.filter(
+          (p2) => p2.edge.source === p.paths[pathss.length - 1].edge.target,
+        )
+        if (!pathsStartsWithSrc || pathsStartsWithSrc.length == 0) {
+          return []
+        }
+        const minCostPath = pathsStartsWithSrc.reduce((p, c) =>
+          c.edge.cost < p.edge.cost ? c : p,
+        )
+        return {
+          cost: p.cost + minCostPath.edge.cost,
+          paths: [...p.paths, minCostPath],
+        } as PathsWithCost
+      })
+      .reduce((p, c) => (p.cost < c.cost ? p : c))
+
+    const addon_path = nextEdge.paths[nextEdge.paths.length - 1]
+    unvisited_paths = unvisited_paths?.filter(
+      (p) => p.index !== addon_path.index,
+    )
+    const dst = nodes.value?.findIndex((n) => n.name === addon_path.edge.target)
+    if (!dst) return []
+    if (confirmed_paths[dst] !== null) {
+      continue
+    }
+    confirmed_paths[dst] = nextEdge.paths.map((p) => p.index)
+  }
+  console.log(confirmed_paths)
+  return confirmed_paths
+}
+
 handleClick.value = (e: ECElementEvent) => {
   if (e.dataType === 'node') {
     const data = e.data as Node
-    uptimeRouterId.value = data.name
+    dispatchEchartAction({
+      type: 'highlight',
+      batch: getEdgeIndexesInShortestPathOf(data.name).map((i) => {
+        return {
+          dataType: 'edge',
+          dataIndex: i,
+        }
+      }),
+    })
+    focusedRouterId.value = data.name
   }
 }
 
 handleZrClick.value = (e: ElementEvent) => {
   if (e.target === undefined) {
-    uptimeRouterId.value = ''
+    focusedRouterId.value = ''
   }
 }
 </script>
 
 <template>
-  <Transition name="fade" appear>
-    <OSPFUptime
-      class="uptime"
-      v-if="uptimeRouterId"
-      :routerId="uptimeRouterId"
-      :asn="asn"
-    />
-  </Transition>
+  <Transition name="fade" appear> </Transition>
 </template>
 <style scoped>
 .uptime {

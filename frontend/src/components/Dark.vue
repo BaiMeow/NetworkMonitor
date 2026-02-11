@@ -12,8 +12,6 @@ const toggleTheme = (event: MouseEvent) => {
     Math.max(x, innerWidth - x),
     Math.max(y, innerHeight - y),
   )
-
-  // 兼容性处理
   if (!document.startViewTransition) {
     toggleDark()
     return
@@ -21,7 +19,6 @@ const toggleTheme = (event: MouseEvent) => {
   const transition = document.startViewTransition(async () => {
     toggleDark()
   })
-
   transition.ready.then(() => {
     const clipPath = [
       `circle(0px at ${x}px ${y}px)`,
