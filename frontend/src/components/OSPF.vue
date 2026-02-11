@@ -8,6 +8,7 @@ import { GraphChart } from 'echarts/charts'
 import { TooltipComponent, TitleComponent } from 'echarts/components'
 
 import {
+  Link,
   getBetweenness,
   getCloseness,
   getOSPF,
@@ -26,7 +27,7 @@ import { setUpdatedTime } from '@/state/updated_time'
 const route = useRoute()
 use([CanvasRenderer, GraphChart, TooltipComponent, TitleComponent])
 const isDark = useDark()
-const uptimeRouterId = ref('')
+const focusedRouterId = ref('')
 
 const { option, selectList, loading } = useGraph()
 
@@ -42,6 +43,7 @@ interface Edge {
   betweenness?: number
   lineStyle?: any
   symbol?: string[]
+  type: 'bidirectional' | 'unidirectional'
 }
 
 interface Node {
@@ -130,6 +132,9 @@ option.tooltip = {
       return output
     }
   },
+  position: function () {
+    return [20, 50]
+  },
 }
 option.symbolSize = 50
 option.animationDurationUpdate = 1500
@@ -203,7 +208,7 @@ let autoRefreshInterval: ReturnType<typeof setTimeout>
 watch(
   [asn],
   () => {
-    uptimeRouterId.value = ''
+    focusedRouterId.value = ''
     if (autoRefreshInterval) clearInterval(autoRefreshInterval)
     firstLoading = true
     loadData()
@@ -343,6 +348,7 @@ const edges = computed(() =>
               nodes.value?.length,
             ),
           },
+          type: 'bidirectional',
         })
       }
 
@@ -370,6 +376,7 @@ const edges = computed(() =>
               nodes.value?.length,
             ),
           },
+          type: 'bidirectional',
         })
         if (next_curveness) {
           curveness += 0.07
@@ -403,6 +410,7 @@ const edges = computed(() =>
             ),
           },
           symbol: ['', 'arrow'],
+          type: 'unidirectional',
         })
         if (next_curveness) {
           curveness += 0.07
@@ -490,29 +498,89 @@ onBeforeRouteLeave(() => {
   }
 })
 
+interface LinkWithIndex {
+  index: number
+  link: Link
+}
+
+function getEdgeIndexesInShortestPathOf(src: string) {
+  let node_distance:Map<string, number> = new Map();
+  node_distance.set(src, 0);
+  let unvisited_links: Array<LinkWithIndex> =
+    all_links.value?.map((e, i) => {
+      return {
+        index: i,
+        link: e,
+      }
+    }) || []
+  let visited_links: Array<LinkWithIndex> = []
+  let found_new_node_pos = 1;
+
+  while (node_distance.size <= (nodes.value?.length || 0) && unvisited_links.length > 0) {
+    let allow_start = Array.from(node_distance.keys());
+    let min_cost_edge = unvisited_links.filter((e) => allow_start.includes(e.link.src)).reduce<LinkWithIndex | null>((min_cost_edge, e) => {
+      if (min_cost_edge === null) return e;
+      if (e.link.cost+node_distance.get(e.link.src)! < min_cost_edge.link.cost+node_distance.get(min_cost_edge.link.src)!) return e;
+      return min_cost_edge;
+    }, null)
+    if (min_cost_edge === null) break;
+    unvisited_links = unvisited_links.filter((e) => e.index !== min_cost_edge.index);
+    if (node_distance.get(min_cost_edge.link.dst) === undefined || node_distance.get(min_cost_edge.link.dst)! === node_distance.get(min_cost_edge.link.src)! + min_cost_edge.link.cost) {
+      node_distance.set(min_cost_edge.link.dst, node_distance.get(min_cost_edge.link.src)! + min_cost_edge.link.cost);
+      visited_links.push(min_cost_edge);
+      found_new_node_pos = visited_links.length;
+    }
+  }
+  let tree_links = visited_links.slice(0, found_new_node_pos)
+  return edges.value?.map((e, i) => {
+    return {
+      index: i,
+      ...e,
+    }
+  }).flatMap((e) => {
+    if (e.type === 'bidirectional') {
+      return tree_links.some((link) => link.link.src === e.source && link.link.dst === e.target && link.link.cost === e.cost || link.link.src === e.target && link.link.dst === e.source && link.link.cost === e.cost) ? e.index : [];
+    } else if (e.type === 'unidirectional') {
+      return tree_links.some((link) => link.link.src === e.source && link.link.dst === e.target && link.link.cost === e.cost) ? e.index : [];
+    }
+    return null;
+  }).flat().filter((i) => i !== null) || [];
+}
+
 handleClick.value = (e: ECElementEvent) => {
   if (e.dataType === 'node') {
     const data = e.data as Node
-    uptimeRouterId.value = data.name
+    let edge_idxes = getEdgeIndexesInShortestPathOf(data.name)
+    let node_idxes = nodes.value?.map((n,i) => {
+      return {
+        index: i,
+        ...n
+      }
+    }).filter((n) => edge_idxes.some((i) => edges.value?.[i]?.source === n.name || edges.value?.[i]?.target === n.name)).map((n) => n.index)
+    dispatchEchartAction({
+      type: 'highlight',
+      batch: [{
+        dataType: 'edge',
+        dataIndex: edge_idxes,
+        }, {
+        dataType: 'node',
+        dataIndex: node_idxes,
+        notBlur: true
+        }],
+    })
+    focusedRouterId.value = data.name
   }
 }
 
 handleZrClick.value = (e: ElementEvent) => {
   if (e.target === undefined) {
-    uptimeRouterId.value = ''
+    focusedRouterId.value = ''
   }
 }
 </script>
 
 <template>
-  <Transition name="fade" appear>
-    <OSPFUptime
-      class="uptime"
-      v-if="uptimeRouterId"
-      :routerId="uptimeRouterId"
-      :asn="asn"
-    />
-  </Transition>
+  <Transition name="fade" appear> </Transition>
 </template>
 <style scoped>
 .uptime {

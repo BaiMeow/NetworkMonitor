@@ -14,7 +14,6 @@ import {
 } from '../api/bgp'
 import { prettierNet } from '../utils/colornet'
 import { ASData } from '../api/meta'
-import BGPUptime from './uptime/BGPUptime.vue'
 import { useDark } from '@vueuse/core'
 import { deepEqual } from '../utils/obj'
 import { useGraph, useGraphEvent } from '@/state/graph'
@@ -524,12 +523,6 @@ onBeforeRouteLeave(() => {
 
 <template>
   <Transition name="fade" appear>
-    <BGPUptime
-      class="uptime"
-      v-if="uptime_asn !== 0"
-      :asn="uptime_asn"
-      :grName="name"
-    />
   </Transition>
 </template>
 
