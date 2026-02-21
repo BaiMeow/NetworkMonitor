@@ -1,5 +1,7 @@
 package analysis
 
+import "slices"
+
 type PathBetweennessResult struct {
 	Src         *Node   `json:"src"`
 	Dst         *Node   `json:"dst"`
@@ -40,11 +42,17 @@ func (g *Graph) PathBetweenness() []PathBetweennessResult {
 			}
 		}
 		for range samePathCount {
+			var betweenness float64
+			if g.bidirectional {
+				betweenness = count / float64(maxBidirectionalPathCount(len(g.Nodes))) / float64(samePathCount)
+			} else {
+				betweenness = count / float64(maxUnidirectionalPathCount(len(g.Nodes))) / float64(samePathCount)
+			}
 			results = append(results, PathBetweennessResult{
 				Src:         g.Nodes[pair[0]],
 				Dst:         g.Nodes[pair[1]],
 				Cost:        minCost,
-				Betweenness: count / float64(len(g.Nodes)*len(g.Nodes)/2) / float64(samePathCount),
+				Betweenness: betweenness,
 			})
 		}
 		for _, outEdge := range g.Nodes[pair[0]].Out {
@@ -61,5 +69,26 @@ func (g *Graph) PathBetweenness() []PathBetweennessResult {
 			}
 		}
 	}
-	return results
+
+	if g.bidirectional {
+		return slices.DeleteFunc(results, func(p PathBetweennessResult) bool {
+			return p.Src.Id >= p.Dst.Id
+		})
+	} else {
+		return results
+	}
+}
+
+func maxUnidirectionalPathCount(n int) int {
+	if n <= 1 {
+		return 0
+	}
+	return (n-1)*(n-2) + 1
+}
+
+func maxBidirectionalPathCount(n int) int {
+	if n <= 1 {
+		return 0
+	}
+	return n * n / 4
 }

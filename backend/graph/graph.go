@@ -334,10 +334,6 @@ func (b *BGP) Draw(ctx context.Context) {
 			cl[c.Node.Tag["asn"].(uint32)] = c.Closeness
 		}
 		for _, p := range g.PathBetweenness() {
-			// remove half
-			if p.Src.Id > p.Dst.Id {
-				continue
-			}
 			pbt = append(pbt, PathBetweenness{
 				Src:         strconv.FormatUint(uint64(p.Src.Tag["asn"].(uint32)), 10),
 				Dst:         strconv.FormatUint(uint64(p.Dst.Tag["asn"].(uint32)), 10),

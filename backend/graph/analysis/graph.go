@@ -24,8 +24,10 @@ type Edge struct {
 }
 
 type Graph struct {
-	Nodes        []*Node
-	ShortestPath map[int]map[int][]*Path
+	// no directional graph
+	bidirectional bool
+	Nodes         []*Node
+	ShortestPath  map[int]map[int][]*Path
 }
 
 func ConvertFromBGP(bgp *entity.BGP) *Graph {
@@ -33,7 +35,9 @@ func ConvertFromBGP(bgp *entity.BGP) *Graph {
 		nodeIdReleaser IdReleaser
 		edgeIdReleaser IdReleaser
 	)
-	g := &Graph{}
+	g := &Graph{
+		bidirectional: true,
+	}
 	for _, as := range bgp.AS {
 		node := &Node{Id: nodeIdReleaser.Next()}
 		node.Tag = map[string]any{"asn": as.ASN}
