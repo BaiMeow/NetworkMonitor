@@ -9,7 +9,7 @@ require (
 	github.com/go-routeros/routeros/v3 v3.0.1
 	github.com/influxdata/influxdb-client-go/v2 v2.14.0
 	github.com/jellydator/ttlcache/v3 v3.4.0
-	github.com/osrg/gobgp/v4 v4.2.0
+	github.com/osrg/gobgp/v4 v4.3.0
 	github.com/pkg/errors v0.9.1
 	github.com/pkg/sftp v1.13.7
 	github.com/spf13/viper v1.20.1

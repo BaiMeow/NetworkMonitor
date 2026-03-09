@@ -153,7 +153,7 @@ func init() {
 				if err := bgpServer.AddPeer(context.Background(), &apipb.AddPeerRequest{
 					Peer: &apipb.Peer{
 						Conf: &apipb.PeerConf{
-							PeerAsn:         uint32(peerASN),
+							PeerAsn:         peerASN,
 							NeighborAddress: neighborAddr,
 						},
 						EbgpMultihop: &apipb.EbgpMultihop{
