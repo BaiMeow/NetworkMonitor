@@ -4,17 +4,17 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
-	"github.com/BaiMeow/NetworkMonitor/graph/fetch"
-	"github.com/BaiMeow/NetworkMonitor/template"
-	"github.com/BaiMeow/NetworkMonitor/trace"
-	"github.com/BaiMeow/NetworkMonitor/utils/ctxex"
-	"github.com/pkg/sftp"
-	"golang.org/x/crypto/ssh"
 	"io"
 	"log"
 	"net"
 	"strconv"
-	"time"
+
+	"github.com/BaiMeow/NetworkMonitor/conf"
+	"github.com/BaiMeow/NetworkMonitor/graph/fetch"
+	"github.com/BaiMeow/NetworkMonitor/template"
+	"github.com/BaiMeow/NetworkMonitor/trace"
+	"github.com/pkg/sftp"
+	"golang.org/x/crypto/ssh"
 )
 
 func init() {
@@ -94,7 +94,7 @@ func (s *WithPassword) GetData(ctx context.Context) (any, error) {
 		Auth: []ssh.AuthMethod{
 			ssh.Password(s.Password),
 		},
-		Timeout: 30 * time.Second,
+		Timeout: conf.ProbeTimeout * 4 / 5,
 	}
 	if s.PublicKey != nil {
 		cfg.HostKeyCallback = ssh.FixedHostKey(s.PublicKey)
@@ -104,50 +104,44 @@ func (s *WithPassword) GetData(ctx context.Context) (any, error) {
 
 	var content []byte
 
-	if err := ctxex.Warp(ctx, func() error {
-		c, err := ssh.Dial("tcp", net.JoinHostPort(s.Host, strconv.Itoa(s.Port)), cfg)
-		if err != nil {
-			return fmt.Errorf("fail to dial ssh: %v", err)
-		}
-		defer c.Close()
-		if ctxex.CheckDone(ctx) {
-			return context.Cause(ctx)
-		}
+	c, err := ssh.Dial("tcp", net.JoinHostPort(s.Host, strconv.Itoa(s.Port)), cfg)
+	if err != nil {
+		return nil, fmt.Errorf("fail to dial ssh: %v", err)
+	}
+	defer c.Close()
+	if ctx.Err() != nil {
+		return nil, ctx.Err()
+	}
 
-		sftpc, err := sftp.NewClient(c)
-		if err != nil {
-			return fmt.Errorf("fail to dial sftp: %v", err)
-		}
-		defer sftpc.Close()
-		if ctxex.CheckDone(ctx) {
-			return context.Cause(ctx)
-		}
+	sftpc, err := sftp.NewClient(c)
+	if err != nil {
+		return nil, fmt.Errorf("fail to dial sftp: %v", err)
+	}
+	defer sftpc.Close()
+	if ctx.Err() != nil {
+		return nil, ctx.Err()
+	}
 
-		fp, err := s.filepath.ExecuteString()
-		if err != nil {
-			return fmt.Errorf("fail to get filepath: %v", err)
-		}
-		if ctxex.CheckDone(ctx) {
-			return context.Cause(ctx)
-		}
+	fp, err := s.filepath.ExecuteString()
+	if err != nil {
+		return nil, fmt.Errorf("fail to get filepath: %v", err)
+	}
+	if ctx.Err() != nil {
+		return nil, ctx.Err()
+	}
 
-		file, err := sftpc.Open(fp)
-		if err != nil {
-			return fmt.Errorf("fail to open file from sftp: %v", err)
-		}
-		defer file.Close()
-		if ctxex.CheckDone(ctx) {
-			return context.Cause(ctx)
-		}
+	file, err := sftpc.Open(fp)
+	if err != nil {
+		return nil, fmt.Errorf("fail to open file from sftp: %v", err)
+	}
+	defer file.Close()
+	if ctx.Err() != nil {
+		return nil, ctx.Err()
+	}
 
-		content, err = io.ReadAll(file)
-		if err != nil {
-			return fmt.Errorf("fail to read file from sftp: %v", err)
-		}
-
-		return nil
-	}); err != nil {
-		return err, nil
+	content, err = io.ReadAll(file)
+	if err != nil {
+		return nil, fmt.Errorf("fail to read file from sftp: %v", err)
 	}
 
 	return content, nil

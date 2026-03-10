@@ -3,11 +3,14 @@ package tcp
 import (
 	"context"
 	"fmt"
-	"github.com/BaiMeow/NetworkMonitor/graph/fetch"
-	"github.com/BaiMeow/NetworkMonitor/trace"
-	"github.com/BaiMeow/NetworkMonitor/utils/ctxex"
+	"io"
 	"net"
 	"strconv"
+	"time"
+
+	"github.com/BaiMeow/NetworkMonitor/conf"
+	"github.com/BaiMeow/NetworkMonitor/graph/fetch"
+	"github.com/BaiMeow/NetworkMonitor/trace"
 )
 
 func init() {
@@ -44,12 +47,13 @@ func (t *Tcp) GetData(ctx context.Context) (any, error) {
 		"fetch/tcp/Tcp.GetData",
 	)
 	defer span.End()
-
+	now := time.Now()
 	dialer := &net.Dialer{}
 	conn, err := dialer.DialContext(ctx, "tcp", net.JoinHostPort(t.host, strconv.Itoa(t.port)))
 	if err != nil {
 		return nil, fmt.Errorf("fail to dial tcp: %v", err)
 	}
 	defer conn.Close()
-	return ctxex.IoReadAll(ctx, conn)
+	_ = conn.SetReadDeadline(now.Add(conf.ProbeTimeout * 4 / 5))
+	return io.ReadAll(conn)
 }

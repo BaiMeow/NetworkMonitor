@@ -3,16 +3,20 @@ package sftp
 import (
 	"context"
 	"encoding/base64"
+	"net"
+	"testing"
+	"time"
+
+	"github.com/BaiMeow/NetworkMonitor/conf"
 	"github.com/BaiMeow/NetworkMonitor/graph/fetch"
 	"github.com/BaiMeow/NetworkMonitor/trace"
 	"go.opentelemetry.io/otel/trace/noop"
 	"golang.org/x/crypto/ssh"
-	"net"
-	"testing"
 )
 
 func init() {
 	trace.Tracer = noop.Tracer{}
+	conf.ProbeTimeout = time.Second * 10
 }
 
 func TestSftpWithPassword_GetData(t *testing.T) {

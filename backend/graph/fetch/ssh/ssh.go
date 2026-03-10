@@ -4,14 +4,14 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
-	"github.com/BaiMeow/NetworkMonitor/graph/fetch"
-	"github.com/BaiMeow/NetworkMonitor/trace"
-	"github.com/BaiMeow/NetworkMonitor/utils/ctxex"
-	"golang.org/x/crypto/ssh"
 	"log"
 	"net"
 	"strconv"
-	"time"
+
+	"github.com/BaiMeow/NetworkMonitor/conf"
+	"github.com/BaiMeow/NetworkMonitor/graph/fetch"
+	"github.com/BaiMeow/NetworkMonitor/trace"
+	"golang.org/x/crypto/ssh"
 )
 
 func init() {
@@ -84,7 +84,7 @@ func (s *SshWithPassword) GetData(ctx context.Context) (any, error) {
 		Auth: []ssh.AuthMethod{
 			ssh.Password(s.Password),
 		},
-		Timeout: 30 * time.Second,
+		Timeout: conf.ProbeTimeout * 4 / 5,
 	}
 	if s.PublicKey != nil {
 		cfg.HostKeyCallback = ssh.FixedHostKey(s.PublicKey)
@@ -94,30 +94,28 @@ func (s *SshWithPassword) GetData(ctx context.Context) (any, error) {
 
 	var output []byte
 
-	if err := ctxex.Warp(ctx, func() error {
-		c, err := ssh.Dial("tcp", net.JoinHostPort(s.Host, strconv.Itoa(s.Port)), cfg)
-		if err != nil {
-			return fmt.Errorf("fail to dial ssh: %v", err)
-		}
-		defer c.Close()
+	c, err := ssh.Dial("tcp", net.JoinHostPort(s.Host, strconv.Itoa(s.Port)), cfg)
+	if err != nil {
+		return nil, fmt.Errorf("fail to dial ssh: %v", err)
+	}
+	defer c.Close()
 
-		ctxex.CheckDone(ctx)
-
-		ss, err := c.NewSession()
-		if err != nil {
-			return fmt.Errorf("fail to dial ssh: %v", err)
-		}
-		defer ss.Close()
-		ctxex.CheckDone(ctx)
-
-		output, err = ss.CombinedOutput(s.Command)
-		if err != nil {
-			return fmt.Errorf("fail to run command: %v", err)
-		}
-		return nil
-	}); err != nil {
-		return nil, err
+	if ctx.Err() != nil {
+		return nil, ctx.Err()
 	}
 
+	ss, err := c.NewSession()
+	if err != nil {
+		return nil, fmt.Errorf("fail to dial ssh: %v", err)
+	}
+	defer ss.Close()
+	if ctx.Err() != nil {
+		return nil, ctx.Err()
+	}
+
+	output, err = ss.CombinedOutput(s.Command)
+	if err != nil {
+		return nil, fmt.Errorf("fail to run command: %v", err)
+	}
 	return output, nil
 }
