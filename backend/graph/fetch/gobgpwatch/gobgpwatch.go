@@ -158,7 +158,7 @@ func (f *GoBGPWatch) run() {
 		case <-f.ctx.Done():
 			cancel()
 			return
-		case <-time.After(fetchALLInterval):
+		case <-fetchALLTimer.C:
 			fmt.Println("GoBGP watch reconnect")
 			newSession, newCancel, err := f.mustConnect()
 			if err != nil {
@@ -166,8 +166,8 @@ func (f *GoBGPWatch) run() {
 				cancel()
 				return
 			}
-			cancel()
 			lock.Lock()
+			cancel()
 			session = newSession
 			cancel = newCancel
 			init = true
