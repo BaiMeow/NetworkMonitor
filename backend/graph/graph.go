@@ -126,10 +126,10 @@ func (g *baseGraph[T]) StartDrawDaemon() {
 	g.daemonCancel = cancel
 	Timer := time.NewTimer(conf.Interval)
 	waitFirstLoad := make(chan struct{})
+	once := sync.OnceFunc(func() {
+		close(waitFirstLoad)
+	})
 	go func() {
-		once := sync.OnceFunc(func() {
-			close(waitFirstLoad)
-		})
 		for {
 			ctx, cancel := context.WithCancel(ctx)
 			t := time.Now()
@@ -140,6 +140,7 @@ func (g *baseGraph[T]) StartDrawDaemon() {
 			g.Draw(ctx)
 			alert.Stop()
 			dur := time.Since(t)
+			cancel()
 			if dur > conf.ProbeTimeout/2 {
 				log.Printf("graph %s slow draw: %v\n", g.name, dur)
 			}
