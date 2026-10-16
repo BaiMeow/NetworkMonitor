@@ -108,7 +108,7 @@ func BatchRecordOSPF(asn uint32, ospf *entity.OSPF, t time.Time) error {
 			AddTag("routerId", router).
 			SetTime(t))
 	}
-	if err := peerCountWrite.WritePoint(context.Background(), points...); err != nil {
+	if err := peerCountWrite.WritePoint(context.Background(), outDegree...); err != nil {
 		log.Printf("write peer count fail:%v", err)
 		return ErrDatabase
 	}
