@@ -51,7 +51,7 @@ func BatchRecordBGP(name string, bgp *entity.BGP, t time.Time) error {
 			AddTag("asn", strconv.FormatUint(uint64(asn), 10)).
 			SetTime(t))
 	}
-	if err := peerCountWrite.WritePoint(context.Background(), points...); err != nil {
+	if err := peerCountWrite.WritePoint(context.Background(), peerCountPoint...); err != nil {
 		log.Printf("write peer count fail:%v", err)
 		return ErrDatabase
 	}
